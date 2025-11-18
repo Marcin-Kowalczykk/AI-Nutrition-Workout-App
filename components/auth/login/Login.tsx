@@ -68,6 +68,15 @@ const Login = () => {
         >
           {loading ? "Login in progress..." : "Login"}
         </button>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => router.push("/forgot-password")}
+            className="text-sm text-blue-500 hover:text-blue-700 underline"
+          >
+            Forgot password?
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => router.push("/register")}

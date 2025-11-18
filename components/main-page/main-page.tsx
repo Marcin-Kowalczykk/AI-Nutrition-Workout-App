@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import LogoutButton from "../shared/logout-button/logout-button";
+import Link from "next/link";
 
 const MainPage = async () => {
   const supabase = await createClient();
@@ -62,7 +63,16 @@ const MainPage = async () => {
           ))}
         </div>
       </div>
-      <LogoutButton />
+
+      <div className="mt-8 flex gap-4">
+        <Link
+          href="/profile-settings"
+          className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors"
+        >
+          Profile Settings
+        </Link>
+        <LogoutButton />
+      </div>
     </div>
   );
 };

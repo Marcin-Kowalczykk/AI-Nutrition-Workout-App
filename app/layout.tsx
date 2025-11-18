@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Training Diet App",
-  description: "Training Diet App",
+  description:
+    "Training Diet App for counting calories and tracking your diet and training progress",
 };
 
 export default function RootLayout({

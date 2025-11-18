@@ -45,7 +45,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect routes that require authentication
-  if (!user && request.nextUrl.pathname.startsWith("/main-page")) {
+  if (
+    !user &&
+    (request.nextUrl.pathname.startsWith("/main-page") ||
+      request.nextUrl.pathname.startsWith("/profile-settings"))
+  ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
