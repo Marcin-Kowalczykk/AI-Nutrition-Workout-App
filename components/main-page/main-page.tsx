@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import LogoutButton from "../shared/logout-button/logout-button";
 
 const MainPage = async () => {
   const supabase = await createClient();
@@ -61,6 +62,7 @@ const MainPage = async () => {
           ))}
         </div>
       </div>
+      <LogoutButton />
     </div>
   );
 };

@@ -25,7 +25,7 @@ const Login = () => {
 
       if (error) throw error;
 
-      router.push("/dashboard");
+      router.push("/main-page");
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error during login");
