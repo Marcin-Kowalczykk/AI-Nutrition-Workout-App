@@ -1,7 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -39,3 +38,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# node
+node_modules
+
+# env
+.env
+.env.local
+.env.prod
+.env.dev
+
+# supabase
+supabase/migrations
+supabase/seed.sql
+supabase/storage
+supabase/functions
+
+NEXTJS_AUTH_GUIDE.md
+VERCEL_DEPLOY_GUIDE.md
