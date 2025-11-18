@@ -37,12 +37,12 @@ const MainPage = async () => {
     .limit(10);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className=" flex flex-col gap-4 max-w-screen-2xl pb-10 text-primary-foreground bg-foreground h-full w-full rounded-lg p-4">
       <h1 className="text-2xl font-bold mb-4">
         Witaj, {profile?.full_name || user.email}!
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
         <div>
           <h2 className="text-xl font-semibold mb-2">Training plans</h2>
           {trainingPlans?.map((plan) => (
