@@ -54,5 +54,4 @@ supabase/seed.sql
 supabase/storage
 supabase/functions
 
-NEXTJS_AUTH_GUIDE.md
-VERCEL_DEPLOY_GUIDE.md
+guides/
