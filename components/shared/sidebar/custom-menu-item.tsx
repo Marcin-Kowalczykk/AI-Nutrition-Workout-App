@@ -30,7 +30,9 @@ export const CustomMenuItem = ({
     <SidebarMenuItem key={title}>
       <SidebarMenuButton
         className={`${
-          isActive ? "bg-muted text-primary gap-4" : "bg-transparent gap-4"
+          isActive
+            ? "bg-muted text-secondary-foreground gap-4"
+            : "bg-transparent gap-4"
         } group-data-[collapsible=icon]:justify-center`}
         asChild
         tooltip={title}

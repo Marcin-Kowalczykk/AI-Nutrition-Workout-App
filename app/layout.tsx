@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import ThemeInitializer from "@/components/providers/theme-initializer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,11 +17,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="overflow-hidden">
-        <TooltipProvider delayDuration={0}>
-          <QueryProvider>{children}</QueryProvider>
-        </TooltipProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider delayDuration={0}>
+            <QueryProvider>
+              <ThemeInitializer />
+              {children}
+            </QueryProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

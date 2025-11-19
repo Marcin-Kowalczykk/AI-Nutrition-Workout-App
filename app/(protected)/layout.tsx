@@ -21,13 +21,13 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
           {isMobile ? (
             <header className="flex h-16 bg-sidebar-background border-b border-sidebar-border shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
               <div className="flex justify-between items-center gap-2 px-4">
-                <div className="-ml-1 flex items-center gap-2">
+                <div className="-ml-1 flex items-center gap-2 cursor-pointer text-sidebar-foreground">
                   <SidebarTrigger />
                 </div>
               </div>
             </header>
           ) : null}
-          <div className="flex flex-col gap-4 px-8 pt-4 pb-10 h-full overflow-y-auto bg-foreground">
+          <div className="flex flex-col gap-4 px-8 pt-4 pb-10 h-full overflow-y-auto bg-color-background">
             {children}
           </div>
         </SidebarInset>

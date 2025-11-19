@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 // hooks
 import { useForm, useWatch } from "react-hook-form";
 import { useUpdateProfile } from "../api/use-update-profile";
-import { useProfile } from "../api/use-profile";
+import { useGetProfile } from "../../../hooks/use-get-profile";
+import { useTheme } from "next-themes";
 
 // components
 import {
@@ -26,6 +27,9 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/shared/password-input";
 import { Loader } from "@/components/shared/loader";
 import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Theme } from "@/components/shared/theme-toggle/theme-toggle";
 
 // types and schemas
 import {
@@ -35,8 +39,9 @@ import {
 
 const ProfileSettingsFormContent = () => {
   const router = useRouter();
-  const { data: profileData, isLoading, error: profileError } = useProfile();
+  const { data: profileData, isLoading, error: profileError } = useGetProfile();
   const { mutate: updateProfile, isPending, isError } = useUpdateProfile();
+  const { setTheme } = useTheme();
 
   const form = useForm<ProfileSettingsFormType>({
     resolver: zodResolver(getProfileSettingsFormSchema()),
@@ -44,6 +49,7 @@ const ProfileSettingsFormContent = () => {
       fullName: "",
       password: "",
       confirmPassword: "",
+      theme: Theme.Dark,
     },
   });
 
@@ -53,6 +59,7 @@ const ProfileSettingsFormContent = () => {
         fullName: profileData.profile.full_name,
         password: "",
         confirmPassword: "",
+        theme: profileData.profile.theme,
       });
     }
   }, [profileData, form]);
@@ -65,14 +72,16 @@ const ProfileSettingsFormContent = () => {
 
   const currentFullName = useWatch({ control: form.control, name: "fullName" });
   const password = useWatch({ control: form.control, name: "password" });
+  const currentTheme = useWatch({ control: form.control, name: "theme" });
 
   const onSubmitHandler = async (values: ProfileSettingsFormType) => {
-    const { fullName, password } = values;
+    const { fullName, password, theme } = values;
 
     updateProfile(
       {
         fullName,
         password: password || undefined,
+        theme: theme || undefined,
       },
       {
         onSuccess: () => {
@@ -97,14 +106,18 @@ const ProfileSettingsFormContent = () => {
   }
 
   const initialFullName = profileData.profile.full_name;
+  const initialTheme = profileData.profile.theme;
   const isFormDirty =
-    currentFullName !== initialFullName || (password && password.length > 0);
+    currentFullName !== initialFullName ||
+    currentTheme !== initialTheme ||
+    (password && password.length > 0);
+  const isNameOrThemeDirty =
+    currentFullName !== initialFullName || currentTheme !== initialTheme;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} noValidate>
         <div className="flex flex-col gap-4">
-          {/* Email (read-only) */}
           <FormItem>
             <FormLabel>Email</FormLabel>
             <FormControl>
@@ -118,7 +131,6 @@ const ProfileSettingsFormContent = () => {
             <FormDescription>Email cannot be changed</FormDescription>
           </FormItem>
 
-          {/* Full Name */}
           <FormField
             name="fullName"
             control={form.control}
@@ -138,8 +150,56 @@ const ProfileSettingsFormContent = () => {
             )}
           />
 
-          {/* Password Section */}
-          <div className="border-t pt-4 mt-2">
+          <FormField
+            name="theme"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Theme</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setTheme(value);
+                    }}
+                    disabled={isPending}
+                  >
+                    <div className="flex items-center space-x-2 py-2 w-full">
+                      <RadioGroupItem value={Theme.Light} id={Theme.Light} />
+                      <Label
+                        htmlFor={Theme.Light}
+                        className={
+                          isPending ? "cursor-default" : "cursor-pointer"
+                        }
+                      >
+                        Light Mode
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 w-full">
+                      <RadioGroupItem value={Theme.Dark} id={Theme.Dark} />
+                      <Label
+                        htmlFor={Theme.Dark}
+                        className={
+                          isPending ? "cursor-default" : "cursor-pointer"
+                        }
+                      >
+                        Dark Mode
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                {isNameOrThemeDirty && (
+                  <FormDescription className="text-warning">
+                    For saving changes in name or theme, click the &quot;Update
+                    Profile&quot;
+                  </FormDescription>
+                )}
+              </FormItem>
+            )}
+          />
+
+          <div className="border-t pt-2 mt-2">
             <h3 className="text-lg font-semibold mb-3">Change Password</h3>
 
             <FormField

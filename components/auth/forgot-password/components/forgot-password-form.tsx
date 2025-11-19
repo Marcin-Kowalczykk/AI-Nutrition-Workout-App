@@ -57,7 +57,7 @@ const ForgotPasswordFormContent = () => {
   if (isSuccess && submittedEmail) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="text-center py-4" style={{ color: "var(--success)" }}>
+        <div className="text-center py-4 text-success">
           <h2 className="text-xl font-semibold mb-2">Check your email</h2>
           <p className="mb-2">
             We&apos;ve sent a password reset link to{" "}

@@ -14,6 +14,7 @@ import {
 import { SidebarGroup, SidebarMenu } from "@/components/ui/sidebar";
 import { CustomMenuItem, NavSettingsType } from "./custom-menu-item";
 import LogoutButton from "../logout-button/logout-button";
+import { ThemeToggle } from "../theme-toggle/theme-toggle";
 
 export function NavMain() {
   const topSideSettings: NavSettingsType[] = [
@@ -63,6 +64,7 @@ export function NavMain() {
         {bottomSideSettings.map((item, index) => (
           <CustomMenuItem key={index + item.title} {...item} />
         ))}
+        <ThemeToggle />
         <LogoutButton />
       </SidebarMenu>
     </SidebarGroup>

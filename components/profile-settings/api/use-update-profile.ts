@@ -2,49 +2,42 @@
 
 // dependencies
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 type UpdateProfileCredentials = {
-  fullName: string;
+  fullName?: string;
   password?: string;
+  theme?: string;
 };
 
 export const useUpdateProfile = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const supabase = createClient();
+  const { setTheme } = useTheme();
 
   const mutation = useMutation({
-    mutationFn: async ({ fullName, password }: UpdateProfileCredentials) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    mutationFn: async ({
+      fullName,
+      password,
+      theme,
+    }: UpdateProfileCredentials) => {
+      const response = await fetch("/api/profile/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fullName, password, theme }),
+      });
 
-      if (!user) {
-        throw new Error("User not found");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update profile");
       }
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ full_name: fullName })
-        .eq("id", user.id);
-
-      if (profileError) throw profileError;
-
-      if (password) {
-        const passwordResponse = await fetch("/api/auth/reset-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ password }),
-        });
-
-        if (!passwordResponse.ok) {
-          const errorData = await passwordResponse.json();
-          throw new Error(errorData.error || "Failed to update password");
-        }
+      // Update theme in next-themes if theme was provided
+      if (theme) {
+        setTheme(theme);
       }
 
       return { success: true };

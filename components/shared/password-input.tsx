@@ -46,7 +46,7 @@ export const PasswordInput = ({
         onClick={typeToggle}
         type="button"
         aria-label="Toggle password visibility"
-        className="absolute top-1.5 right-3 text-primary"
+        className="absolute top-1.5 right-3 text-primary-foreground"
       >
         {isPasswordVisible ? <EyeIcon size={25} /> : <EyeOff size={25} />}
       </button>

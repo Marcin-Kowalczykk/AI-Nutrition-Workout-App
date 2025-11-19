@@ -11,7 +11,7 @@ interface BackgroundImageProps {
 const BackgroundImage = ({
   imagePath,
   className = "",
-  fallbackClassName = "bg-black",
+  fallbackClassName = "bg-background",
 }: BackgroundImageProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);

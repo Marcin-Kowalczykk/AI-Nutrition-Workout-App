@@ -4,6 +4,7 @@ export const getProfileSettingsFormSchema = () =>
   z
     .object({
       fullName: z.string().min(1, "Full name is required"),
+      theme: z.string().optional(),
       password: z.string().optional(),
       confirmPassword: z.string().optional(),
     })

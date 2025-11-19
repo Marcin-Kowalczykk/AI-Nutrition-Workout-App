@@ -36,8 +36,8 @@ const MainPage = async () => {
     .limit(10);
 
   return (
-    <div className=" flex flex-col gap-4 max-w-screen-2xl pb-10 text-primary-foreground bg-foreground h-full w-full rounded-lg p-4">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className=" flex flex-col gap-4 max-w-screen-2xl pb-10 text-secondary-foreground bg-background h-full w-full rounded-lg p-4">
+      <h1 className="text-2xl font-bold mb-4 text-secondary-foreground">
         Welcome, {profile?.full_name || user.email}!
       </h1>
 
@@ -47,7 +47,9 @@ const MainPage = async () => {
           {trainingPlans?.map((plan) => (
             <div key={plan.id} className="border p-4 rounded mb-2">
               <h3>{plan.name}</h3>
-              <p className="text-sm text-gray-600">{plan.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {plan.description}
+              </p>
             </div>
           ))}
         </div>
@@ -66,7 +68,7 @@ const MainPage = async () => {
       <div className="mt-8 flex gap-4">
         <Link
           href="/profile-settings"
-          className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded cursor-pointer hover:bg-primary/90 transition-colors"
         >
           Profile Settings
         </Link>

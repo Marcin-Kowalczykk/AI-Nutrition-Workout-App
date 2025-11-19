@@ -106,7 +106,7 @@ const ResetPasswordFormContent = () => {
   if (isSuccess) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="text-center py-4" style={{ color: "var(--success)" }}>
+        <div className="text-center py-4 text-success">
           <p className="mb-4">
             Your password has been successfully reset. Redirecting to login...
           </p>
