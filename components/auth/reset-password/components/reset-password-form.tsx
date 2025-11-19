@@ -111,7 +111,7 @@ const ResetPasswordFormContent = () => {
             Your password has been successfully reset. Redirecting to login...
           </p>
         </div>
-        <Button type="button" variant="secondary" asChild>
+        <Button type="button" variant="outline" asChild>
           <Link href="/login">Go to Login →</Link>
         </Button>
       </div>

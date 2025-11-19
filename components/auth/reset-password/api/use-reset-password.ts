@@ -3,6 +3,7 @@
 // dependencies
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { encryptPassword } from "@/lib/crypto";
 
 type ResetPasswordCredentials = {
   password: string;
@@ -21,12 +22,14 @@ export const useResetPassword = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ password }: ResetPasswordCredentials) => {
+      const encryptedPassword = encryptPassword(password);
+
       const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: encryptedPassword }),
       });
 
       const data: ResetPasswordResponse | ErrorResponse = await response.json();

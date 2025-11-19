@@ -1,13 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { decryptPassword } from "@/lib/crypto";
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password: encryptedPassword } = await request.json();
 
-    if (!email || !password) {
+    if (!email || !encryptedPassword) {
       return NextResponse.json(
         { error: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    let password: string;
+    try {
+      password = decryptPassword(encryptedPassword);
+    } catch (decryptError) {
+      console.error("Password decryption error:", decryptError);
+      return NextResponse.json(
+        { error: "Invalid password format" },
         { status: 400 }
       );
     }

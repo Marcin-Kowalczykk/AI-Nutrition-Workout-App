@@ -4,6 +4,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { encryptPassword } from "@/lib/crypto";
 
 type UpdateProfileCredentials = {
   fullName?: string;
@@ -22,12 +23,20 @@ export const useUpdateProfile = () => {
       password,
       theme,
     }: UpdateProfileCredentials) => {
+      const encryptedPassword = password
+        ? encryptPassword(password)
+        : undefined;
+
       const response = await fetch("/api/profile/update-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullName, password, theme }),
+        body: JSON.stringify({
+          fullName,
+          password: encryptedPassword,
+          theme,
+        }),
       });
 
       if (!response.ok) {
@@ -35,7 +44,6 @@ export const useUpdateProfile = () => {
         throw new Error(errorData.error || "Failed to update profile");
       }
 
-      // Update theme in next-themes if theme was provided
       if (theme) {
         setTheme(theme);
       }

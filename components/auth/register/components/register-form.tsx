@@ -127,12 +127,7 @@ const RegisterFormContent = () => {
           <Button type="submit" variant="destructive" disabled={isPending}>
             {isPending ? <Loader /> : "Register"}
           </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isPending}
-            asChild
-          >
+          <Button type="button" variant="outline" disabled={isPending} asChild>
             <Link href="/login">Already have an account? Login</Link>
           </Button>
         </div>

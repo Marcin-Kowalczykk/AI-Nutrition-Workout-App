@@ -3,6 +3,7 @@
 // dependencies
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { encryptPassword } from "@/lib/crypto";
 
 type RegisterCredentials = {
   email: string;
@@ -24,12 +25,14 @@ export const useRegister = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ email, password, fullName }: RegisterCredentials) => {
+      const encryptedPassword = encryptPassword(password);
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, fullName }),
+        body: JSON.stringify({ email, password: encryptedPassword, fullName }),
       });
 
       const data: RegisterResponse | ErrorResponse = await response.json();

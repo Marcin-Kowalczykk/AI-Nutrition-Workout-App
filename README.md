@@ -75,7 +75,22 @@ bun install
 NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Password encryption key
+# NEXT_PUBLIC_ENCRYPTION_KEY is required (used on client-side)
+# ENCRYPTION_KEY is optional but recommended for server-side (more secure)
+# If ENCRYPTION_KEY is not set, NEXT_PUBLIC_ENCRYPTION_KEY will be used as fallback
+NEXT_PUBLIC_ENCRYPTION_KEY=your-secure-encryption-key-here
+# Optional: ENCRYPTION_KEY=your-secure-encryption-key-here (same value)
 ```
+
+**Note:** The encryption key should be a strong, random string (at least 32 characters). You can generate one using:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**Security Note:** `NEXT_PUBLIC_ENCRYPTION_KEY` is visible in the browser, so this encryption provides obfuscation rather than true security. The main security comes from HTTPS and Supabase's password hashing.
 
 ## 🚀 Deployment on Vercel
 
@@ -89,6 +104,8 @@ The easiest way to deploy this Next.js app is using [Vercel](https://vercel.com)
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_ENCRYPTION_KEY` (required)
+   - `ENCRYPTION_KEY` (optional, will use `NEXT_PUBLIC_ENCRYPTION_KEY` as fallback)
 4. Deploy
 
 ### Environment Variables on Vercel
@@ -97,6 +114,7 @@ Make sure to add all your Supabase environment variables in the Vercel dashboard
 
 - Go to your project → **Settings** → **Environment Variables**
 - Add all variables from your `.env.local` file
+- **Note:** `ENCRYPTION_KEY` is optional - if not set, `NEXT_PUBLIC_ENCRYPTION_KEY` will be used
 
 ## 🛠️ Available Scripts
 

@@ -40,7 +40,12 @@ import {
 const ProfileSettingsFormContent = () => {
   const router = useRouter();
   const { data: profileData, isLoading, error: profileError } = useGetProfile();
-  const { mutate: updateProfile, isPending, isError } = useUpdateProfile();
+  const {
+    mutate: updateProfile,
+    isPending,
+    isError,
+    error,
+  } = useUpdateProfile();
   const { setTheme } = useTheme();
 
   const form = useForm<ProfileSettingsFormType>({
@@ -246,7 +251,7 @@ const ProfileSettingsFormContent = () => {
 
           {isError && (
             <FormMessage className="text-destructive text-center">
-              Failed to update profile. Please try again.
+              {error?.message || "Failed to update profile. Please try again."}
             </FormMessage>
           )}
 
@@ -258,7 +263,7 @@ const ProfileSettingsFormContent = () => {
             {isPending ? <Loader /> : "Update Profile"}
           </Button>
 
-          <Button type="button" variant="secondary" asChild>
+          <Button type="button" variant="outline" asChild>
             <Link href="/main-page">← Back to Main Page</Link>
           </Button>
         </div>

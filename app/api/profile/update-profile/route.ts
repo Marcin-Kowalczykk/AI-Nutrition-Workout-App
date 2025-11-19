@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { decryptPassword } from "@/lib/crypto";
 
 type UpdateProfileRequest = {
   fullName?: string;
@@ -9,8 +10,11 @@ type UpdateProfileRequest = {
 
 export async function POST(request: Request) {
   try {
-    const { fullName, password, theme }: UpdateProfileRequest =
-      await request.json();
+    const {
+      fullName,
+      password: encryptedPassword,
+      theme,
+    }: UpdateProfileRequest = await request.json();
 
     const supabase = await createClient();
 
@@ -30,7 +34,6 @@ export async function POST(request: Request) {
       updateData.theme = theme;
     }
 
-    // Update profile if there's data to update
     if (Object.keys(updateData).length > 0) {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -45,8 +48,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update password if provided
-    if (password) {
+    if (encryptedPassword) {
+      let password: string;
+      try {
+        password = decryptPassword(encryptedPassword);
+      } catch (decryptError) {
+        console.error("Password decryption error:", decryptError);
+        return NextResponse.json(
+          { error: "Invalid password format" },
+          { status: 400 }
+        );
+      }
+
       if (password.length < 6) {
         return NextResponse.json(
           { error: "Password must be at least 6 characters" },

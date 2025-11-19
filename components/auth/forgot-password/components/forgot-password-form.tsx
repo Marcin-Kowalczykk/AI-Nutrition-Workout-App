@@ -109,12 +109,7 @@ const ForgotPasswordFormContent = () => {
           <Button type="submit" variant="destructive" disabled={isPending}>
             {isPending ? <Loader /> : "Send Reset Link"}
           </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isPending}
-            asChild
-          >
+          <Button type="button" variant="outline" disabled={isPending} asChild>
             <Link href="/login">← Back to Login</Link>
           </Button>
         </div>
