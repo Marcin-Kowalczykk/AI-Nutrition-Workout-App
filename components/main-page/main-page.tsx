@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import LogoutButton from "../shared/logout-button/logout-button";
 import Link from "next/link";
 
 const MainPage = async () => {
@@ -39,7 +38,7 @@ const MainPage = async () => {
   return (
     <div className=" flex flex-col gap-4 max-w-screen-2xl pb-10 text-primary-foreground bg-foreground h-full w-full rounded-lg p-4">
       <h1 className="text-2xl font-bold mb-4">
-        Witaj, {profile?.full_name || user.email}!
+        Welcome, {profile?.full_name || user.email}!
       </h1>
 
       <div>
@@ -71,7 +70,6 @@ const MainPage = async () => {
         >
           Profile Settings
         </Link>
-        <LogoutButton />
       </div>
     </div>
   );

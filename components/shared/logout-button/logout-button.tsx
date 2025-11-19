@@ -1,25 +1,53 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 const LogoutButton = () => {
   const router = useRouter();
-  const supabase = createClient();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still redirect even if API call fails
+      router.push("/login");
+      router.refresh();
+    }
   };
 
+  if (isCollapsed) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={handleLogout}
+          className="bg-transparent hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:justify-center"
+          tooltip="Logout"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
   return (
-    <button
-      onClick={handleLogout}
-      className="px-4 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600"
-    >
+    <Button onClick={handleLogout} variant="destructive" className="w-full">
       Logout
-    </button>
+    </Button>
   );
 };
 

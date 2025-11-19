@@ -31,13 +31,14 @@ export const CustomMenuItem = ({
       <SidebarMenuButton
         className={`${
           isActive ? "bg-muted text-primary gap-4" : "bg-transparent gap-4"
-        }`}
+        } group-data-[collapsible=icon]:justify-center`}
         asChild
+        tooltip={title}
       >
         <a href={url}>
           {iconComponent && iconComponent}
           {IconComponent && <IconComponent />}
-          <span>{title}</span>
+          <span className="group-data-[collapsible=icon]:hidden">{title}</span>
         </a>
       </SidebarMenuButton>
     </SidebarMenuItem>

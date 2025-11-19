@@ -54,12 +54,12 @@ export function NavMain() {
 
   return (
     <SidebarGroup className="flex-1 flex flex-col justify-between gap-4 text-muted-foreground p-4">
-      <SidebarMenu className="gap-4">
+      <SidebarMenu className="gap-4 group-data-[collapsible=icon]:items-center">
         {topSideSettings.map((item, index) => (
           <CustomMenuItem key={index + item.title} {...item} />
         ))}
       </SidebarMenu>
-      <SidebarMenu className="gap-4">
+      <SidebarMenu className="gap-4 group-data-[collapsible=icon]:items-center">
         {bottomSideSettings.map((item, index) => (
           <CustomMenuItem key={index + item.title} {...item} />
         ))}
