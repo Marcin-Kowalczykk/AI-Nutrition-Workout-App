@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
 export async function POST(request: Request) {
   try {
@@ -11,10 +10,8 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-    const headersList = await headers();
-    const origin = headersList.get("origin") || "";
 
-    const redirectUrl = `${origin}/reset-password`;
+    const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,
