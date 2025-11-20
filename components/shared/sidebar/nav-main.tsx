@@ -16,39 +16,57 @@ import { CustomMenuItem, NavSettingsType } from "./custom-menu-item";
 import LogoutButton from "../../auth/logout-button/logout-button";
 import { ThemeToggle } from "../theme-toggle/theme-toggle";
 
+export enum EnableRoutes {
+  WorkoutHistory = "/main-page",
+  CreateNewWorkout = "/create-new-workout",
+  DietHistory = "/diet-history",
+  KcalCalculator = "/kcal-calculator",
+  BodyMeasurements = "/body-measurements",
+  ProfileSettings = "/profile-settings",
+}
+
+export enum NavMainTitles {
+  WorkoutHistory = "Workout history",
+  CreateNewWorkout = "Create new workout",
+  DietHistory = "Diet history",
+  KcalCalculator = "Kcal calculator",
+  BodyMeasurements = "Body measurements",
+  ProfileSettings = "Profile settings",
+}
+
 export function NavMain() {
   const topSideSettings: NavSettingsType[] = [
     {
-      title: "Home",
-      url: `/main-page`,
+      title: NavMainTitles.WorkoutHistory,
+      url: EnableRoutes.WorkoutHistory,
       icon: HomeIcon,
     },
     {
-      title: "Training plans",
-      url: `/training-plans`,
+      title: NavMainTitles.CreateNewWorkout,
+      url: EnableRoutes.CreateNewWorkout,
       icon: NotebookPenIcon,
     },
     {
-      title: "Diet history",
-      url: `/diet-history`,
+      title: NavMainTitles.DietHistory,
+      url: EnableRoutes.DietHistory,
       icon: FilesIcon,
     },
     {
-      title: "Kcal calculator",
-      url: `/kcal-calculator`,
+      title: NavMainTitles.KcalCalculator,
+      url: EnableRoutes.KcalCalculator,
       icon: CalculatorIcon,
     },
     {
-      title: "Body measurements",
-      url: `/body-measurements`,
+      title: NavMainTitles.BodyMeasurements,
+      url: EnableRoutes.BodyMeasurements,
       icon: ActivityIcon,
     },
   ];
 
   const bottomSideSettings: NavSettingsType[] = [
     {
-      title: "Profile settings",
-      url: `/profile-settings`,
+      title: NavMainTitles.ProfileSettings,
+      url: EnableRoutes.ProfileSettings,
       icon: UserRoundCogIcon,
     },
   ];
