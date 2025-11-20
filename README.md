@@ -15,6 +15,7 @@ A modern web application for tracking training plans, diet history, and body mea
 
   - Update full name
   - Update password
+  - Update theme (dark/light mode)
 
 - **Features**
 
@@ -31,6 +32,9 @@ This project is built with the following technologies:
 - **[React 19](https://react.dev/)** - UI library for building user interfaces
 - **[TypeScript](https://www.typescriptlang.org/)** - Typed superset of JavaScript for better developer experience
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework for styling
+- **[TanStack Query (React Query)](https://tanstack.com/query/latest)** - Powerful data synchronization library for React that provides server state management, caching, background updates, and data fetching with minimal boilerplate
+- **[shadcn/ui](https://ui.shadcn.com/)** - Re-usable components built with Radix UI and Tailwind CSS, providing accessible and customizable UI components
+- **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme provider for Next.js that enables seamless dark/light mode switching with system preference detection
 - **[Supabase](https://supabase.com/)** - Backend-as-a-Service providing:
   - PostgreSQL database
   - Authentication (email/password, password reset)
