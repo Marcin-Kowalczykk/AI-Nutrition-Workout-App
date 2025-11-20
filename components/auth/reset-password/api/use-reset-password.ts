@@ -5,23 +5,17 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { encryptPassword } from "@/lib/crypto";
 
-type ResetPasswordCredentials = {
-  password: string;
-};
-
-type ResetPasswordResponse = {
-  message: string;
-};
-
-type ErrorResponse = {
-  error: string;
-};
+// types
+import {
+  IResetPasswordRequestBody,
+  IResetPasswordResponse,
+} from "@/app/api/auth/reset-password/route";
 
 export const useResetPassword = () => {
   const router = useRouter();
 
   const mutation = useMutation({
-    mutationFn: async ({ password }: ResetPasswordCredentials) => {
+    mutationFn: async ({ password }: IResetPasswordRequestBody) => {
       const encryptedPassword = encryptPassword(password);
 
       const response = await fetch("/api/auth/reset-password", {
@@ -32,15 +26,13 @@ export const useResetPassword = () => {
         body: JSON.stringify({ password: encryptedPassword }),
       });
 
-      const data: ResetPasswordResponse | ErrorResponse = await response.json();
-
       if (!response.ok) {
-        throw new Error(
-          (data as ErrorResponse).error || "Failed to reset password"
-        );
+        throw new Error("Failed to reset password");
       }
 
-      return data as ResetPasswordResponse;
+      const data: IResetPasswordResponse = await response.json();
+
+      return data;
     },
     onSuccess: () => {
       setTimeout(() => {

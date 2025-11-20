@@ -3,21 +3,15 @@
 // dependencies
 import { useMutation } from "@tanstack/react-query";
 
-type ForgotPasswordCredentials = {
-  email: string;
-};
-
-type ForgotPasswordResponse = {
-  message: string;
-};
-
-type ErrorResponse = {
-  error: string;
-};
+// types
+import {
+  IForgotPasswordRequestBody,
+  IForgotPasswordResponse,
+} from "@/app/api/auth/forgot-password/route";
 
 export const useForgotPassword = () => {
   const mutation = useMutation({
-    mutationFn: async ({ email }: ForgotPasswordCredentials) => {
+    mutationFn: async ({ email }: IForgotPasswordRequestBody) => {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
@@ -26,16 +20,13 @@ export const useForgotPassword = () => {
         body: JSON.stringify({ email }),
       });
 
-      const data: ForgotPasswordResponse | ErrorResponse =
-        await response.json();
+      const data: IForgotPasswordResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          (data as ErrorResponse).error || "Failed to send reset email"
-        );
+        throw new Error("Failed to send reset email");
       }
 
-      return data as ForgotPasswordResponse;
+      return data;
     },
   });
 

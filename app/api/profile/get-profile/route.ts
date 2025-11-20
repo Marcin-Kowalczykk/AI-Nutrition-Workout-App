@@ -1,5 +1,21 @@
+import { Theme } from "@/components/shared/theme-toggle/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+
+export interface IUserResponse {
+  email: string;
+  id: string;
+}
+
+export interface IProfileData {
+  full_name: string;
+  theme: Theme;
+}
+
+export interface IGetProfileResponse {
+  user: IUserResponse;
+  profile: IProfileData;
+}
 
 export async function GET() {
   try {
@@ -28,7 +44,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(
+    return NextResponse.json<IGetProfileResponse>(
       {
         user: {
           email: user.email || "",

@@ -1,27 +1,20 @@
 "use client";
+
+// hooks
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+
+// utils
 import { encryptPassword } from "@/lib/crypto";
 
-type LoginCredentials = {
-  email: string;
-  password: string;
-};
-
-type LoginResponse = {
-  message: string;
-  user: unknown;
-};
-
-type ErrorResponse = {
-  error: string;
-};
+// types
+import { ILoginRequestBody, ILoginResponse } from "@/app/api/auth/login/route";
 
 export const useLogin = () => {
   const router = useRouter();
 
   const mutation = useMutation({
-    mutationFn: async ({ email, password }: LoginCredentials) => {
+    mutationFn: async ({ email, password }: ILoginRequestBody) => {
       const encryptedPassword = encryptPassword(password);
 
       const response = await fetch("/api/auth/login", {
@@ -32,13 +25,13 @@ export const useLogin = () => {
         body: JSON.stringify({ email, password: encryptedPassword }),
       });
 
-      const data: LoginResponse | ErrorResponse = await response.json();
+      const data: ILoginResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error((data as ErrorResponse).error || "Login failed");
+        throw new Error("Login failed");
       }
 
-      return data as LoginResponse;
+      return data;
     },
     onSuccess: () => {
       router.push("/main-page");

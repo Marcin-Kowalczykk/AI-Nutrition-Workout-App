@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+export interface ILogoutResponse {
+  message: string;
+  status: number;
+}
+
 export async function POST() {
   try {
     const supabase = await createClient();
@@ -14,8 +19,8 @@ export async function POST() {
       );
     }
 
-    return NextResponse.json(
-      { message: "Logged out successfully" },
+    return NextResponse.json<ILogoutResponse>(
+      { message: "Logged out successfully", status: 200 },
       { status: 200 }
     );
   } catch (error) {

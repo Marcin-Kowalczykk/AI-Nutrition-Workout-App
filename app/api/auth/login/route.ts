@@ -1,6 +1,20 @@
+// utils
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { decryptPassword } from "@/lib/crypto";
+
+// types
+import { User } from "@supabase/supabase-js";
+
+export interface ILoginRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface ILoginResponse {
+  message: string;
+  user: User;
+}
 
 export async function POST(request: Request) {
   try {

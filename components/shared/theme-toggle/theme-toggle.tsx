@@ -11,6 +11,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUpdateProfile } from "@/components/profile-settings/api/use-update-profile";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 export enum Theme {
   Dark = "dark",
@@ -22,7 +23,14 @@ export const ThemeToggle = () => {
   const { state } = useSidebar();
   const [mounted, setMounted] = React.useState(false);
   const isCollapsed = state === "collapsed";
-  const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { mutate: updateProfile, isPending } = useUpdateProfile({
+    onSuccess: (message) => {
+      toast.success(message);
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
 
   React.useEffect(() => {
     setMounted(true);

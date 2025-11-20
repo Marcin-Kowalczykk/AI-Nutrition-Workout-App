@@ -1,9 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+export interface IForgotPasswordRequestBody {
+  email: string;
+}
+
+export interface IForgotPasswordResponse {
+  message: string;
+  status: number;
+}
+
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email }: IForgotPasswordRequestBody = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -24,8 +33,8 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
-      { message: "Password reset email sent" },
+    return NextResponse.json<IForgotPasswordResponse>(
+      { message: "Password reset email sent", status: 200 },
       { status: 200 }
     );
   } catch (error) {

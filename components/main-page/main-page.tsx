@@ -1,69 +1,33 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
+
+// components
 import Link from "next/link";
+import { Loader } from "../shared/loader";
 
-const MainPage = async () => {
-  const supabase = await createClient();
+// hooks
+import { useGetProfile } from "@/hooks/use-get-profile";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+const MainPage = () => {
+  const { data, isLoading, error, isError } = useGetProfile();
 
-  if (!user) {
-    redirect("/login");
+  const { profile, user } = data || {};
+
+  if (isLoading) {
+    return <Loader />;
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  // Get training plans
-  const { data: trainingPlans } = await supabase
-    .from("training_plans")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  // Get diet history
-  const { data: dietHistory } = await supabase
-    .from("diet_history")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("date", { ascending: false })
-    .limit(10);
+  if (isError) {
+    return <div>Error: {error?.message}</div>;
+  }
 
   return (
     <div className=" flex flex-col gap-4 max-w-screen-2xl pb-10 text-secondary-foreground bg-background h-full w-full rounded-lg p-4">
       <h1 className="text-2xl font-bold mb-4 text-secondary-foreground">
-        Welcome, {profile?.full_name || user.email}!
+        name: {profile?.full_name}
       </h1>
-
-      <div>
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Training plans</h2>
-          {trainingPlans?.map((plan) => (
-            <div key={plan.id} className="border p-4 rounded mb-2">
-              <h3>{plan.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {plan.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Diet history</h2>
-          {dietHistory?.map((entry) => (
-            <div key={entry.id} className="border p-4 rounded mb-2">
-              <p className="font-semibold">{entry.date}</p>
-              <p className="text-sm">Calories: {entry.total_calories}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold mb-4 text-secondary-foreground">
+        email: {user?.email}
+      </h1>
 
       <div className="mt-8 flex gap-4">
         <Link

@@ -1,20 +1,27 @@
 "use client";
 
-// dependencies
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+// hooks
+import { useMutation } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
+
+// lib
 import { encryptPassword } from "@/lib/crypto";
 
-type UpdateProfileCredentials = {
-  fullName?: string;
-  password?: string;
-  theme?: string;
+// types
+import {
+  IUpdateProfileRequestBody,
+  IUpdateProfileResponse,
+} from "@/app/api/profile/update-profile/route";
+
+type UseUpdateProfileOptions = {
+  onSuccess?: (message: string) => void;
+  onError?: (error: string) => void;
 };
 
-export const useUpdateProfile = () => {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+export const useUpdateProfile = ({
+  onSuccess,
+  onError,
+}: UseUpdateProfileOptions) => {
   const { setTheme } = useTheme();
 
   const mutation = useMutation({
@@ -22,7 +29,7 @@ export const useUpdateProfile = () => {
       fullName,
       password,
       theme,
-    }: UpdateProfileCredentials) => {
+    }: IUpdateProfileRequestBody) => {
       const encryptedPassword = password
         ? encryptPassword(password)
         : undefined;
@@ -48,11 +55,19 @@ export const useUpdateProfile = () => {
         setTheme(theme);
       }
 
-      return { success: true };
+      const data: IUpdateProfileResponse = await response.json();
+
+      return data.message;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      router.refresh();
+    onSuccess: (message) => {
+      if (onSuccess) {
+        onSuccess(message);
+      }
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
     },
   });
 

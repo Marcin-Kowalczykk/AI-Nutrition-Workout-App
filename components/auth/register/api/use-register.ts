@@ -5,26 +5,17 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { encryptPassword } from "@/lib/crypto";
 
-type RegisterCredentials = {
-  email: string;
-  password: string;
-  fullName: string;
-};
-
-type RegisterResponse = {
-  message: string;
-  user: unknown;
-};
-
-type ErrorResponse = {
-  error: string;
-};
+// types
+import {
+  IRegisterRequestBody,
+  IRegisterResponse,
+} from "@/app/api/auth/register/route";
 
 export const useRegister = () => {
   const router = useRouter();
 
   const mutation = useMutation({
-    mutationFn: async ({ email, password, fullName }: RegisterCredentials) => {
+    mutationFn: async ({ email, password, fullName }: IRegisterRequestBody) => {
       const encryptedPassword = encryptPassword(password);
 
       const response = await fetch("/api/auth/register", {
@@ -35,13 +26,13 @@ export const useRegister = () => {
         body: JSON.stringify({ email, password: encryptedPassword, fullName }),
       });
 
-      const data: RegisterResponse | ErrorResponse = await response.json();
+      const data: IRegisterResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error((data as ErrorResponse).error || "Registration failed");
+        throw new Error("Registration failed");
       }
 
-      return data as RegisterResponse;
+      return data;
     },
     onSuccess: (data) => {
       if (data?.user) {

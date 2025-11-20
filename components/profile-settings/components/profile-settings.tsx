@@ -6,7 +6,7 @@ import { ProfileSettingsForm } from "./profile-settings-form";
 
 const ProfileSettings = () => {
   return (
-    <Card className="w-full">
+    <Card className="w-full md:w-1/2">
       <CardHeader>
         <CardTitle className="text-card-foreground text-2xl font-semibold tracking-normal">
           Profile Settings

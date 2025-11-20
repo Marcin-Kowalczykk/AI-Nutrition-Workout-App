@@ -2,11 +2,21 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { decryptPassword } from "@/lib/crypto";
 
-type UpdateProfileRequest = {
+export interface IUpdateProfileRequestBody {
   fullName?: string;
   password?: string;
   theme?: string;
-};
+}
+
+export interface IUpdateProfileDBFields {
+  full_name?: string;
+  theme?: string;
+}
+
+export interface IUpdateProfileResponse {
+  message: string;
+  status: number;
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +24,7 @@ export async function POST(request: Request) {
       fullName,
       password: encryptedPassword,
       theme,
-    }: UpdateProfileRequest = await request.json();
+    }: IUpdateProfileRequestBody = await request.json();
 
     const supabase = await createClient();
 
@@ -26,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
-    const updateData: { full_name?: string; theme?: string } = {};
+    const updateData: IUpdateProfileDBFields = {};
     if (fullName !== undefined) {
       updateData.full_name = fullName;
     }
@@ -80,7 +90,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "Profile updated successfully" },
+      { message: "Profile updated successfully", status: 200 },
       { status: 200 }
     );
   } catch (error) {

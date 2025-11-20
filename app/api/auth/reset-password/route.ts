@@ -2,9 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { decryptPassword } from "@/lib/crypto";
 
+export interface IResetPasswordRequestBody {
+  password: string;
+}
+
+export interface IResetPasswordResponse {
+  message: string;
+  status: number;
+}
+
 export async function POST(request: Request) {
   try {
-    const { password: encryptedPassword } = await request.json();
+    const { password: encryptedPassword }: IResetPasswordRequestBody =
+      await request.json();
 
     if (!encryptedPassword) {
       return NextResponse.json(
@@ -44,8 +54,8 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
-      { message: "Password updated successfully" },
+    return NextResponse.json<IResetPasswordResponse>(
+      { message: "Password updated successfully", status: 200 },
       { status: 200 }
     );
   } catch (error) {

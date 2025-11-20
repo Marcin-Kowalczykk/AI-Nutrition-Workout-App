@@ -34,6 +34,8 @@ const ResetPasswordFormContent = () => {
     isPending,
     isError,
     isSuccess,
+    error,
+    data,
   } = useResetPassword();
   const supabase = createClient();
 
@@ -107,9 +109,7 @@ const ResetPasswordFormContent = () => {
     return (
       <div className="flex flex-col gap-4">
         <div className="text-center py-4 text-success">
-          <p className="mb-4">
-            Your password has been successfully reset. Redirecting to login...
-          </p>
+          <p className="mb-4">{data.message} Redirecting to login...</p>
         </div>
         <Button type="button" variant="outline" asChild>
           <Link href="/login">Go to Login →</Link>
@@ -158,7 +158,7 @@ const ResetPasswordFormContent = () => {
           />
           {isError && (
             <FormMessage className="text-destructive text-center">
-              Failed to reset password. Please try again.
+              {error?.message}
             </FormMessage>
           )}
           <Button type="submit" variant="destructive" disabled={isPending}>

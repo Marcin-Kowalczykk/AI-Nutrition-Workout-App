@@ -27,7 +27,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               </div>
             </header>
           ) : null}
-          <div className="flex flex-col gap-4 px-8 pt-4 pb-10 h-full overflow-y-auto bg-color-background">
+          <div className="flex flex-col gap-2 p-3 pb-10 h-full overflow-y-auto overflow-x-hidden bg-color-background">
             {children}
           </div>
         </SidebarInset>

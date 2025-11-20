@@ -11,6 +11,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { useUpdateProfile } from "../api/use-update-profile";
 import { useGetProfile } from "../../../hooks/use-get-profile";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
 
 // components
 import {
@@ -39,13 +40,24 @@ import {
 
 const ProfileSettingsFormContent = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: profileData, isLoading, error: profileError } = useGetProfile();
   const {
     mutate: updateProfile,
     isPending,
     isError,
     error,
-  } = useUpdateProfile();
+  } = useUpdateProfile({
+    onSuccess: (message) => {
+      queryClient.refetchQueries({ queryKey: ["get-profile"] });
+      toast.success(message);
+      form.setValue("password", "");
+      form.setValue("confirmPassword", "");
+    },
+    onError: (error) => {
+      toast.error(error || "Failed to update profile. Please try again.");
+    },
+  });
   const { setTheme } = useTheme();
 
   const form = useForm<ProfileSettingsFormType>({
@@ -82,20 +94,11 @@ const ProfileSettingsFormContent = () => {
   const onSubmitHandler = async (values: ProfileSettingsFormType) => {
     const { fullName, password, theme } = values;
 
-    updateProfile(
-      {
-        fullName,
-        password: password || undefined,
-        theme: theme || undefined,
-      },
-      {
-        onSuccess: () => {
-          form.setValue("password", "");
-          form.setValue("confirmPassword", "");
-          toast.success("Profile updated successfully");
-        },
-      }
-    );
+    updateProfile({
+      fullName,
+      password: password || undefined,
+      theme: theme || undefined,
+    });
   };
 
   if (isLoading) {
@@ -218,7 +221,8 @@ const ProfileSettingsFormContent = () => {
                       id="newPassword"
                       {...field}
                       value={field.value || ""}
-                      placeholder="Leave empty to keep current"
+                      className="text-sm"
+                      placeholder="Leave empty to keep current password"
                     />
                   </FormControl>
                   <FormDescription>Minimum 6 characters</FormDescription>
@@ -239,6 +243,7 @@ const ProfileSettingsFormContent = () => {
                         id="confirmPassword"
                         {...field}
                         value={field.value || ""}
+                        className="text-sm"
                         placeholder="Confirm new password"
                       />
                     </FormControl>

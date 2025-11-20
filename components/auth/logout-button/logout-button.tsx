@@ -1,32 +1,27 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+// icons
 import { LogOut } from "lucide-react";
+
+// components
 import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/shared/loader";
+
+// hooks
+import { useLogout } from "./api/use-logout";
 
 const LogoutButton = () => {
-  const router = useRouter();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const { mutate: logout, isPending } = useLogout();
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-      router.push("/login");
-      router.refresh();
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Still redirect even if API call fails
-      router.push("/login");
-      router.refresh();
-    }
+  const handleLogout = () => {
+    logout();
   };
 
   if (isCollapsed) {
@@ -34,6 +29,7 @@ const LogoutButton = () => {
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={handleLogout}
+          disabled={isPending}
           className="bg-transparent hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:justify-center"
           tooltip="Logout"
         >
@@ -45,8 +41,13 @@ const LogoutButton = () => {
   }
 
   return (
-    <Button onClick={handleLogout} variant="destructive" className="w-full">
-      Logout
+    <Button
+      onClick={handleLogout}
+      variant="destructive"
+      className="w-full"
+      disabled={isPending}
+    >
+      {isPending ? <Loader /> : "Logout"}
     </Button>
   );
 };

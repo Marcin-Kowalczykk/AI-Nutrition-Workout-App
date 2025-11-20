@@ -1,9 +1,12 @@
 "use client";
 
 // hooks
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
-export const useGetProfile = () => {
+// types
+import { IGetProfileResponse } from "@/app/api/profile/get-profile/route";
+
+export const useGetProfile = (): UseQueryResult<IGetProfileResponse, Error> => {
   const query = useQuery({
     queryKey: ["get-profile"],
     queryFn: async () => {
