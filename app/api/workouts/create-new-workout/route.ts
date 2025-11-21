@@ -4,24 +4,15 @@ import { NextResponse } from "next/server";
 // constants
 import { TABLE_NAMES } from "../../tableNames";
 
-export interface ICreateWorkoutRequestBody {
-  name: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  exercises?: Record<string, unknown>;
-}
+// types
+import { IWorkoutItem } from "../types";
 
-export interface ICreateWorkoutResponse {
-  id: string;
-  user_id: string;
-  name: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  exercises?: Record<string, unknown>;
-  created_at: string;
-}
+export type ICreateWorkoutRequestBody = Omit<
+  IWorkoutItem,
+  "user_id" | "created_at" | "updated_at" | "id"
+>;
+
+export type ICreateWorkoutResponse = IWorkoutItem;
 
 export async function POST(request: Request) {
   try {

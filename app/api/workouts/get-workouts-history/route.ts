@@ -4,19 +4,11 @@ import { NextResponse } from "next/server";
 // constants
 import { TABLE_NAMES } from "../../tableNames";
 
-export interface IWorkoutHistoryItem {
-  id: string;
-  user_id: string;
-  name: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  exercises?: Record<string, unknown>;
-  created_at: string;
-}
+// types
+import { IWorkoutItem } from "../types";
 
 export interface IGetWorkoutsHistoryResponse {
-  workouts: IWorkoutHistoryItem[];
+  workouts: IWorkoutItem[];
 }
 
 export async function GET(request: Request) {

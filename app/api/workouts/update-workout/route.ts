@@ -4,26 +4,12 @@ import { NextResponse } from "next/server";
 // constants
 import { TABLE_NAMES } from "../../tableNames";
 
-export interface IUpdateWorkoutRequestBody {
-  id: string;
-  name?: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  exercises?: Record<string, unknown>;
-}
+// types
+import { IWorkoutItem } from "../types";
 
-export interface IUpdateWorkoutResponse {
-  id: string;
-  user_id: string;
-  name: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  exercises?: Record<string, unknown>;
-  created_at: string;
-  updated_at?: string;
-}
+export type IUpdateWorkoutRequestBody = Partial<IWorkoutItem>;
+
+export type IUpdateWorkoutResponse = IWorkoutItem;
 
 export async function PUT(request: Request) {
   try {

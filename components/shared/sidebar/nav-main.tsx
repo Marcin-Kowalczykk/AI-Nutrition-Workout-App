@@ -18,7 +18,7 @@ import { ThemeToggle } from "../theme-toggle/theme-toggle";
 
 export enum EnableRoutes {
   WorkoutHistory = "/main-page",
-  CreateNewWorkout = "/create-new-workout",
+  CreateNewWorkout = "/workout/create",
   DietHistory = "/diet-history",
   KcalCalculator = "/kcal-calculator",
   BodyMeasurements = "/body-measurements",
