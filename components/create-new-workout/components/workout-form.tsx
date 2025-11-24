@@ -1,7 +1,7 @@
 "use client";
 
 // dependencies
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -30,9 +31,33 @@ import { toast } from "sonner";
 // types and schemas
 import { CreateWorkoutFormType, createWorkoutFormSchema } from "../types";
 
+//TODO: ADD modals "are you sure to discard the workout?"
+
+const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
+
 export const WorkoutForm = () => {
   const [workoutId, setWorkoutId] = useState<string | null>(null);
   const [isFirstSave, setIsFirstSave] = useState(true);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMountRef = useRef(true);
+
+  // Save to cache
+  const saveToCache = useCallback((data: CreateWorkoutFormType) => {
+    try {
+      localStorage.setItem(WORKOUT_FORM_CACHE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error("Error saving workout form to cache:", error);
+    }
+  }, []);
+
+  // Clear cache
+  const clearCache = useCallback(() => {
+    try {
+      localStorage.removeItem(WORKOUT_FORM_CACHE_KEY);
+    } catch (error) {
+      console.error("Error clearing workout form cache:", error);
+    }
+  }, []);
 
   const {
     mutate: createWorkout,
@@ -43,6 +68,7 @@ export const WorkoutForm = () => {
     onSuccess: (data) => {
       setWorkoutId(data.id);
       setIsFirstSave(false);
+      clearCache(); // Clear cache after successful save
       toast.success("Workout created successfully");
     },
     onError: (error) => {
@@ -57,6 +83,7 @@ export const WorkoutForm = () => {
     error: updateError,
   } = useUpdateWorkout({
     onSuccess: () => {
+      clearCache(); // Clear cache after successful update
       toast.success("Workout updated successfully");
     },
     onError: (error) => {
@@ -73,6 +100,20 @@ export const WorkoutForm = () => {
     },
   });
 
+  // Load cached data after hydration (client-side only)
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(WORKOUT_FORM_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        form.reset(parsed);
+      }
+    } catch (error) {
+      console.error("Error loading cached workout form:", error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const {
     fields: exerciseFields,
     append: appendExercise,
@@ -81,6 +122,35 @@ export const WorkoutForm = () => {
     control: form.control,
     name: "exercises",
   });
+
+  // Watch form changes and save to cache with debounce
+  const formValues = form.watch();
+
+  useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 2 seconds of inactivity
+    saveTimeoutRef.current = setTimeout(() => {
+      const currentValues = form.getValues();
+      saveToCache(currentValues);
+    }, 2000);
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [formValues, form, saveToCache]);
 
   const isPending = isCreating || isUpdating;
   const isError = isCreateError || isUpdateError;
@@ -96,7 +166,7 @@ export const WorkoutForm = () => {
 
   const handleAddSet = (exerciseIndex: number) => {
     const exercise = form.getValues(`exercises.${exerciseIndex}`);
-    const currentSets = exercise?.sets || [];
+    const currentSets = exercise?.sets ?? [];
     const nextSetNumber = currentSets.length + 1;
 
     form.setValue(`exercises.${exerciseIndex}.sets`, [
@@ -107,13 +177,14 @@ export const WorkoutForm = () => {
         reps: undefined,
         weight: undefined,
         duration: undefined,
+        isChecked: false,
       },
     ]);
   };
 
   const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
     const exercise = form.getValues(`exercises.${exerciseIndex}`);
-    const currentSets = exercise?.sets || [];
+    const currentSets = exercise?.sets ?? [];
     const updatedSets = currentSets.filter((_, index) => index !== setIndex);
 
     // Recalculate set numbers
@@ -125,16 +196,36 @@ export const WorkoutForm = () => {
     form.setValue(`exercises.${exerciseIndex}.sets`, renumberedSets);
   };
 
-  const onSubmitHandler = async (values: CreateWorkoutFormType) => {
-    const { name, description, exercises } = values;
-    const currentDate = new Date().toISOString();
+  const handleDiscardWorkout = () => {
+    // Clear cache
+    clearCache();
 
-    // Filter out empty exercises and sets, and ensure proper types
-    const filteredExercises = exercises
-      .filter(
-        (exercise) =>
-          exercise.name || (exercise.sets && exercise.sets.length > 0)
-      )
+    // Reset form to initial state
+    form.reset({
+      name: "",
+      description: "",
+      exercises: [],
+    });
+
+    // Reset workout state
+    setWorkoutId(null);
+    setIsFirstSave(true);
+
+    // TODO: Delete workout from database if it was previously saved
+    // if (workoutId) {
+    //   // Call API to delete workout
+    //   // await deleteWorkout(workoutId);
+    // }
+
+    toast.success("Workout discarded");
+  };
+
+  // Filter and transform exercises for submission
+  const prepareExercisesForSubmission = (
+    exercises: CreateWorkoutFormType["exercises"]
+  ) => {
+    return exercises
+      .filter((exercise) => exercise.name || exercise.sets?.length > 0)
       .map((exercise) => {
         const filteredSets = exercise.sets
           .filter(
@@ -145,19 +236,25 @@ export const WorkoutForm = () => {
           )
           .map((set) => ({
             id: set.id,
-            set_number: set.set_number || 0,
-            reps: set.reps || 0,
+            set_number: set.set_number ?? 0,
+            reps: set.reps ?? 0,
             weight: set.weight,
             duration: set.duration,
           }));
 
         return {
           id: exercise.id,
-          name: exercise.name || "",
+          name: exercise.name ?? "",
           sets: filteredSets,
         };
       })
       .filter((exercise) => exercise.name || exercise.sets.length > 0);
+  };
+
+  const onSubmitHandler = async (values: CreateWorkoutFormType) => {
+    const { name, description, exercises } = values;
+    const currentDate = new Date().toISOString();
+    const filteredExercises = prepareExercisesForSubmission(exercises);
 
     if (isFirstSave && !workoutId) {
       createWorkout({
@@ -215,7 +312,7 @@ export const WorkoutForm = () => {
                   />
                 </FormControl>
                 <FormDescription>
-                  Optional description for your workout for example your goals
+                  Optional description for your workout
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -263,14 +360,25 @@ export const WorkoutForm = () => {
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   {/* Sets */}
-                  {(() => {
-                    const sets =
-                      form.watch(`exercises.${exerciseIndex}.sets`) || [];
-                    return sets.map((set, setIndex) => (
-                      <div
-                        key={set.id}
-                        className="flex items-center gap-2 p-2 border rounded-md"
-                      >
+                  {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
+                    (set, setIndex) => (
+                      <div key={set.id} className="flex items-center gap-2 ">
+                        <FormField
+                          control={form.control}
+                          name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value ?? false}
+                                  onCheckedChange={field.onChange}
+                                  disabled={isPending}
+                                  className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                         <div className="flex-1">
                           <FormLabel>Set</FormLabel>
                           <Input
@@ -295,7 +403,7 @@ export const WorkoutForm = () => {
                                   type="number"
                                   autoComplete="off"
                                   disabled={isPending}
-                                  value={field.value || ""}
+                                  value={field.value ?? ""}
                                   onChange={(e) =>
                                     field.onChange(
                                       e.target.value
@@ -321,7 +429,7 @@ export const WorkoutForm = () => {
                                   type="number"
                                   autoComplete="off"
                                   disabled={isPending}
-                                  value={field.value || ""}
+                                  value={field.value ?? ""}
                                   onChange={(e) =>
                                     field.onChange(
                                       e.target.value
@@ -347,7 +455,7 @@ export const WorkoutForm = () => {
                                   type="number"
                                   autoComplete="off"
                                   disabled={isPending}
-                                  value={field.value || ""}
+                                  value={field.value ?? ""}
                                   onChange={(e) =>
                                     field.onChange(
                                       e.target.value
@@ -361,6 +469,7 @@ export const WorkoutForm = () => {
                             </FormItem>
                           )}
                         />
+
                         <Button
                           type="button"
                           variant="ghost"
@@ -374,11 +483,10 @@ export const WorkoutForm = () => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    ));
-                  })()}
+                    )
+                  )}
 
                   <div className="flex items-center gap-2 justify-between">
-                    {/* Add Set Button */}
                     <Button
                       type="button"
                       variant="outline"
@@ -391,7 +499,6 @@ export const WorkoutForm = () => {
                       Add Set
                     </Button>
 
-                    {/* Remove Exercise Button */}
                     <Button
                       type="button"
                       variant="outline"
@@ -424,15 +531,25 @@ export const WorkoutForm = () => {
             <Plus className="h-4 w-4" />
             Add Exercise
           </Button>
-          <Button type="submit" variant="destructive" disabled={isPending}>
-            {isPending ? (
-              <Loader />
-            ) : isFirstSave ? (
-              "Save Workout"
-            ) : (
-              "Update Workout"
-            )}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button type="submit" variant="destructive" disabled={isPending}>
+              {isPending ? (
+                <Loader />
+              ) : isFirstSave ? (
+                "Save Workout"
+              ) : (
+                "Update Workout"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDiscardWorkout}
+              disabled={isPending}
+            >
+              Discard Workout
+            </Button>
+          </div>
         </div>
       </form>
     </Form>

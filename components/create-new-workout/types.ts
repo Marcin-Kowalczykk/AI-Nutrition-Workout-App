@@ -6,6 +6,7 @@ const workoutSetSchema = z.object({
   reps: z.number().optional(),
   weight: z.number().optional(),
   duration: z.number().optional(),
+  isChecked: z.boolean().optional(),
 });
 
 const workoutExerciseSchema = z.object({
