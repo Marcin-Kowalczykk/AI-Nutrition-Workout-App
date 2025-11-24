@@ -22,4 +22,5 @@ export interface IWorkoutSetItem {
   reps: number;
   weight?: number;
   duration?: number;
+  isChecked?: boolean;
 }

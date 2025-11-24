@@ -240,6 +240,7 @@ export const WorkoutForm = () => {
             reps: set.reps ?? 0,
             weight: set.weight,
             duration: set.duration,
+            isChecked: set.isChecked ?? false,
           }));
 
         return {
