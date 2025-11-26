@@ -1,4 +1,4 @@
-import Workout from "@/components/create-new-workout/components/workout";
+import Workout from "@/components/workout/components/workout";
 
 export default function WorkoutPage() {
   return <Workout />;
