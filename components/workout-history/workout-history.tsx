@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
 
 // hooks
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useGetWorkoutHistory } from "./api/use-get-workout-history";
 
 // types
@@ -19,12 +20,12 @@ import { IWorkoutItem } from "@/app/api/workouts/types";
 import CenterWrapper from "../shared/center-wrapper";
 
 const WorkoutHistory = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  // Format dates to ISO string for API using date-fns
-  // startDate: end of day (23:59:59) - for "from this date backwards" (lte)
-  // endDate: start of day (00:00:00) - for range filtering (gte) to include the entire day
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
     return endOfDay(startDate).toISOString();
@@ -42,7 +43,7 @@ const WorkoutHistory = () => {
 
   if (isLoading) {
     return (
-      <CenterWrapper>
+      <CenterWrapper className="w-full xl:w-1/2">
         <Loader />
       </CenterWrapper>
     );
@@ -67,32 +68,30 @@ const WorkoutHistory = () => {
   };
 
   const handleView = (workoutId: string) => {
-    // TODO: Navigate to workout view page
-    console.log("View workout:", workoutId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("workoutId", workoutId);
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   const handleEdit = (workoutId: string) => {
-    // TODO: Navigate to workout edit page
-    console.log("Edit workout:", workoutId);
+    router.push(`/workout/edit?id=${workoutId}`);
   };
 
   return (
     <div className="justify-start">
-      <div className="flex flex-col gap-4 mb-6 xl:w-1/2 w-full">
-        <div className="flex flex-row gap-4">
+      <div className="flex flex-col mb-2 xl:w-1/2 w-full">
+        <div className="flex flex-row gap-1">
           <div className="flex-1">
             <DatePicker
               value={startDate}
-              onChange={(date) => setStartDate(date)}
-              label="Start date"
+              onChange={(date) => setStartDate(date || undefined)}
               placeholder="select start date"
             />
           </div>
           <div className="flex-1">
             <DatePicker
               value={endDate}
-              onChange={(date) => setEndDate(date)}
-              label="End date"
+              onChange={(date) => setEndDate(date || undefined)}
               placeholder="select end date"
               disabled={(date) => {
                 if (startDate) {
@@ -103,64 +102,58 @@ const WorkoutHistory = () => {
             />
           </div>
         </div>
-        {(startDate || endDate) && (
-          <Button
-            variant="outline"
-            onClick={() => {
-              setStartDate(undefined);
-              setEndDate(undefined);
-            }}
-            className="w-fit"
-          >
-            Wyczyść filtry
-          </Button>
-        )}
       </div>
 
       {workouts.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center text-muted-foreground">
           No workouts found. Start creating your first workout!
         </div>
       ) : (
-        <div className="flex flex-col gap-2 xl:w-1/2 w-full">
+        <ul className="flex flex-col gap-2 xl:w-1/2 w-full">
           {workouts.map((workout: IWorkoutItem) => (
-            <Card key={workout.id} className="w-full">
-              <CardContent className="p-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1 flex-1">
-                    <div className="text-sm text-destructive">
-                      {formatDate(workout.created_at)}
-                    </div>
-                    <div className="font-semibold text-lg">{workout.name}</div>
-                    {workout.description && (
-                      <div className="text-sm text-muted-foreground">
-                        {workout.description}
+            <li key={workout.id}>
+              <Card className="w-full">
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 flex-1">
+                      <div className="text-sm text-muted-foreground border-b-2 border-destructive pb-2 w-fit">
+                        {formatDate(workout.created_at)}
                       </div>
-                    )}
+                      <div className="font-semibold text-lg">
+                        {workout.name}
+                      </div>
+                      {workout.description && (
+                        <div className="text-sm text-muted-foreground">
+                          {workout.description}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleEdit(workout.id)}
+                        className="h-9 w-9 text-muted-foreground"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleView(workout.id)}
+                        className="h-9 w-9 text-muted-foreground"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleView(workout.id)}
-                      className="h-9 w-9"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEdit(workout.id)}
-                      className="h-9 w-9"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

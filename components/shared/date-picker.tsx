@@ -12,12 +12,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { Label } from "../ui/label";
 
 interface DatePickerProps {
   value: Date | undefined;
-  onChange: (date: Date) => void;
+  onChange: (date: Date | undefined) => void;
   label?: string;
   className?: string;
   placeholder?: string;
@@ -54,6 +54,11 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       setIsPopoverOpen(false);
     };
 
+    const handleClear = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onChange(undefined);
+    };
+
     const combinedRef = React.useCallback(
       (node: HTMLButtonElement | null) => {
         triggerRef.current = node;
@@ -81,16 +86,29 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               size="lg"
               ref={combinedRef}
               className={cn(
-                "w-full justify-start text-left font-normal px-3",
+                "w-full justify-start text-left font-normal px-2 relative text-sm",
                 !value && "text-muted-foreground",
+                value && !isPopoverOpen && "pr-8",
                 className
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {value ? (
-                format(value, "PPP", { locale: pl })
-              ) : (
-                <span>{placeholder}</span>
+              <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
+                {value ? (
+                  format(value, "PPP", { locale: pl })
+                ) : (
+                  <span>{placeholder}</span>
+                )}
+              </span>
+              {value && !isPopoverOpen && (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-accent rounded-sm transition-colors shrink-0"
+                  aria-label="Clear date"
+                >
+                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                </button>
               )}
             </Button>
           </PopoverTrigger>

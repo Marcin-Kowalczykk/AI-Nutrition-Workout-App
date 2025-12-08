@@ -34,7 +34,17 @@ export enum NavMainTitles {
   ProfileSettings = "Profile settings",
 }
 
+const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
+
 export function NavMain() {
+  const handleCreateWorkoutClick = () => {
+    try {
+      localStorage.removeItem(WORKOUT_FORM_CACHE_KEY);
+    } catch (error) {
+      console.error("Error clearing workout form cache:", error);
+    }
+  };
+
   const topSideSettings: NavSettingsType[] = [
     {
       title: NavMainTitles.WorkoutHistory,
@@ -45,6 +55,7 @@ export function NavMain() {
       title: NavMainTitles.CreateNewWorkout,
       url: EnableRoutes.CreateNewWorkout,
       icon: NotebookPenIcon,
+      onClick: handleCreateWorkoutClick,
     },
     {
       title: NavMainTitles.DietHistory,

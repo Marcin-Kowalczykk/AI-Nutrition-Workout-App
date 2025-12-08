@@ -12,6 +12,7 @@ import {
   IUpdateProfileRequestBody,
   IUpdateProfileResponse,
 } from "@/app/api/profile/update-profile/route";
+import { getAccessToken } from "@/lib/supabase/get-access-token";
 
 type UseUpdateProfileOptions = {
   onSuccess?: (message: string) => void;
@@ -34,11 +35,18 @@ export const useUpdateProfile = ({
         ? encryptPassword(password)
         : undefined;
 
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) return null;
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
       const response = await fetch("/api/profile/update-profile", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           fullName,
           password: encryptedPassword,
@@ -61,7 +69,7 @@ export const useUpdateProfile = ({
     },
     onSuccess: (message) => {
       if (onSuccess) {
-        onSuccess(message);
+        onSuccess(message as string);
       }
     },
     onError: (error) => {

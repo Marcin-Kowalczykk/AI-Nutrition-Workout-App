@@ -8,8 +8,9 @@ import { Plus, Trash2 } from "lucide-react";
 
 // hooks
 import { useForm } from "react-hook-form";
-import { useCreateWorkout } from "../api/use-create-workout";
-import { useUpdateWorkout } from "../api/use-update-workout";
+import { useCreateWorkout } from "../../api/use-create-workout";
+import { useUpdateWorkout } from "../../api/use-update-workout";
+import { useGetWorkout } from "../../api/use-get-workout";
 
 // components
 import {
@@ -27,19 +28,34 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import CenterWrapper from "@/components/shared/center-wrapper";
 
 // types and schemas
-import { CreateWorkoutFormType, createWorkoutFormSchema } from "../types";
+import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
 
 //TODO: ADD modals "are you sure to discard the workout?"
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 
-export const WorkoutForm = () => {
-  const [workoutId, setWorkoutId] = useState<string | null>(null);
-  const [isFirstSave, setIsFirstSave] = useState(true);
+interface WorkoutFormProps {
+  workoutId?: string | null;
+}
+
+export const WorkoutForm = ({
+  workoutId: initialWorkoutId,
+}: WorkoutFormProps) => {
+  const [workoutId, setWorkoutId] = useState<string | null>(
+    initialWorkoutId || null
+  );
+  const [isFirstSave, setIsFirstSave] = useState(!initialWorkoutId);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
+  const hasLoadedWorkoutDataRef = useRef(false);
+
+  const { data: workoutData, isLoading: isLoadingWorkout } = useGetWorkout({
+    workoutId: initialWorkoutId || null,
+    enabled: !!initialWorkoutId,
+  });
 
   // Save to cache
   const saveToCache = useCallback((data: CreateWorkoutFormType) => {
@@ -68,7 +84,7 @@ export const WorkoutForm = () => {
     onSuccess: (data) => {
       setWorkoutId(data.id);
       setIsFirstSave(false);
-      clearCache(); // Clear cache after successful save
+      clearCache();
       toast.success("Workout created successfully");
     },
     onError: (error) => {
@@ -83,7 +99,7 @@ export const WorkoutForm = () => {
     error: updateError,
   } = useUpdateWorkout({
     onSuccess: () => {
-      clearCache(); // Clear cache after successful update
+      clearCache();
       toast.success("Workout updated successfully");
     },
     onError: (error) => {
@@ -100,8 +116,10 @@ export const WorkoutForm = () => {
     },
   });
 
-  // Load cached data after hydration (client-side only)
   useEffect(() => {
+    if (!isInitialMountRef.current) return;
+    if (initialWorkoutId) return;
+
     try {
       const cached = localStorage.getItem(WORKOUT_FORM_CACHE_KEY);
       if (cached) {
@@ -114,6 +132,42 @@ export const WorkoutForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!initialWorkoutId || !workoutData) {
+      if (!initialWorkoutId) {
+        hasLoadedWorkoutDataRef.current = false;
+      }
+      return;
+    }
+
+    if (hasLoadedWorkoutDataRef.current) return;
+
+    hasLoadedWorkoutDataRef.current = true;
+    setWorkoutId(workoutData.id);
+    setIsFirstSave(false);
+
+    // Transform workout data to form format
+    const formData: CreateWorkoutFormType = {
+      name: workoutData.name || "",
+      description: workoutData.description || "",
+      exercises: (workoutData.exercises || []).map((exercise) => ({
+        id: exercise.id,
+        name: exercise.name || "",
+        sets: (exercise.sets || []).map((set) => ({
+          id: set.id,
+          set_number: set.set_number || 0,
+          reps: set.reps,
+          weight: set.weight,
+          duration: set.duration,
+          isChecked: set.isChecked || false,
+        })),
+      })),
+    };
+
+    form.reset(formData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workoutData, initialWorkoutId]);
+
   const {
     fields: exerciseFields,
     append: appendExercise,
@@ -123,28 +177,23 @@ export const WorkoutForm = () => {
     name: "exercises",
   });
 
-  // Watch form changes and save to cache with debounce
   const formValues = form.watch();
 
   useEffect(() => {
-    // Skip on initial mount
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
       return;
     }
 
-    // Clear existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Set new timeout to save after 2 seconds of inactivity
     saveTimeoutRef.current = setTimeout(() => {
       const currentValues = form.getValues();
       saveToCache(currentValues);
     }, 2000);
 
-    // Cleanup timeout on unmount
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -152,9 +201,16 @@ export const WorkoutForm = () => {
     };
   }, [formValues, form, saveToCache]);
 
-  const isPending = isCreating || isUpdating;
+  const isPending = isCreating || isUpdating || isLoadingWorkout;
   const isError = isCreateError || isUpdateError;
   const error = createError || updateError;
+
+  if (isLoadingWorkout && initialWorkoutId)
+    return (
+      <CenterWrapper>
+        <Loader />
+      </CenterWrapper>
+    );
 
   const handleAddExercise = () => {
     appendExercise({
@@ -187,7 +243,6 @@ export const WorkoutForm = () => {
     const currentSets = exercise?.sets ?? [];
     const updatedSets = currentSets.filter((_, index) => index !== setIndex);
 
-    // Recalculate set numbers
     const renumberedSets = updatedSets.map((set, index) => ({
       ...set,
       set_number: index + 1,
@@ -197,17 +252,14 @@ export const WorkoutForm = () => {
   };
 
   const handleDiscardWorkout = () => {
-    // Clear cache
     clearCache();
 
-    // Reset form to initial state
     form.reset({
       name: "",
       description: "",
       exercises: [],
     });
 
-    // Reset workout state
     setWorkoutId(null);
     setIsFirstSave(true);
 
@@ -220,7 +272,6 @@ export const WorkoutForm = () => {
     toast.success("Workout discarded");
   };
 
-  // Filter and transform exercises for submission
   const prepareExercisesForSubmission = (
     exercises: CreateWorkoutFormType["exercises"]
   ) => {
@@ -320,7 +371,6 @@ export const WorkoutForm = () => {
             )}
           />
 
-          {/* Exercises Section */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <FormLabel>Exercises</FormLabel>
@@ -360,7 +410,6 @@ export const WorkoutForm = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
-                  {/* Sets */}
                   {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
                     (set, setIndex) => (
                       <div key={set.id} className="flex items-center gap-2 ">
@@ -548,7 +597,7 @@ export const WorkoutForm = () => {
               onClick={handleDiscardWorkout}
               disabled={isPending}
             >
-              Discard Workout
+              Discard Workout <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           </div>
         </div>

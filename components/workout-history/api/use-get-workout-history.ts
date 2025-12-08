@@ -3,6 +3,9 @@
 // hooks
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
+// utils
+import { getAccessToken } from "@/lib/supabase/get-access-token";
+
 // types
 import { IGetWorkoutsHistoryResponse } from "@/app/api/workouts/get-workouts-history/route";
 
@@ -19,6 +22,10 @@ export const useGetWorkoutHistory = (
   const query = useQuery({
     queryKey: ["get-workout-history", startDate, endDate],
     queryFn: async () => {
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) return null;
+
       const params = new URLSearchParams();
       if (startDate) params.append("start_date", startDate);
       if (endDate) params.append("end_date", endDate);
@@ -27,7 +34,11 @@ export const useGetWorkoutHistory = (
         params.toString() ? `?${params.toString()}` : ""
       }`;
 
-      const response = await fetch(url);
+      const headers: HeadersInit = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      const response = await fetch(url, { headers });
 
       if (!response.ok) {
         const errorData = await response.json();

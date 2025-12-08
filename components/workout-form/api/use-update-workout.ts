@@ -3,6 +3,9 @@
 // hooks
 import { useMutation } from "@tanstack/react-query";
 
+// utils
+import { getAccessToken } from "@/lib/supabase/get-access-token";
+
 // types
 import {
   IUpdateWorkoutRequestBody,
@@ -20,11 +23,18 @@ export const useUpdateWorkout = ({
 }: UseUpdateWorkoutOptions = {}) => {
   const mutation = useMutation({
     mutationFn: async (body: IUpdateWorkoutRequestBody) => {
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) return null;
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
       const response = await fetch("/api/workouts/update-workout", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -39,7 +49,7 @@ export const useUpdateWorkout = ({
     },
     onSuccess: (data) => {
       if (onSuccess) {
-        onSuccess(data);
+        onSuccess(data as IUpdateWorkoutResponse);
       }
     },
     onError: (error) => {
