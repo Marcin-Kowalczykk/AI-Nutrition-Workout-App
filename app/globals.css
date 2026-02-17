@@ -9,9 +9,11 @@
 html,
 body,
 :root {
+  min-height: 100dvh;
   height: 100%;
   color: var(--secondary-foreground);
 }
+
 
 .link-hover-underline a:hover,
 .link-hover-underline a:focus {
