@@ -9,25 +9,15 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVisualViewportHeight } from "@/hooks/use-visual-viewport-height";
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
-  const visualHeight = useVisualViewportHeight(!!isMobile);
-
   return (
     <>
       <Toaster position="top-center" richColors />
       <SidebarProvider defaultOpen={true}>
         <AppSidebar />
-        <SidebarInset
-          className="flex-1 flex flex-col h-dvh w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))]"
-          style={
-            isMobile && visualHeight != null
-              ? { height: visualHeight, maxHeight: visualHeight }
-              : undefined
-          }
-        >
+        <SidebarInset className="flex-1 flex flex-col min-h-0 h-full w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:h-dvh">
           {isMobile ? (
             <header className="flex h-16 bg-sidebar-background border-b border-sidebar-border shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
               <div className="flex justify-between items-center gap-2 px-4">
