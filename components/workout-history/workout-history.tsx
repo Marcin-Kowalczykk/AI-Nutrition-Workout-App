@@ -7,13 +7,17 @@ import { pl } from "date-fns/locale";
 // components
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Edit } from "lucide-react";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
+import { ConfirmModal } from "@/components/shared/confirm-modal";
+import { toast } from "sonner";
 
 // hooks
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetWorkoutHistory } from "./api/use-get-workout-history";
+import { useDeleteWorkout } from "@/components/workout-form/api/use-delete-workout";
 
 // types
 import { IWorkoutItem } from "@/app/api/workouts/types";
@@ -23,8 +27,12 @@ const WorkoutHistory = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [workoutIdToDelete, setWorkoutIdToDelete] = useState<string | null>(
+    null
+  );
 
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
@@ -39,6 +47,17 @@ const WorkoutHistory = () => {
   const { data, isLoading, error, isError } = useGetWorkoutHistory({
     startDate: startDateString,
     endDate: endDateString,
+  });
+
+  const { mutate: deleteWorkout, isPending: isDeleting } = useDeleteWorkout({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["get-workout-history"] });
+      setWorkoutIdToDelete(null);
+      toast.success("Workout deleted");
+    },
+    onError: (err) => {
+      toast.error(err || "Failed to delete workout");
+    },
   });
 
   if (isLoading) {
@@ -75,6 +94,12 @@ const WorkoutHistory = () => {
 
   const handleEdit = (workoutId: string) => {
     router.push(`/workout/edit?id=${workoutId}`);
+  };
+
+  const handleConfirmDelete = () => {
+    if (workoutIdToDelete) {
+      deleteWorkout(workoutIdToDelete);
+    }
   };
 
   return (
@@ -114,8 +139,8 @@ const WorkoutHistory = () => {
             <li key={workout.id}>
               <Card className="w-full">
                 <CardContent className="p-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="text-sm text-muted-foreground border-b-2 border-destructive pb-2 w-fit">
                         {formatDate(workout.created_at)}
                       </div>
@@ -128,24 +153,31 @@ const WorkoutHistory = () => {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 shrink-0">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => handleEdit(workout.id)}
-                        className="h-9 w-9 text-muted-foreground"
+                        className="h-9 w-9 text-foreground"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => handleView(workout.id)}
-                        className="h-9 w-9 text-muted-foreground"
+                        className="h-9 w-9 text-foreground"
                       >
                         <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setWorkoutIdToDelete(workout.id)}
+                        className="h-9 w-9 text-destructive hover:text-destructive"
+                        aria-label="Delete workout"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -155,6 +187,17 @@ const WorkoutHistory = () => {
           ))}
         </ul>
       )}
+
+      <ConfirmModal
+        open={workoutIdToDelete !== null}
+        onOpenChange={(open) => !open && setWorkoutIdToDelete(null)}
+        title="Delete workout?"
+        description="This will permanently delete this workout. This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmDelete}
+        isPending={isDeleting}
+      />
     </div>
   );
 };

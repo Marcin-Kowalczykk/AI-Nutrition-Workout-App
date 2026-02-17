@@ -1,16 +1,18 @@
 "use client";
 
 // dependencies
-import { useState, useEffect, useRef, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 // hooks
+import { useFieldArray } from "react-hook-form";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateWorkout } from "../../api/use-create-workout";
 import { useUpdateWorkout } from "../../api/use-update-workout";
 import { useGetWorkout } from "../../api/use-get-workout";
+import { useDeleteWorkout } from "../../api/use-delete-workout";
 
 // components
 import {
@@ -27,13 +29,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 import CenterWrapper from "@/components/shared/center-wrapper";
+import { ConfirmModal } from "../../../shared/confirm-modal";
 
 // types and schemas
 import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
-
-//TODO: ADD modals "are you sure to discard the workout?"
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 
@@ -48,6 +48,17 @@ export const WorkoutForm = ({
     initialWorkoutId || null
   );
   const [isFirstSave, setIsFirstSave] = useState(!initialWorkoutId);
+  const [isDiscardWorkoutModalOpen, setIsDiscardWorkoutModalOpen] =
+    useState(false);
+  const [removeExerciseModal, setRemoveExerciseModal] = useState<{
+    open: boolean;
+    exerciseIndex: number | null;
+  }>({ open: false, exerciseIndex: null });
+  const [removeSetModal, setRemoveSetModal] = useState<{
+    open: boolean;
+    exerciseIndex: number | null;
+    setIndex: number | null;
+  }>({ open: false, exerciseIndex: null, setIndex: null });
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
   const hasLoadedWorkoutDataRef = useRef(false);
@@ -104,6 +115,24 @@ export const WorkoutForm = ({
     },
     onError: (error) => {
       toast.error(error || "Failed to update workout. Please try again.");
+    },
+  });
+
+  const { mutate: deleteWorkout, isPending: isDeleting } = useDeleteWorkout({
+    onSuccess: () => {
+      clearCache();
+      form.reset({
+        name: "",
+        description: "",
+        exercises: [],
+      });
+      setWorkoutId(null);
+      setIsFirstSave(true);
+      setIsDiscardWorkoutModalOpen(false);
+      toast.success("Workout discarded");
+    },
+    onError: (error) => {
+      toast.error(error || "Failed to delete workout. Please try again.");
     },
   });
 
@@ -201,7 +230,7 @@ export const WorkoutForm = ({
     };
   }, [formValues, form, saveToCache]);
 
-  const isPending = isCreating || isUpdating || isLoadingWorkout;
+  const isPending = isCreating || isUpdating || isDeleting || isLoadingWorkout;
   const isError = isCreateError || isUpdateError;
   const error = createError || updateError;
 
@@ -218,6 +247,39 @@ export const WorkoutForm = ({
       name: "",
       sets: [],
     });
+  };
+
+  const handleRemoveExerciseClick = (exerciseIndex: number) => {
+    if (workoutId) {
+      setRemoveExerciseModal({ open: true, exerciseIndex });
+    } else {
+      removeExercise(exerciseIndex);
+    }
+  };
+
+  const handleConfirmRemoveExercise = () => {
+    const exerciseIndex = removeExerciseModal.exerciseIndex;
+    if (exerciseIndex === null || !workoutId) return;
+
+    const values = form.getValues();
+    const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
+    const prepared = prepareExercisesForSubmission(newExercises);
+
+    updateWorkout(
+      {
+        id: workoutId,
+        name: values.name,
+        description: values.description,
+        end_date: new Date().toISOString(),
+        exercises: prepared.length > 0 ? prepared : undefined,
+      },
+      {
+        onSuccess: () => {
+          removeExercise(exerciseIndex);
+          setRemoveExerciseModal({ open: false, exerciseIndex: null });
+        },
+      }
+    );
   };
 
   const handleAddSet = (exerciseIndex: number) => {
@@ -238,38 +300,81 @@ export const WorkoutForm = ({
     ]);
   };
 
-  const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
+  const doRemoveSetFromForm = (exerciseIndex: number, setIndex: number) => {
     const exercise = form.getValues(`exercises.${exerciseIndex}`);
     const currentSets = exercise?.sets ?? [];
     const updatedSets = currentSets.filter((_, index) => index !== setIndex);
-
     const renumberedSets = updatedSets.map((set, index) => ({
       ...set,
       set_number: index + 1,
     }));
-
     form.setValue(`exercises.${exerciseIndex}.sets`, renumberedSets);
   };
 
-  const handleDiscardWorkout = () => {
-    clearCache();
+  const handleRemoveSetClick = (exerciseIndex: number, setIndex: number) => {
+    if (workoutId) {
+      setRemoveSetModal({ open: true, exerciseIndex, setIndex });
+    } else {
+      doRemoveSetFromForm(exerciseIndex, setIndex);
+    }
+  };
 
-    form.reset({
-      name: "",
-      description: "",
-      exercises: [],
-    });
+  const handleConfirmRemoveSet = () => {
+    const { exerciseIndex, setIndex } = removeSetModal;
+    if (exerciseIndex === null || setIndex === null || !workoutId) return;
 
-    setWorkoutId(null);
-    setIsFirstSave(true);
+    const values = form.getValues();
+    const exercise = values.exercises[exerciseIndex];
+    if (!exercise) return;
 
-    // TODO: Delete workout from database if it was previously saved
-    // if (workoutId) {
-    //   // Call API to delete workout
-    //   // await deleteWorkout(workoutId);
-    // }
+    const newSets = exercise.sets
+      .filter((_, i) => i !== setIndex)
+      .map((set, i) => ({ ...set, set_number: i + 1 }));
+    const newExercises = values.exercises.map((ex, i) =>
+      i === exerciseIndex ? { ...ex, sets: newSets } : ex
+    );
+    const prepared = prepareExercisesForSubmission(newExercises);
 
-    toast.success("Workout discarded");
+    updateWorkout(
+      {
+        id: workoutId,
+        name: values.name,
+        description: values.description,
+        end_date: new Date().toISOString(),
+        exercises: prepared.length > 0 ? prepared : undefined,
+      },
+      {
+        onSuccess: () => {
+          doRemoveSetFromForm(exerciseIndex, setIndex);
+          setRemoveSetModal({
+            open: false,
+            exerciseIndex: null,
+            setIndex: null,
+          });
+        },
+      }
+    );
+  };
+
+  const handleDiscardWorkoutClick = () => {
+    setIsDiscardWorkoutModalOpen(true);
+  };
+
+  const handleConfirmDiscard = () => {
+    if (workoutId) {
+      deleteWorkout(workoutId);
+    } else {
+      clearCache();
+      form.reset({
+        name: "",
+        description: "",
+        exercises: [],
+      });
+      setWorkoutId(null);
+      setIsFirstSave(true);
+      setIsDiscardWorkoutModalOpen(false);
+      toast.success("Workout discarded");
+    }
   };
 
   const prepareExercisesForSubmission = (
@@ -389,8 +494,8 @@ export const WorkoutForm = ({
 
             {exerciseFields.map((exercise, exerciseIndex) => (
               <Card key={exercise.id}>
-                <CardHeader>
-                  <CardTitle>
+                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                  <CardTitle className="flex-1">
                     <FormField
                       control={form.control}
                       name={`exercises.${exerciseIndex}.name`}
@@ -408,6 +513,17 @@ export const WorkoutForm = ({
                       )}
                     />
                   </CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveExerciseClick(exerciseIndex)}
+                    disabled={isPending}
+                    className="shrink-0 text-destructive hover:text-destructive"
+                    aria-label="Remove exercise"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
@@ -525,7 +641,7 @@ export const WorkoutForm = ({
                           variant="ghost"
                           size="icon"
                           onClick={() =>
-                            handleRemoveSet(exerciseIndex, setIndex)
+                            handleRemoveSetClick(exerciseIndex, setIndex)
                           }
                           disabled={isPending}
                           className="text-destructive hover:text-destructive pt-5"
@@ -553,7 +669,7 @@ export const WorkoutForm = ({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => removeExercise(exerciseIndex)}
+                      onClick={() => handleRemoveExerciseClick(exerciseIndex)}
                       disabled={isPending}
                       className="gap-2 self-start text-destructive hover:text-destructive"
                     >
@@ -594,7 +710,7 @@ export const WorkoutForm = ({
             <Button
               type="button"
               variant="outline"
-              onClick={handleDiscardWorkout}
+              onClick={handleDiscardWorkoutClick}
               disabled={isPending}
             >
               Discard Workout <Trash2 className="h-4 w-4 text-destructive" />
@@ -602,6 +718,52 @@ export const WorkoutForm = ({
           </div>
         </div>
       </form>
+
+      <ConfirmModal
+        open={isDiscardWorkoutModalOpen}
+        onOpenChange={setIsDiscardWorkoutModalOpen}
+        title="Discard workout?"
+        description={
+          workoutId
+            ? "This will permanently delete this workout. This action cannot be undone."
+            : "This will clear the form. Your unsaved changes will be lost."
+        }
+        confirmLabel="Discard"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmDiscard}
+        isPending={isDeleting}
+      />
+
+      <ConfirmModal
+        open={removeExerciseModal.open}
+        onOpenChange={(open) =>
+          !open && setRemoveExerciseModal({ open: false, exerciseIndex: null })
+        }
+        title="Remove exercise?"
+        description="This exercise will be removed from the workout. This action will be saved to the workout."
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmRemoveExercise}
+        isPending={isUpdating}
+      />
+
+      <ConfirmModal
+        open={removeSetModal.open}
+        onOpenChange={(open) =>
+          !open &&
+          setRemoveSetModal({
+            open: false,
+            exerciseIndex: null,
+            setIndex: null,
+          })
+        }
+        title="Remove set?"
+        description="This set will be removed from the exercise. This action will be saved to the workout."
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmRemoveSet}
+        isPending={isUpdating}
+      />
     </Form>
   );
 };
