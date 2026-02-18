@@ -15,14 +15,6 @@ body,
   color: var(--secondary-foreground);
 }
 
-/* Łańcuch wysokości do scroll-container: każda warstwa wypełnia rodzica,
-   żeby na mobile (po zamknięciu klawiatury) nie było „czarnego” pasa bez tła */
-body > * {
-  min-height: 100%;
-  height: 100%;
-}
-
-
 .link-hover-underline a:hover,
 .link-hover-underline a:focus {
   text-decoration: underline;

@@ -17,7 +17,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
       <Toaster position="top-center" richColors />
       <SidebarProvider defaultOpen={true}>
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col min-h-0 h-full w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:h-dvh">
+        <SidebarInset className="flex-1 flex flex-col min-h-dvh h-dvh w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))]">
           {isMobile ? (
             <header className="flex h-16 bg-sidebar-background border-b border-sidebar-border shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
               <div className="flex justify-between items-center gap-2 px-4">
