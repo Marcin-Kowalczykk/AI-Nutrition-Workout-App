@@ -3,6 +3,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
+import { VisualViewportHeight } from "@/components/providers/visual-viewport-height";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -34,6 +35,7 @@ export default function RootLayout({
         >
           <TooltipProvider delayDuration={0}>
             <QueryProvider>
+              <VisualViewportHeight />
               <ThemeInitializer />
               {children}
             </QueryProvider>

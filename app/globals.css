@@ -9,6 +9,8 @@
 html,
 body,
 :root {
+  /* --vvh ustawiane przez JS (Visual Viewport API) – fallback na mobile przy klawiaturze */
+  --vvh: 100dvh;
   min-height: 100dvh;
   height: 100%;
   background-color: var(--background);
