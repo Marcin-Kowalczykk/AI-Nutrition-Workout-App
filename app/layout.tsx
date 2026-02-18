@@ -5,12 +5,12 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
 import "./globals.css";
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  interactiveWidget: "resizes-content",
-};
+// export const viewport: Viewport = {
+//   width: "device-width",
+//   initialScale: 1,
+//   viewportFit: "cover",
+//   interactiveWidget: "resizes-content",
+// };
 
 export const metadata: Metadata = {
   title: "Training Diet App",
