@@ -7,6 +7,7 @@ import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
+  height: "100dvh",
   initialScale: 1,
   interactiveWidget: "overlays-content",
 };
