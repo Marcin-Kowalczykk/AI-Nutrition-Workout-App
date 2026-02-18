@@ -24,7 +24,6 @@ body,
   flex: 1 1 0;
 }
 
-/* Na mobile: tylko % i -webkit-fill-available, bez dvh – przy resizes-content viewport się odświeża po zamknięciu klawiatury */
 @media (max-width: 767px) {
   [data-slot="sidebar-wrapper"] {
     min-height: 100%;
@@ -36,7 +35,6 @@ body,
 .protected-layout-content {
   overflow-anchor: auto;
   -webkit-overflow-scrolling: touch;
-  /* Ograniczenie przewijania do tego kontenera, mniej „podnoszenia” przy focusie inputa */
   overscroll-behavior-y: contain;
 }
 
