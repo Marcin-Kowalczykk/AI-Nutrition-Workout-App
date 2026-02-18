@@ -15,23 +15,25 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Toaster position="bottom-center" richColors />
-      <SidebarProvider defaultOpen={true}>
-        <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col min-h-dvh h-dvh max-md:min-h-[var(--vvh,100svh)] max-md:h-[var(--vvh,100svh)] w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))]">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <SidebarProvider defaultOpen={true}>
+          <AppSidebar />
+          <SidebarInset className="flex min-h-0 flex-1 flex-col w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:min-h-dvh md:h-dvh">
           {isMobile ? (
-            <header className="flex h-16 bg-sidebar-background border-b border-sidebar-border shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-              <div className="flex justify-between items-center gap-2 px-4">
-                <div className="-ml-1 flex items-center gap-2 cursor-pointer text-sidebar-foreground">
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border bg-sidebar-background transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+              <div className="flex items-center justify-between gap-2 px-4">
+                <div className="-ml-1 flex cursor-pointer items-center gap-2 text-sidebar-foreground">
                   <SidebarTrigger />
                 </div>
               </div>
             </header>
           ) : null}
-          <div className="protected-layout-content flex flex-col gap-2 p-3 h-[calc(100dvh-4rem)] max-h-[calc(100dvh-4rem)] max-md:h-[calc(var(--vvh,100svh)-4rem)] max-md:max-h-[calc(var(--vvh,100svh)-4rem)] overflow-y-auto overflow-x-hidden bg-color-background tracking-normal">
+          <div className="protected-layout-content flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-3 tracking-normal">
             {children}
           </div>
         </SidebarInset>
       </SidebarProvider>
+      </div>
     </>
   );
 };

@@ -6,18 +6,25 @@
   font-family: "Arial", sans-serif;
 }
 
-html,
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
 body,
 :root {
-  /* --vvh ustawiane przez JS (Visual Viewport API) – fallback na mobile przy klawiaturze */
-  --vvh: 100dvh;
-  min-height: 100dvh;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   height: 100%;
   background-color: var(--background);
   color: var(--secondary-foreground);
 }
 
-/* Kontener treści w protected layout – stabilny scroll przy klawiaturze na mobile */
+.layout-root > * {
+  min-height: 0;
+  flex: 1 1 0;
+}
+
 .protected-layout-content {
   overflow-anchor: auto;
   -webkit-overflow-scrolling: touch;

@@ -3,14 +3,12 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
-import { VisualViewportHeight } from "@/components/providers/visual-viewport-height";
 import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
-  height: "100dvh",
   initialScale: 1,
-  interactiveWidget: "overlays-content",
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -26,21 +24,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="overflow-hidden">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider delayDuration={0}>
-            <QueryProvider>
-              <VisualViewportHeight />
-              <ThemeInitializer />
-              {children}
-            </QueryProvider>
-          </TooltipProvider>
-        </ThemeProvider>
+      <body className="h-full min-h-full overflow-x-hidden">
+        <div className="layout-root flex h-full min-h-full flex-col">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TooltipProvider delayDuration={0}>
+              <QueryProvider>
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <ThemeInitializer />
+                  {children}
+                </div>
+              </QueryProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );
