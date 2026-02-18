@@ -8,7 +8,7 @@ import "./globals.css";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  interactiveWidget: "resizes-content",
+  interactiveWidget: "overlays-content",
 };
 
 export const metadata: Metadata = {
