@@ -5,12 +5,12 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
 import "./globals.css";
 
-// export const viewport: Viewport = {
-//   width: "device-width",
-//   initialScale: 1,
-//   viewportFit: "cover",
-//   interactiveWidget: "resizes-content",
-// };
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "overlays-content",
+};
 
 export const metadata: Metadata = {
   title: "Training Diet App",
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="h-full min-h-full overflow-x-hidden">
-        <div className="layout-root flex h-full min-h-full flex-col">
+        <div className="flex h-full min-h-full flex-col">
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
