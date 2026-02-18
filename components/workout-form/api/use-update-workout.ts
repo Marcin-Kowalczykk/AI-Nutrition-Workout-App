@@ -1,7 +1,7 @@
 "use client";
 
 // hooks
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // utils
 import { getAccessToken } from "@/lib/supabase/get-access-token";
@@ -21,6 +21,8 @@ export const useUpdateWorkout = ({
   onSuccess,
   onError,
 }: UseUpdateWorkoutOptions = {}) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (body: IUpdateWorkoutRequestBody) => {
       const accessToken = await getAccessToken();
@@ -50,6 +52,14 @@ export const useUpdateWorkout = ({
     onSuccess: (data) => {
       if (onSuccess) {
         onSuccess(data as IUpdateWorkoutResponse);
+      }
+      queryClient.invalidateQueries({
+        queryKey: ["get-workout-history"],
+      });
+      if (data?.id) {
+        queryClient.invalidateQueries({
+          queryKey: ["get-single-workout", data.id],
+        });
       }
     },
     onError: (error) => {

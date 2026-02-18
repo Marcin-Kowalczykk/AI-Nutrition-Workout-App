@@ -20,7 +20,7 @@ export const useGetWorkout = ({
   enabled = true,
 }: UseGetWorkoutOptions) => {
   const query = useQuery({
-    queryKey: ["workout", workoutId],
+    queryKey: ["get-single-workout", workoutId],
     queryFn: async (): Promise<IWorkoutItem | null> => {
       if (!workoutId) return null;
 
