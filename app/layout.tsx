@@ -9,6 +9,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  /* Zamiast „podnoszenia” ekranu przy klawiaturze viewport się zmniejsza; layout oparty o % odświeża się po zamknięciu. */
+  interactiveWidget: "resizes-content",
 };
 
 export const metadata: Metadata = {
