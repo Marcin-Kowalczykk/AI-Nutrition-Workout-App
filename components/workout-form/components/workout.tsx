@@ -1,31 +1,28 @@
 "use client";
 
 import { Suspense } from "react";
-import { usePathname } from "next/navigation";
 import { Loader } from "@/components/shared/loader";
 import { WorkoutForm } from "./edit/workout-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface WorkoutProps {
   workoutId?: string | null;
+  isTemplateMode?: boolean;
+  templateId?: string | null;
+  prefillFromTemplateId?: string | null;
 }
 
-const Workout = ({ workoutId }: WorkoutProps) => {
-  const pathname = usePathname();
-  const isTemplate = pathname?.includes("create-template");
-  const isEditMode = !!workoutId;
-
+const Workout = ({
+  workoutId,
+  isTemplateMode = false,
+  templateId,
+  prefillFromTemplateId,
+}: WorkoutProps) => {
   let title: string;
-  switch (true) {
-    case isTemplate:
-      title = "Create New Template";
-      break;
-    case isEditMode:
-      title = "Edit Workout";
-      break;
-    default:
-      title = "Create New Workout";
-      break;
+  if (isTemplateMode) {
+    title = templateId ? "Edit Template" : "Create New Template";
+  } else {
+    title = workoutId ? "Edit Workout" : "Create New Workout";
   }
 
   return (
@@ -35,7 +32,12 @@ const Workout = ({ workoutId }: WorkoutProps) => {
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <WorkoutForm workoutId={workoutId} />
+          <WorkoutForm
+            workoutId={workoutId}
+            isTemplateMode={isTemplateMode}
+            templateId={templateId}
+            prefillFromTemplateId={prefillFromTemplateId}
+          />
         </CardContent>
       </Card>
     </Suspense>

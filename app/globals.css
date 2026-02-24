@@ -41,6 +41,10 @@ body,
   --color-primary: var(--primary);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -76,6 +80,10 @@ body,
   --success-background: #064e3b;
   --sidebar: #0a0a0a;
   --sidebar-primary: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
 }
 
 .light {
@@ -98,6 +106,10 @@ body,
   --success-background: #d1fae5;
   --sidebar: #ffffff;
   --sidebar-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --accent: #f4f4f5;
+  --accent-foreground: #0a0a0a;
 }
 
 @layer base {
