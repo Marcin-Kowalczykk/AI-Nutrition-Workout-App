@@ -16,6 +16,21 @@ export const metadata: Metadata = {
   title: "Training Diet App",
   description:
     "Training Diet App for counting calories and tracking your diet and workout progress",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon-192", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Training Diet",
+  },
 };
 
 export default function RootLayout({
