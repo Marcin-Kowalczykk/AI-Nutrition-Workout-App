@@ -7,7 +7,6 @@
 
 html {
   height: 100%;
-  /* Tylko góra: treść nie chowa się pod status barem. Dół bez paddingu – bez białego paska na dole ekranu w PWA. */
   padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
 }

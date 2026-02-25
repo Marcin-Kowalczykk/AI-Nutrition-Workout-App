@@ -3,13 +3,14 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
+import { IosViewportListener } from "@/components/shared/ios-viewport";
 import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  interactiveWidget: "overlays-content",
+  interactiveWidget: "resizes-content",
 };
 
 export const metadata: Metadata = {
@@ -22,9 +23,7 @@ export const metadata: Metadata = {
       { url: "/icon-192", sizes: "192x192", type: "image/png" },
       { url: "/icon-512", sizes: "512x512", type: "image/png" },
     ],
-    apple: [
-      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
-    ],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
@@ -41,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="h-full min-h-full overflow-x-hidden">
+        <IosViewportListener />
         <div className="flex h-full min-h-full flex-col">
           <ThemeProvider
             attribute="class"
