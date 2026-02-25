@@ -65,12 +65,16 @@ export function ViewTemplateSheet() {
           }
         }}
       >
-        <SheetContent className="flex max-h-dvh w-full flex-col gap-0 overflow-auto p-0 sm:w-[70%] sm:max-w-[600px]">
+        <SheetContent className="flex max-h-screen w-full flex-col gap-0 overflow-auto p-0 sm:w-[70%] sm:max-w-[600px]">
           <SheetHeader className="border-b p-6">
             <SheetTitle className="flex items-center justify-between m-0">
               <div className="flex items-center gap-2">
                 <Button variant="outline" asChild>
-                  <Link href={templateId ? `/workout/template/${templateId}/edit` : "#"}>
+                  <Link
+                    href={
+                      templateId ? `/workout/template/${templateId}/edit` : "#"
+                    }
+                  >
                     <Pencil className="h-4 w-4 text-foreground" />
                     Edit
                   </Link>
