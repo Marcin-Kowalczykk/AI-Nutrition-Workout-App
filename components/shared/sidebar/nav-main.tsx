@@ -9,6 +9,7 @@ import {
   CalculatorIcon,
   ActivityIcon,
   FileStackIcon,
+  DumbbellIcon,
 } from "lucide-react";
 
 // components
@@ -21,6 +22,7 @@ export enum EnableRoutes {
   WorkoutHistory = "/main-page",
   CreateNewWorkout = "/workout/create",
   Templates = "/workout/template",
+  Exercises = "/exercises",
   DietHistory = "/diet-history",
   KcalCalculator = "/kcal-calculator",
   BodyMeasurements = "/body-measurements",
@@ -31,6 +33,7 @@ export enum NavMainTitles {
   WorkoutHistory = "Workout history",
   CreateNewWorkout = "Create new workout",
   Templates = "Templates",
+  Exercises = "Exercises",
   DietHistory = "Diet history",
   KcalCalculator = "Kcal calculator",
   BodyMeasurements = "Body measurements",
@@ -64,6 +67,11 @@ export function NavMain() {
       title: NavMainTitles.Templates,
       url: EnableRoutes.Templates,
       icon: FileStackIcon,
+    },
+    {
+      title: NavMainTitles.Exercises,
+      url: EnableRoutes.Exercises,
+      icon: DumbbellIcon,
     },
     {
       title: NavMainTitles.DietHistory,
