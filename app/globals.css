@@ -7,13 +7,18 @@
 
 html {
   height: 100%;
+  /* PWA/safe area: viewport extends under notch/status bar; padding keeps content visible */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  box-sizing: border-box;
 }
 
 body,
 :root {
   height: 100%;
+  min-height: 100%;
   background-color: var(--background);
   color: var(--secondary-foreground);
+  box-sizing: border-box;
 }
 
 .link-hover-underline a:hover,
