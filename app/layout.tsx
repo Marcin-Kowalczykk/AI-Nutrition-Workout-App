@@ -19,11 +19,7 @@ export const metadata: Metadata = {
     "Training Diet App for counting calories and tracking your diet and workout progress",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [
-      { url: "/icon-192", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    icon: [{ url: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
   },
   appleWebApp: {
     capable: true,
