@@ -267,8 +267,6 @@ export const Exercises = () => {
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
-      <h2 className="text-lg font-semibold">Exercises</h2>
-
       <div className="flex flex-col gap-2 border-b-2 border-destructive pb-4">
         <Input
           placeholder="Search categories and exercises..."

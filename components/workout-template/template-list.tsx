@@ -70,8 +70,7 @@ export function TemplateList() {
 
   return (
     <div className="w-full xl:w-1/2">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Templates</h2>
+      <div className="flex items-center justify-end mb-4">
         <Button asChild variant="destructive" size="sm" className="gap-2">
           <Link href="/workout/template/create">
             <Plus className="h-4 w-4" />

@@ -18,19 +18,9 @@ const Workout = ({
   templateId,
   prefillFromTemplateId,
 }: WorkoutProps) => {
-  let title: string;
-  if (isTemplateMode) {
-    title = templateId ? "Edit Template" : "Create New Template";
-  } else {
-    title = workoutId ? "Edit Workout" : "Create New Workout";
-  }
-
   return (
     <Suspense fallback={<Loader />}>
       <Card className="w-full xl:w-1/2 min-w-0 shrink-0">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
         <CardContent>
           <WorkoutForm
             workoutId={workoutId}

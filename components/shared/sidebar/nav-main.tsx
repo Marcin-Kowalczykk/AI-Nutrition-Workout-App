@@ -32,7 +32,10 @@ export enum EnableRoutes {
 export enum NavMainTitles {
   WorkoutHistory = "Workout history",
   CreateNewWorkout = "Create new workout",
+  EditWorkout = "Edit workout",
   Templates = "Templates",
+  CreateTemplate = "Create template",
+  EditTemplate = "Edit template",
   Exercises = "Exercises",
   DietHistory = "Diet history",
   KcalCalculator = "Kcal calculator",
