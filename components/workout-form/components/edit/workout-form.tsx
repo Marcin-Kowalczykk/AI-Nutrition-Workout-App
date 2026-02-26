@@ -35,6 +35,7 @@ import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../../../shared/confirm-modal";
+import { ExercisesSelect } from "@/components/shared/exercises-select";
 
 // types and schemas
 import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
@@ -458,6 +459,10 @@ export const WorkoutForm = ({
 
   const handleAddSet = (exerciseIndex: number) => {
     const exercise = form.getValues(`exercises.${exerciseIndex}`);
+    if (!exercise?.name?.trim()) {
+      return;
+    }
+
     const currentSets = exercise?.sets ?? [];
     const nextSetNumber = currentSets.length + 1;
 
@@ -731,9 +736,9 @@ export const WorkoutForm = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Exercise name"
+                            <ExercisesSelect
+                              value={field.value}
+                              onChange={field.onChange}
                               disabled={isPending}
                             />
                           </FormControl>
@@ -801,11 +806,13 @@ export const WorkoutForm = ({
                                   autoComplete="off"
                                   disabled={isPending}
                                   value={field.value ?? ""}
-                                  onChange={(e) =>
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>,
+                                  ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined
+                                        : undefined,
                                     )
                                   }
                                 />
@@ -827,11 +834,13 @@ export const WorkoutForm = ({
                                   autoComplete="off"
                                   disabled={isPending}
                                   value={field.value ?? ""}
-                                  onChange={(e) =>
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>,
+                                  ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined
+                                        : undefined,
                                     )
                                   }
                                 />
@@ -853,11 +862,13 @@ export const WorkoutForm = ({
                                   autoComplete="off"
                                   disabled={isPending}
                                   value={field.value ?? ""}
-                                  onChange={(e) =>
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>,
+                                  ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined
+                                        : undefined,
                                     )
                                   }
                                 />
@@ -889,7 +900,17 @@ export const WorkoutForm = ({
                       variant="outline"
                       size="sm"
                       onClick={() => handleAddSet(exerciseIndex)}
-                      disabled={isPending}
+                      disabled={
+                        isPending ||
+                        !(
+                          (
+                            form.watch(`exercises.${exerciseIndex}.name`) ??
+                            ""
+                          )
+                            .toString()
+                            .trim()
+                        )
+                      }
                       className="gap-2 self-start"
                     >
                       <Plus className="h-4 w-4" />

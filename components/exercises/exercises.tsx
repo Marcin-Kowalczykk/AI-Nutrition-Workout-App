@@ -19,7 +19,7 @@ import { useDeleteExercises } from "./api/use-delete-exercises";
 import type { IExerciseCategory } from "@/app/api/exercises/types";
 import type { IExercise } from "@/app/api/exercises/types";
 
-export function ExerciseDatabase() {
+export const Exercises = () => {
   const [search, setSearch] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newExerciseByCategory, setNewExerciseByCategory] = useState<
@@ -108,7 +108,6 @@ export function ExerciseDatabase() {
             item.exercises.length > 0
         );
     }
-    // Zawsze "other" na końcu listy
     return [...list].sort((a, b) => {
       const aIsOther = a.category.name.toLowerCase() === OTHER_NAME;
       const bIsOther = b.category.name.toLowerCase() === OTHER_NAME;
@@ -149,7 +148,6 @@ export function ExerciseDatabase() {
         }
       });
     } else if (isOnlyOtherCategory) {
-      // Gdy jest tylko kategoria "other" – domyślnie rozwinięta
       nextExpanded.add(categories[0].id);
     }
 
@@ -192,7 +190,6 @@ export function ExerciseDatabase() {
         next.delete(id);
       }
 
-      // Zaznacz/odznacz wszystkie ćwiczenia w tej kategorii
       setSelectedExerciseIds((prevExercises) => {
         const nextExercises = new Set(prevExercises);
         if (willSelect) {
@@ -261,7 +258,11 @@ export function ExerciseDatabase() {
   const isDeleting = deleteCategories.isPending || deleteExercises.isPending;
 
   if (loadingCategories || loadingExercises) {
-    return <Loader />;
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader />
+      </div>
+    );
   }
 
   return (
@@ -492,4 +493,4 @@ export function ExerciseDatabase() {
       />
     </div>
   );
-}
+};
