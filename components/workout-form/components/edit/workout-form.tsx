@@ -39,6 +39,7 @@ import { ExercisesSelect } from "@/components/shared/exercises-select";
 
 // types and schemas
 import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
+import { ExerciseHistoryStrip } from "./exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
@@ -759,7 +760,13 @@ export const WorkoutForm = ({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-4">
+                <CardContent className="flex min-w-0 flex-col gap-4">
+                  <ExerciseHistoryStrip
+                    exerciseName={
+                      (form.watch(`exercises.${exerciseIndex}.name`) ?? "") ||
+                      undefined
+                    }
+                  />
                   {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
                     (set, setIndex) => (
                       <div key={set.id} className="flex items-center gap-2 ">

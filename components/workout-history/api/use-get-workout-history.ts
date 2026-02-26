@@ -12,12 +12,13 @@ import { IGetWorkoutsHistoryResponse } from "@/app/api/workouts/get-workouts-his
 type UseGetWorkoutHistoryOptions = {
   startDate?: string;
   endDate?: string;
+  enabled?: boolean;
 };
 
 export const useGetWorkoutHistory = (
   options?: UseGetWorkoutHistoryOptions
 ): UseQueryResult<IGetWorkoutsHistoryResponse, Error> => {
-  const { startDate, endDate } = options || {};
+  const { startDate, endDate, enabled } = options || {};
 
   const query = useQuery({
     queryKey: ["get-workout-history", startDate, endDate],
@@ -47,6 +48,7 @@ export const useGetWorkoutHistory = (
 
       return response.json();
     },
+    enabled: enabled ?? true,
   });
 
   return query;
