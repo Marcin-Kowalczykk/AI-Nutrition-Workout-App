@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Training Diet App",
-    short_name: "Training Diet",
+    short_name: "JTCNW",
     description:
       "Training Diet App for counting calories and tracking your diet and workout progress",
     start_url: "/",
