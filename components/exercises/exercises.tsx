@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,17 +15,16 @@ import { useCreateCategory } from "./api/use-create-category";
 import { useCreateExercise } from "./api/use-create-exercise";
 import { useDeleteCategories } from "./api/use-delete-categories";
 import { useDeleteExercises } from "./api/use-delete-exercises";
+import { ExercisesSearchInput } from "./exercises-search";
+import { useExercisesSearch } from "./hooks/use-exercises-search";
 
-import type { IExerciseCategory } from "@/app/api/exercises/types";
 import type { IExercise } from "@/app/api/exercises/types";
 
 export const Exercises = () => {
-  const [search, setSearch] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newExerciseByCategory, setNewExerciseByCategory] = useState<
     Record<string, string>
   >({});
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(
     new Set()
   );
@@ -82,100 +81,14 @@ export const Exercises = () => {
     return map;
   }, [exercises]);
 
-  const searchLower = search.trim().toLowerCase();
-
-  const filteredCategories = useMemo(() => {
-    const OTHER_NAME = "other";
-    let list: { category: IExerciseCategory; exercises: IExercise[] }[];
-    if (!searchLower) {
-      list = categories.map((c: IExerciseCategory) => ({
-        category: c,
-        exercises: exercisesByCategory[c.id] ?? [],
-      }));
-    } else {
-      list = categories
-        .map((c: IExerciseCategory) => ({
-          category: c,
-          exercises: (exercisesByCategory[c.id] ?? []).filter(
-            (e) =>
-              e.name.toLowerCase().includes(searchLower) ||
-              c.name.toLowerCase().includes(searchLower)
-          ),
-        }))
-        .filter(
-          (item: { category: IExerciseCategory; exercises: IExercise[] }) =>
-            item.category.name.toLowerCase().includes(searchLower) ||
-            item.exercises.length > 0
-        );
-    }
-    return [...list].sort((a, b) => {
-      const aIsOther = a.category.name.toLowerCase() === OTHER_NAME;
-      const bIsOther = b.category.name.toLowerCase() === OTHER_NAME;
-      if (aIsOther && !bIsOther) return 1;
-      if (!aIsOther && bIsOther) return -1;
-      return 0;
-    });
-  }, [categories, exercisesByCategory, searchLower]);
-
-  const isOnlyOtherCategory =
-    categories.length === 1 && categories[0].name.toLowerCase() === "other";
-
-  const prevFilterRef = useRef({ searchLower: "", isOnlyOther: false });
-
-  useEffect(() => {
-    const prev = prevFilterRef.current;
-    const filterChanged =
-      prev.searchLower !== searchLower ||
-      prev.isOnlyOther !== isOnlyOtherCategory;
-    prevFilterRef.current = { searchLower, isOnlyOther: isOnlyOtherCategory };
-
-    if (!filterChanged) return;
-
-    const nextExpanded = new Set<string>();
-
-    if (searchLower) {
-      categories.forEach((category: IExerciseCategory) => {
-        const catNameMatches = category.name
-          .toLowerCase()
-          .includes(searchLower);
-        const catExercises = exercisesByCategory[category.id] ?? [];
-        const hasMatchingExercise = catExercises.some((ex) =>
-          ex.name.toLowerCase().includes(searchLower)
-        );
-
-        if (catNameMatches || hasMatchingExercise) {
-          nextExpanded.add(category.id);
-        }
-      });
-    } else if (isOnlyOtherCategory) {
-      nextExpanded.add(categories[0].id);
-    }
-
-    queueMicrotask(() => {
-      setExpandedIds((prev) => {
-        if (prev.size === nextExpanded.size) {
-          let same = true;
-          for (const id of prev) {
-            if (!nextExpanded.has(id)) {
-              same = false;
-              break;
-            }
-          }
-          if (same) return prev;
-        }
-        return nextExpanded;
-      });
-    });
-  }, [searchLower, categories, exercisesByCategory, isOnlyOtherCategory]);
-
-  const toggleExpanded = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const {
+    search,
+    setSearch,
+    searchLower,
+    filteredCategories,
+    expandedIds,
+    toggleExpanded,
+  } = useExercisesSearch({ categories, exercisesByCategory });
 
   const toggleCategorySelection = (id: string) => {
     const categoryExercises = exercisesByCategory[id] ?? [];
@@ -268,12 +181,7 @@ export const Exercises = () => {
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
       <div className="flex flex-col gap-2 border-b-2 border-destructive pb-4">
-        <Input
-          placeholder="Search categories and exercises..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
-        />
+        <ExercisesSearchInput value={search} onChange={setSearch} />
       </div>
 
       <div className="flex flex-col gap-2 max-w-sm">

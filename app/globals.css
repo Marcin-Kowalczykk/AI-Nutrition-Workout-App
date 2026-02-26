@@ -47,6 +47,7 @@ body,
   --color-card: var(--card);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-popover-border: var(--popover-border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --radius-sm: calc(var(--radius) - 4px);
@@ -86,6 +87,7 @@ body,
   --sidebar-primary: #fafafa;
   --popover: #171717;
   --popover-foreground: #fafafa;
+  --popover-border: #404040;
   --accent: #262626;
   --accent-foreground: #fafafa;
 }
@@ -112,6 +114,7 @@ body,
   --sidebar-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
+  --popover-border: #262626;
   --accent: #f4f4f5;
   --accent-foreground: #0a0a0a;
 }

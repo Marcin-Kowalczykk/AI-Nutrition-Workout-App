@@ -19,6 +19,8 @@ import { toast } from "sonner";
 
 // types
 import type { IWorkoutTemplateItem } from "@/app/api/workout-templates/types";
+import { TemplateSearchInput } from "./template-search";
+import { useTemplateSearch } from "./hooks/use-template-search";
 
 export function TemplateList() {
   const router = useRouter();
@@ -36,6 +38,10 @@ export function TemplateList() {
   };
 
   const { data, isLoading, error, isError } = useListTemplates();
+
+  const templates = data?.templates ?? [];
+  const { search, setSearch, filteredTemplates, hasAnyTemplates } =
+    useTemplateSearch(templates as IWorkoutTemplateItem[]);
 
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate({
     onSuccess: () => {
@@ -66,34 +72,41 @@ export function TemplateList() {
     );
   }
 
-  const templates = data?.templates ?? [];
-
   return (
     <div className="w-full xl:w-1/2">
-      <div className="flex items-center justify-end mb-4">
-        <Button asChild variant="destructive" size="sm" className="gap-2">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <TemplateSearchInput value={search} onChange={setSearch} />
+        <Button
+          asChild
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 text-foreground"
+          aria-label="Create new template"
+        >
           <Link href="/workout/template/create">
             <Plus className="h-4 w-4" />
-            Create new template
           </Link>
         </Button>
       </div>
 
-      {templates.length === 0 ? (
+      {filteredTemplates.length === 0 ? (
         <div className="text-center text-muted-foreground py-8">
-          No templates yet. Create your first template to reuse workout
-          structure.
+          {!hasAnyTemplates
+            ? "No templates yet. Create your first template to reuse workout structure."
+            : "No templates match your search."}
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {templates.map((template: IWorkoutTemplateItem) => (
+          {filteredTemplates.map((template: IWorkoutTemplateItem) => (
             <li key={template.id}>
               <Card className="w-full">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <div className="font-semibold text-lg">
-                        {template.name}
+                      <div className="font-semibold text-lg mb-1">
+                        <span className="inline-block border-b-2 border-destructive pb-1">
+                          {template.name}
+                        </span>
                       </div>
                       {template.description && (
                         <div className="text-sm text-muted-foreground">

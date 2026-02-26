@@ -15,6 +15,29 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
+interface ExercisesSearchInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const ExercisesSearchInput = ({
+  value,
+  onChange,
+}: ExercisesSearchInputProps) => {
+  return (
+    <div className="relative">
+      <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        placeholder="Search exercises..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 pl-8"
+        onKeyDown={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+};
+
 interface ExercisesSelectProps {
   value?: string | null;
   onChange: (value: string) => void;
@@ -169,16 +192,10 @@ export const ExercisesSelect = ({
         align="start"
       >
         <div className="border-b border-border p-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search exercises..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8"
-              onKeyDown={(e) => e.stopPropagation()}
-            />
-          </div>
+          <ExercisesSearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
         </div>
         <div className="max-h-[min(60vh,20rem)] overflow-y-auto">
           {filteredGroups.map((group) => {
