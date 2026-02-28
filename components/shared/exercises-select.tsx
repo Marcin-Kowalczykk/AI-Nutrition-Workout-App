@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 
 import { Loader } from "@/components/shared/loader";
@@ -19,14 +19,21 @@ import { cn } from "@/lib/utils";
 interface ExercisesSearchInputProps {
   value: string;
   onChange: (value: string) => void;
+  readOnly?: boolean;
+  onActivate?: () => void;
 }
 
 const ExercisesSearchInput = ({
   value,
   onChange,
+  readOnly = false,
+  onActivate,
 }: ExercisesSearchInputProps) => {
   return (
-    <div className="relative">
+    <div
+      className="relative cursor-text"
+      onClick={() => readOnly && onActivate?.()}
+    >
       <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         placeholder="Search exercises..."
@@ -34,6 +41,10 @@ const ExercisesSearchInput = ({
         onChange={(e) => onChange(e.target.value)}
         className="h-8 pl-8"
         onKeyDown={(e) => e.stopPropagation()}
+        readOnly={readOnly}
+        inputMode={readOnly ? "none" : "text"}
+        onFocus={readOnly ? onActivate : undefined}
+        onClick={readOnly ? onActivate : undefined}
       />
     </div>
   );
@@ -52,14 +63,30 @@ export const ExercisesSelect = ({
 }: ExercisesSelectProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchActivated, setSearchActivated] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(
     new Set()
   );
+  const popoverContentRef = useRef<HTMLDivElement>(null);
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) setSearchQuery("");
+    if (!nextOpen) {
+      setSearchQuery("");
+      setSearchActivated(false);
+    }
     setOpen(nextOpen);
   };
+
+  useEffect(() => {
+    if (open && popoverContentRef.current) {
+      requestAnimationFrame(() => {
+        popoverContentRef.current?.scrollIntoView({
+          block: "end",
+          behavior: "smooth",
+        });
+      });
+    }
+  }, [open]);
 
   const { data: categoriesData, isLoading: loadingCategories } =
     useListCategories();
@@ -192,18 +219,22 @@ export const ExercisesSelect = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) p-0"
+        ref={popoverContentRef}
+        className="w-(--radix-popover-trigger-width) p-0 max-h-[min(85vh,28rem)] flex flex-col overflow-hidden"
         align="start"
         side="bottom"
         avoidCollisions={false}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="border-b border-border p-2">
+        <div className="border-b border-border p-2 shrink-0">
           <ExercisesSearchInput
             value={searchQuery}
             onChange={setSearchQuery}
+            readOnly={!searchActivated}
+            onActivate={() => setSearchActivated(true)}
           />
         </div>
-        <div className="max-h-[min(60vh,20rem)] overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto max-h-[min(60vh,20rem)]">
           {filteredGroups.map((group) => {
             const isExpanded = searchLower
               ? true
