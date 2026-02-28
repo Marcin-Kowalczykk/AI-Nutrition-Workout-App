@@ -36,12 +36,12 @@ const WorkoutHistory = () => {
 
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
-    return endOfDay(startDate).toISOString();
+    return startOfDay(startDate).toISOString();
   }, [startDate]);
 
   const endDateString = useMemo(() => {
     if (!endDate) return undefined;
-    return startOfDay(endDate).toISOString();
+    return endOfDay(endDate).toISOString();
   }, [endDate]);
 
   const { data, isLoading, error, isError } = useGetWorkoutHistory({
@@ -120,7 +120,7 @@ const WorkoutHistory = () => {
               placeholder="select end date"
               disabled={(date) => {
                 if (startDate) {
-                  return date > startDate;
+                  return date < startDate;
                 }
                 return false;
               }}

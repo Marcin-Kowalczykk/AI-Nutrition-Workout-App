@@ -101,14 +101,22 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
                 )}
               </span>
               {value && !isPopoverOpen && (
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={handleClear}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-accent rounded-sm transition-colors shrink-0"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onChange(undefined);
+                    }
+                  }}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-accent rounded-sm transition-colors shrink-0 cursor-pointer"
                   aria-label="Clear date"
                 >
                   <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                </button>
+                </span>
               )}
             </Button>
           </PopoverTrigger>

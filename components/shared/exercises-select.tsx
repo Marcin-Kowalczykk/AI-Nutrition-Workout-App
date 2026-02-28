@@ -194,6 +194,8 @@ export const ExercisesSelect = ({
       <PopoverContent
         className="w-(--radix-popover-trigger-width) p-0"
         align="start"
+        side="bottom"
+        avoidCollisions={false}
       >
         <div className="border-b border-border p-2">
           <ExercisesSearchInput

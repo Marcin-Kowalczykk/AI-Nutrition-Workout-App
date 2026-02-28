@@ -423,6 +423,8 @@ export const WorkoutForm = ({
       return;
     }
 
+    if (currentEntityId) return;
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
@@ -437,7 +439,7 @@ export const WorkoutForm = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [formValues, form, saveToCache]);
+  }, [formValues, form, saveToCache, currentEntityId]);
 
   const hasFormChanges = useCallback(() => {
     const values = form.getValues();

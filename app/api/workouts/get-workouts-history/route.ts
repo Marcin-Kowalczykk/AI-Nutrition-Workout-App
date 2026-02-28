@@ -34,11 +34,11 @@ export async function GET(request: Request) {
       .eq("user_id", user.id);
 
     if (startDate && endDate) {
-      query = query.gte("created_at", endDate).lte("created_at", startDate);
+      query = query.gte("created_at", startDate).lte("created_at", endDate);
     } else if (startDate) {
-      query = query.lte("created_at", startDate);
+      query = query.gte("created_at", startDate);
     } else if (endDate) {
-      query = query.gte("created_at", endDate);
+      query = query.lte("created_at", endDate);
     }
 
     query = query.order("created_at", { ascending: false });
