@@ -4,6 +4,7 @@ import { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 
+import { normalizeForComparison } from "@/lib/normalize-string";
 import type { IWorkoutExerciseItem } from "@/app/api/workouts/types";
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
 
@@ -28,17 +29,20 @@ export const ExerciseHistoryStrip = ({
     enabled: isOpen,
   });
 
+  const nameNorm = trimmedName ? normalizeForComparison(trimmedName) : "";
+
   const history = useMemo(() => {
-    if (!trimmedName || !data?.workouts) return [];
+    if (!nameNorm || !data?.workouts) return [];
 
     const withExercise = data.workouts.filter((workout) =>
       (workout.exercises ?? []).some(
-        (exercise: IWorkoutExerciseItem) => exercise.name === trimmedName,
+        (exercise: IWorkoutExerciseItem) =>
+          normalizeForComparison(exercise.name ?? "") === nameNorm,
       ),
     );
 
     return withExercise.slice(0, maxWorkouts);
-  }, [trimmedName, data, maxWorkouts]);
+  }, [nameNorm, data, maxWorkouts]);
 
   const updateArrows = useCallback((el: HTMLDivElement | null) => {
     if (!el) {
@@ -50,7 +54,7 @@ export const ExerciseHistoryStrip = ({
     const tolerance = 2;
     setCanPrev(scrollLeft > tolerance);
     setCanNext(scrollLeft + clientWidth < scrollWidth - tolerance);
-  }, []);
+  }, [setCanPrev, setCanNext]);
 
   const scrollByPage = useCallback(
     (direction: 1 | -1) => {
@@ -139,7 +143,8 @@ export const ExerciseHistoryStrip = ({
           ) : (
             history.map((workout) => {
           const exercises = (workout.exercises ?? []).filter(
-            (exercise) => exercise.name === trimmedName,
+            (exercise) =>
+              normalizeForComparison(exercise.name ?? "") === nameNorm,
           );
 
           if (!exercises.length) return null;

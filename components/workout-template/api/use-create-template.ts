@@ -1,11 +1,12 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/supabase/get-access-token";
 import type {
   ICreateTemplateRequestBody,
   ICreateTemplateResponse,
 } from "@/app/api/workout-templates/create/route";
+import { TEMPLATES_QUERY_KEY } from "./use-list-templates";
 
 type UseCreateTemplateOptions = {
   onSuccess?: (data: ICreateTemplateResponse) => void;
@@ -16,6 +17,8 @@ export const useCreateTemplate = ({
   onSuccess,
   onError,
 }: UseCreateTemplateOptions = {}) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (body: ICreateTemplateRequestBody) => {
       const accessToken = await getAccessToken();
@@ -34,7 +37,12 @@ export const useCreateTemplate = ({
       }
       return response.json() as Promise<ICreateTemplateResponse>;
     },
-    onSuccess: (data) => data && onSuccess?.(data),
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
+        onSuccess?.(data);
+      }
+    },
     onError: (error) => onError?.(error.message),
   });
   return mutation;

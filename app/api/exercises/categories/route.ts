@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { normalizeForComparison } from "@/lib/normalize-string";
 import { NextResponse } from "next/server";
 
 // constants
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from(TABLE_NAMES.EXERCISE_CATEGORIES)
-      .insert({ user_id: user.id, name })
+      .insert({ user_id: user.id, name: normalizeForComparison(name) })
       .select()
       .single();
 

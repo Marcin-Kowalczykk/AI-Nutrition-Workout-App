@@ -1,11 +1,12 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/supabase/get-access-token";
 import type {
   IUpdateTemplateRequestBody,
   IUpdateTemplateResponse,
 } from "@/app/api/workout-templates/update/route";
+import { TEMPLATES_QUERY_KEY } from "./use-list-templates";
 
 type UseUpdateTemplateOptions = {
   onSuccess?: (data: IUpdateTemplateResponse) => void;
@@ -16,6 +17,8 @@ export const useUpdateTemplate = ({
   onSuccess,
   onError,
 }: UseUpdateTemplateOptions = {}) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (body: IUpdateTemplateRequestBody) => {
       const accessToken = await getAccessToken();
@@ -34,7 +37,17 @@ export const useUpdateTemplate = ({
       }
       return response.json() as Promise<IUpdateTemplateResponse>;
     },
-    onSuccess: (data) => data && onSuccess?.(data),
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
+        if (data.id) {
+          queryClient.invalidateQueries({
+            queryKey: ["workout-template", data.id],
+          });
+        }
+        onSuccess?.(data);
+      }
+    },
     onError: (error) => onError?.(error.message),
   });
   return mutation;

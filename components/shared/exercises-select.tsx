@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 
 import { Loader } from "@/components/shared/loader";
+import { normalizeForComparison } from "@/lib/normalize-string";
 import { useListCategories } from "@/components/exercises/api/use-list-categories";
 import { useListExercises } from "@/components/exercises/api/use-list-exercises";
 import { Button } from "@/components/ui/button";
@@ -117,21 +118,24 @@ export const ExercisesSelect = ({
 
   const filteredGroups = useMemo(() => {
     if (!searchLower) return groups;
+    const searchNorm = normalizeForComparison(searchQuery);
     return groups
       .map((group) => ({
         ...group,
         exercises: group.exercises.filter((ex) =>
-          ex.name.toLowerCase().includes(searchLower)
+          normalizeForComparison(ex.name).includes(searchNorm)
         ),
       }))
       .filter((g) => g.exercises.length > 0);
-  }, [groups, searchLower]);
+  }, [groups, searchLower, searchQuery]);
 
   const selectedExercise = useMemo(
     () =>
       value
         ? exercises.find(
-            (exercise: { name: string }) => exercise.name === value
+            (exercise: { name: string }) =>
+              normalizeForComparison(exercise.name) ===
+              normalizeForComparison(value)
           ) ?? null
         : null,
     [exercises, value]
@@ -240,7 +244,8 @@ export const ExercisesSelect = ({
                         onClick={() => handleSelectExercise(exercise.name)}
                         className={cn(
                           "flex w-full items-center rounded-md px-2 py-2 text-left text-sm focus:outline-none focus:ring-1 focus:ring-ring",
-                          value === exercise.name
+                          normalizeForComparison(value ?? "") ===
+                            normalizeForComparison(exercise.name)
                             ? "bg-accent text-accent-foreground font-medium"
                             : "hover:bg-accent/80 hover:text-accent-foreground"
                         )}

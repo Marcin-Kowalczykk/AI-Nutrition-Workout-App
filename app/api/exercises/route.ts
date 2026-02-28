@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { normalizeForComparison } from "@/lib/normalize-string";
 import { NextResponse } from "next/server";
 
 // constants
@@ -139,7 +140,7 @@ export async function POST(request: Request) {
       .insert({
         user_id: user.id,
         category_id: categoryId,
-        name,
+        name: normalizeForComparison(name),
       })
       .select()
       .single();

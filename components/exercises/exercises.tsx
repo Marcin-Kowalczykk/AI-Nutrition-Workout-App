@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,11 @@ import { useDeleteExercises } from "./api/use-delete-exercises";
 import { ExercisesSearchInput } from "./exercises-search";
 import { useExercisesSearch } from "./hooks/use-exercises-search";
 
-import type { IExercise } from "@/app/api/exercises/types";
+import { normalizeForComparison } from "@/lib/normalize-string";
+import type {
+  IExercise,
+  IExerciseCategory,
+} from "@/app/api/exercises/types";
 
 export const Exercises = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -129,12 +134,32 @@ export const Exercises = () => {
   const handleAddCategory = () => {
     const name = newCategoryName.trim();
     if (!name) return;
+
+    const nameNorm = normalizeForComparison(name);
+    const isDuplicate = categories.some(
+      (c: IExerciseCategory) => normalizeForComparison(c.name) === nameNorm
+    );
+    if (isDuplicate) {
+      toast.warning("A category with this name already exists.");
+      return;
+    }
+
     createCategory.mutate({ name });
   };
 
   const handleAddExercise = (categoryId: string) => {
     const name = (newExerciseByCategory[categoryId] ?? "").trim();
     if (!name) return;
+
+    const nameNorm = normalizeForComparison(name);
+    const isDuplicate = exercises.some(
+      (e: IExercise) => normalizeForComparison(e.name ?? "") === nameNorm
+    );
+    if (isDuplicate) {
+      toast.warning("An exercise with this name already exists.");
+      return;
+    }
+
     createExercise.mutate(
       { name, categoryId },
       {

@@ -38,6 +38,12 @@ import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 
 // types and schemas
+import {
+  getFormCache,
+  removeFormCache,
+  setFormCache,
+} from "@/lib/form-cache";
+import { normalizeForComparison } from "@/lib/normalize-string";
 import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
 import { ExerciseHistoryStrip } from "./exercise-history-strip";
 import type {
@@ -47,6 +53,61 @@ import type {
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 const TEMPLATE_FORM_CACHE_KEY = "workout-template-form-draft";
+
+function prepareExercisesForSubmission(
+  exercises: CreateWorkoutFormType["exercises"]
+) {
+  return exercises
+    .filter((exercise) => exercise.name || exercise.sets?.length > 0)
+    .map((exercise) => {
+      const filteredSets = (exercise.sets ?? [])
+        .filter(
+          (set) =>
+            set.reps !== undefined ||
+            set.weight !== undefined ||
+            set.duration !== undefined
+        )
+        .map((set) => ({
+          id: set.id,
+          set_number: set.set_number ?? 0,
+          reps: set.reps ?? 0,
+          weight: set.weight,
+          duration: set.duration,
+          isChecked: set.isChecked ?? false,
+        }));
+
+      return {
+        id: exercise.id,
+        name: normalizeForComparison(exercise.name ?? ""),
+        sets: filteredSets,
+      };
+    })
+    .filter((exercise) => exercise.name || exercise.sets.length > 0);
+}
+
+function prepareExercisesForTemplate(
+  exercises: CreateWorkoutFormType["exercises"]
+) {
+  return prepareExercisesForSubmission(exercises).map((exercise) => ({
+    ...exercise,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- isChecked excluded for template format
+    sets: exercise.sets.map(({ isChecked, ...set }) => set),
+  }));
+}
+
+function getBaselineString(
+  values: CreateWorkoutFormType,
+  isTemplateMode: boolean
+): string {
+  const exercises = isTemplateMode
+    ? prepareExercisesForTemplate(values.exercises)
+    : prepareExercisesForSubmission(values.exercises);
+  return JSON.stringify({
+    name: values.name,
+    description: values.description ?? "",
+    exercises,
+  });
+}
 
 interface WorkoutFormProps {
   workoutId?: string | null;
@@ -86,6 +147,9 @@ export const WorkoutForm = ({
   const hasLoadedWorkoutDataRef = useRef(false);
   const hasLoadedTemplateDataRef = useRef(false);
   const lastPrefilledTemplateIdRef = useRef<string | null>(null);
+  const [lastSavedBaseline, setLastSavedBaseline] = useState<string | null>(
+    null
+  );
 
   const cacheKey = isTemplateMode
     ? TEMPLATE_FORM_CACHE_KEY
@@ -106,25 +170,15 @@ export const WorkoutForm = ({
     enabled: !isTemplateMode && !initialWorkoutId && !!prefillFromTemplateId,
   });
 
-  // Save to cache
   const saveToCache = useCallback(
     (data: CreateWorkoutFormType) => {
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-      } catch (error) {
-        console.error("Error saving form to cache:", error);
-      }
+      setFormCache(cacheKey, JSON.stringify(data));
     },
     [cacheKey]
   );
 
-  // Clear cache
   const clearCache = useCallback(() => {
-    try {
-      localStorage.removeItem(cacheKey);
-    } catch (error) {
-      console.error("Error clearing form cache:", error);
-    }
+    removeFormCache(cacheKey);
   }, [cacheKey]);
 
   const {
@@ -165,6 +219,7 @@ export const WorkoutForm = ({
       form.reset({ name: "", description: "", exercises: [] });
       setWorkoutId(null);
       setIsFirstSave(true);
+      setLastSavedBaseline(null);
       setIsDiscardWorkoutModalOpen(false);
       toast.success("Workout discarded");
     },
@@ -203,6 +258,7 @@ export const WorkoutForm = ({
         form.reset({ name: "", description: "", exercises: [] });
         setTemplateId(null);
         setIsFirstSave(true);
+        setLastSavedBaseline(null);
         setIsDiscardWorkoutModalOpen(false);
         toast.success("Template discarded");
       },
@@ -223,17 +279,20 @@ export const WorkoutForm = ({
   useEffect(() => {
     if (!isInitialMountRef.current) return;
     if (entityId) return;
-    if (prefillFromTemplateId) return; // let prefill effect run first
+    if (prefillFromTemplateId) return;
 
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        form.reset(parsed);
+    const loadCached = async () => {
+      try {
+        const cached = await getFormCache(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          form.reset(parsed);
+        }
+      } catch (error) {
+        console.error("Error loading cached form:", error);
       }
-    } catch (error) {
-      console.error("Error loading cached form:", error);
-    }
+    };
+    loadCached();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -252,7 +311,7 @@ export const WorkoutForm = ({
       exercises: (prefillTemplateData.exercises || []).map(
         (exercise: IWorkoutTemplateExerciseItem) => ({
           id: exercise.id,
-          name: exercise.name || "",
+          name: normalizeForComparison(exercise.name ?? ""),
           sets: (exercise.sets || []).map((set: IWorkoutTemplateSetItem) => ({
             id: set.id,
             set_number: set.set_number || 0,
@@ -292,7 +351,7 @@ export const WorkoutForm = ({
       description: workoutData.description || "",
       exercises: (workoutData.exercises || []).map((exercise) => ({
         id: exercise.id,
-        name: exercise.name || "",
+        name: normalizeForComparison(exercise.name ?? ""),
         sets: (exercise.sets || []).map((set) => ({
           id: set.id,
           set_number: set.set_number || 0,
@@ -305,6 +364,7 @@ export const WorkoutForm = ({
     };
 
     form.reset(formData);
+    setLastSavedBaseline(getBaselineString(formData, false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workoutData, initialWorkoutId]);
 
@@ -328,7 +388,7 @@ export const WorkoutForm = ({
       exercises: (templateData.exercises || []).map(
         (exercise: IWorkoutTemplateExerciseItem) => ({
           id: exercise.id,
-          name: exercise.name || "",
+          name: normalizeForComparison(exercise.name ?? ""),
           sets: (exercise.sets || []).map((set: IWorkoutTemplateSetItem) => ({
             id: set.id,
             set_number: set.set_number || 0,
@@ -342,6 +402,7 @@ export const WorkoutForm = ({
     };
 
     form.reset(formData);
+    setLastSavedBaseline(getBaselineString(formData, true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateData, initialTemplateId]);
 
@@ -377,6 +438,29 @@ export const WorkoutForm = ({
       }
     };
   }, [formValues, form, saveToCache]);
+
+  const hasFormChanges = useCallback(() => {
+    const values = form.getValues();
+    const currentBaseline = getBaselineString(values, isTemplateMode);
+
+    if (lastSavedBaseline === null) {
+      const emptyBaseline = JSON.stringify({
+        name: "",
+        description: "",
+        exercises: [],
+      });
+      return currentBaseline !== emptyBaseline;
+    }
+
+    return currentBaseline !== lastSavedBaseline;
+  }, [form, isTemplateMode, lastSavedBaseline]);
+
+  const setBaselineFromValues = useCallback(
+    (values: CreateWorkoutFormType) => {
+      setLastSavedBaseline(getBaselineString(values, isTemplateMode));
+    },
+    [isTemplateMode]
+  );
 
   const isPending =
     isCreating ||
@@ -424,6 +508,12 @@ export const WorkoutForm = ({
     const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
     const prepared = prepareExercisesForSubmission(newExercises);
 
+    const newValues = {
+      name: values.name,
+      description: values.description,
+      exercises: newExercises,
+    };
+
     if (isTemplateMode) {
       updateTemplate(
         {
@@ -436,6 +526,7 @@ export const WorkoutForm = ({
           onSuccess: () => {
             removeExercise(exerciseIndex);
             setRemoveExerciseModal({ open: false, exerciseIndex: null });
+            setBaselineFromValues(newValues);
           },
         }
       );
@@ -452,6 +543,7 @@ export const WorkoutForm = ({
           onSuccess: () => {
             removeExercise(exerciseIndex);
             setRemoveExerciseModal({ open: false, exerciseIndex: null });
+            setBaselineFromValues(newValues);
           },
         }
       );
@@ -515,6 +607,12 @@ export const WorkoutForm = ({
     );
     const prepared = prepareExercisesForSubmission(newExercises);
 
+    const newValues = {
+      name: values.name,
+      description: values.description,
+      exercises: newExercises,
+    };
+
     if (isTemplateMode) {
       updateTemplate(
         {
@@ -531,6 +629,7 @@ export const WorkoutForm = ({
               exerciseIndex: null,
               setIndex: null,
             });
+            setBaselineFromValues(newValues);
           },
         }
       );
@@ -551,6 +650,7 @@ export const WorkoutForm = ({
               exerciseIndex: null,
               setIndex: null,
             });
+            setBaselineFromValues(newValues);
           },
         }
       );
@@ -572,6 +672,7 @@ export const WorkoutForm = ({
       setWorkoutId(null);
       setTemplateId(null);
       setIsFirstSave(true);
+      setLastSavedBaseline(null);
       setIsDiscardWorkoutModalOpen(false);
       toast.success(
         isTemplateMode ? "Template discarded" : "Workout discarded"
@@ -579,87 +680,61 @@ export const WorkoutForm = ({
     }
   };
 
-  const prepareExercisesForSubmission = (
-    exercises: CreateWorkoutFormType["exercises"]
-  ) => {
-    return exercises
-      .filter((exercise) => exercise.name || exercise.sets?.length > 0)
-      .map((exercise) => {
-        const filteredSets = exercise.sets
-          .filter(
-            (set) =>
-              set.reps !== undefined ||
-              set.weight !== undefined ||
-              set.duration !== undefined
-          )
-          .map((set) => ({
-            id: set.id,
-            set_number: set.set_number ?? 0,
-            reps: set.reps ?? 0,
-            weight: set.weight,
-            duration: set.duration,
-            isChecked: set.isChecked ?? false,
-          }));
-
-        return {
-          id: exercise.id,
-          name: exercise.name ?? "",
-          sets: filteredSets,
-        };
-      })
-      .filter((exercise) => exercise.name || exercise.sets.length > 0);
-  };
-
-  const prepareExercisesForTemplate = (
-    exercises: CreateWorkoutFormType["exercises"]
-  ) => {
-    return prepareExercisesForSubmission(exercises).map((exercise) => ({
-      ...exercise,
-      sets: exercise.sets.map(({ isChecked, ...set }) => set),
-    }));
-  };
-
   const onSubmitHandler = async (values: CreateWorkoutFormType) => {
     const { name, description, exercises } = values;
     const currentDate = new Date().toISOString();
     const filteredExercises = prepareExercisesForSubmission(exercises);
 
+    const setBaselineOnSuccess = () => setBaselineFromValues(values);
+
     if (isTemplateMode) {
       const templateExercises = prepareExercisesForTemplate(exercises);
       if (isFirstSave && !currentEntityId) {
-        createTemplate({
-          name,
-          description: description || undefined,
-          exercises:
-            templateExercises.length > 0 ? templateExercises : undefined,
-        });
+        createTemplate(
+          {
+            name,
+            description: description || undefined,
+            exercises:
+              templateExercises.length > 0 ? templateExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
       } else if (currentEntityId) {
-        updateTemplate({
-          id: currentEntityId,
-          name,
-          description: description || undefined,
-          exercises:
-            templateExercises.length > 0 ? templateExercises : undefined,
-        });
+        updateTemplate(
+          {
+            id: currentEntityId,
+            name,
+            description: description || undefined,
+            exercises:
+              templateExercises.length > 0 ? templateExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
       }
     } else {
       if (isFirstSave && !workoutId) {
-        createWorkout({
-          name,
-          description: description || undefined,
-          start_date: currentDate,
-          exercises:
-            filteredExercises.length > 0 ? filteredExercises : undefined,
-        });
+        createWorkout(
+          {
+            name,
+            description: description || undefined,
+            start_date: currentDate,
+            exercises:
+              filteredExercises.length > 0 ? filteredExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
       } else if (workoutId) {
-        updateWorkout({
-          id: workoutId,
-          name,
-          description: description || undefined,
-          end_date: currentDate,
-          exercises:
-            filteredExercises.length > 0 ? filteredExercises : undefined,
-        });
+        updateWorkout(
+          {
+            id: workoutId,
+            name,
+            description: description || undefined,
+            end_date: currentDate,
+            exercises:
+              filteredExercises.length > 0 ? filteredExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
       }
     }
   };
@@ -814,12 +889,12 @@ export const WorkoutForm = ({
                                   disabled={isPending}
                                   value={field.value ?? ""}
                                   onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>,
+                                    e: React.ChangeEvent<HTMLInputElement>
                                   ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined,
+                                        : undefined
                                     )
                                   }
                                 />
@@ -842,12 +917,12 @@ export const WorkoutForm = ({
                                   disabled={isPending}
                                   value={field.value ?? ""}
                                   onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>,
+                                    e: React.ChangeEvent<HTMLInputElement>
                                   ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined,
+                                        : undefined
                                     )
                                   }
                                 />
@@ -870,12 +945,12 @@ export const WorkoutForm = ({
                                   disabled={isPending}
                                   value={field.value ?? ""}
                                   onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>,
+                                    e: React.ChangeEvent<HTMLInputElement>
                                   ) =>
                                     field.onChange(
                                       e.target.value
                                         ? Number(e.target.value)
-                                        : undefined,
+                                        : undefined
                                     )
                                   }
                                 />
@@ -909,14 +984,9 @@ export const WorkoutForm = ({
                       onClick={() => handleAddSet(exerciseIndex)}
                       disabled={
                         isPending ||
-                        !(
-                          (
-                            form.watch(`exercises.${exerciseIndex}.name`) ??
-                            ""
-                          )
-                            .toString()
-                            .trim()
-                        )
+                        !(form.watch(`exercises.${exerciseIndex}.name`) ?? "")
+                          .toString()
+                          .trim()
                       }
                       className="gap-2 self-start"
                     >
@@ -957,7 +1027,11 @@ export const WorkoutForm = ({
             Add Exercise
           </Button>
           <div className="flex flex-col gap-2">
-            <Button type="submit" variant="destructive" disabled={isPending}>
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={isPending || !hasFormChanges()}
+            >
               {isPending ? (
                 <Loader />
               ) : isFirstSave ? (
