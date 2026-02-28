@@ -77,6 +77,8 @@ export const ExercisesSelect = ({
     setOpen(nextOpen);
   };
 
+  const POPOVER_MAX_HEIGHT = "min(85vh, 28rem)";
+
   useEffect(() => {
     if (open && popoverContentRef.current) {
       requestAnimationFrame(() => {
@@ -85,6 +87,16 @@ export const ExercisesSelect = ({
           behavior: "smooth",
         });
       });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.paddingBottom;
+      document.body.style.paddingBottom = POPOVER_MAX_HEIGHT;
+      return () => {
+        document.body.style.paddingBottom = prev;
+      };
     }
   }, [open]);
 
