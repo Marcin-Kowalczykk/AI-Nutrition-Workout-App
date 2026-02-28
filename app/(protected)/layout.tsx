@@ -19,7 +19,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
             {isMobile ? (
               <TopBar />
             ) : null}
-            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-3 pb-[min(85vh,28rem)] tracking-normal">
+            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-3 pb-[min(42.5vh,14rem)] tracking-normal">
               {children}
             </div>
           </SidebarInset>
