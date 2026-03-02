@@ -36,15 +36,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 // types and schemas
-import {
-  getFormCache,
-  removeFormCache,
-  setFormCache,
-} from "@/lib/form-cache";
+import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
 import { normalizeForComparison } from "@/lib/normalize-string";
-import { CreateWorkoutFormType, createWorkoutFormSchema } from "../../types";
+import {
+  CreateWorkoutFormType,
+  createWorkoutFormSchema,
+  WORKOUT_UNIT_TYPE,
+  type WorkoutUnitType,
+} from "../../types";
 import { ExerciseHistoryStrip } from "./exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
@@ -53,6 +56,20 @@ import type {
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 const TEMPLATE_FORM_CACHE_KEY = "workout-template-form-draft";
+
+function inferUnitType(
+  sets: { weight?: number; duration?: number }[]
+): WorkoutUnitType {
+  const hasWeight = (sets ?? []).some(
+    (s) => s.weight !== undefined && s.weight !== null
+  );
+  const hasDuration = (sets ?? []).some(
+    (s) => s.duration !== undefined && s.duration !== null
+  );
+  if (hasWeight) return WORKOUT_UNIT_TYPE.WEIGHT;
+  if (hasDuration) return WORKOUT_UNIT_TYPE.DURATION;
+  return WORKOUT_UNIT_TYPE.WEIGHT;
+}
 
 function prepareExercisesForSubmission(
   exercises: CreateWorkoutFormType["exercises"]
@@ -142,6 +159,16 @@ export const WorkoutForm = ({
     exerciseIndex: number | null;
     setIndex: number | null;
   }>({ open: false, exerciseIndex: null, setIndex: null });
+  const [changeUnitModal, setChangeUnitModal] = useState<{
+    open: boolean;
+    exerciseIndex: number | null;
+    newUnit: WorkoutUnitType | null;
+  }>({ open: false, exerciseIndex: null, newUnit: null });
+  const [unitSelectVisibleByExerciseId, setUnitSelectVisibleByExerciseId] =
+    useState<Record<string, boolean>>({});
+  const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
+    Record<string, boolean>
+  >({});
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
   const hasLoadedWorkoutDataRef = useRef(false);
@@ -309,18 +336,24 @@ export const WorkoutForm = ({
       name: prefillTemplateData.name || "",
       description: prefillTemplateData.description || "",
       exercises: (prefillTemplateData.exercises || []).map(
-        (exercise: IWorkoutTemplateExerciseItem) => ({
-          id: exercise.id,
-          name: normalizeForComparison(exercise.name ?? ""),
-          sets: (exercise.sets || []).map((set: IWorkoutTemplateSetItem) => ({
-            id: set.id,
-            set_number: set.set_number || 0,
-            reps: set.reps,
-            weight: set.weight,
-            duration: set.duration,
-            isChecked: false,
-          })),
-        })
+        (exercise: IWorkoutTemplateExerciseItem) => {
+          const sets = (exercise.sets || []).map(
+            (set: IWorkoutTemplateSetItem) => ({
+              id: set.id,
+              set_number: set.set_number || 0,
+              reps: set.reps,
+              weight: set.weight,
+              duration: set.duration,
+              isChecked: false,
+            })
+          );
+          return {
+            id: exercise.id,
+            name: normalizeForComparison(exercise.name ?? ""),
+            unitType: inferUnitType(sets),
+            sets,
+          };
+        }
       ),
     };
     form.reset(formData);
@@ -349,18 +382,22 @@ export const WorkoutForm = ({
     const formData: CreateWorkoutFormType = {
       name: workoutData.name || "",
       description: workoutData.description || "",
-      exercises: (workoutData.exercises || []).map((exercise) => ({
-        id: exercise.id,
-        name: normalizeForComparison(exercise.name ?? ""),
-        sets: (exercise.sets || []).map((set) => ({
+      exercises: (workoutData.exercises || []).map((exercise) => {
+        const sets = (exercise.sets || []).map((set) => ({
           id: set.id,
           set_number: set.set_number || 0,
           reps: set.reps,
           weight: set.weight,
           duration: set.duration,
           isChecked: set.isChecked || false,
-        })),
-      })),
+        }));
+        return {
+          id: exercise.id,
+          name: normalizeForComparison(exercise.name ?? ""),
+          unitType: inferUnitType(sets),
+          sets,
+        };
+      }),
     };
 
     form.reset(formData);
@@ -386,18 +423,24 @@ export const WorkoutForm = ({
       name: templateData.name || "",
       description: templateData.description || "",
       exercises: (templateData.exercises || []).map(
-        (exercise: IWorkoutTemplateExerciseItem) => ({
-          id: exercise.id,
-          name: normalizeForComparison(exercise.name ?? ""),
-          sets: (exercise.sets || []).map((set: IWorkoutTemplateSetItem) => ({
-            id: set.id,
-            set_number: set.set_number || 0,
-            reps: set.reps,
-            weight: set.weight,
-            duration: set.duration,
-            isChecked: false,
-          })),
-        })
+        (exercise: IWorkoutTemplateExerciseItem) => {
+          const sets = (exercise.sets || []).map(
+            (set: IWorkoutTemplateSetItem) => ({
+              id: set.id,
+              set_number: set.set_number || 0,
+              reps: set.reps,
+              weight: set.weight,
+              duration: set.duration,
+              isChecked: false,
+            })
+          );
+          return {
+            id: exercise.id,
+            name: normalizeForComparison(exercise.name ?? ""),
+            unitType: inferUnitType(sets),
+            sets,
+          };
+        }
       ),
     };
 
@@ -475,6 +518,56 @@ export const WorkoutForm = ({
   const isError = isCreateError || isUpdateError;
   const error = createError || updateError;
 
+  const applyUnitChange = useCallback(
+    (exerciseIndex: number, newUnit: WorkoutUnitType) => {
+      const values = form.getValues();
+      const exercises = values.exercises ?? [];
+      const updatedExercises = exercises.map((exercise, i) => {
+        if (i !== exerciseIndex) return exercise;
+        const sets = (exercise.sets ?? []).map((set) => ({
+          ...set,
+          weight: undefined,
+          duration: undefined,
+        }));
+        return { ...exercise, unitType: newUnit, sets };
+      });
+      form.reset(
+        { ...values, exercises: updatedExercises },
+        { keepDefaultValues: false }
+      );
+    },
+    [form]
+  );
+
+  const handleUnitTypeChange = (
+    exerciseIndex: number,
+    newUnit: WorkoutUnitType
+  ) => {
+    const currentUnit: WorkoutUnitType =
+      form.getValues(`exercises.${exerciseIndex}.unitType`) ??
+      WORKOUT_UNIT_TYPE.WEIGHT;
+    if (newUnit === currentUnit) return;
+
+    const sets = form.getValues(`exercises.${exerciseIndex}.sets`) ?? [];
+    const hasValues =
+      currentUnit === WORKOUT_UNIT_TYPE.WEIGHT
+        ? sets.some((s) => s.weight !== undefined && s.weight !== null)
+        : sets.some((s) => s.duration !== undefined && s.duration !== null);
+
+    if (hasValues) {
+      setChangeUnitModal({ open: true, exerciseIndex, newUnit });
+    } else {
+      applyUnitChange(exerciseIndex, newUnit);
+    }
+  };
+
+  const handleConfirmChangeUnit = () => {
+    const { exerciseIndex, newUnit } = changeUnitModal;
+    if (exerciseIndex === null || newUnit === null) return;
+    applyUnitChange(exerciseIndex, newUnit);
+    setChangeUnitModal({ open: false, exerciseIndex: null, newUnit: null });
+  };
+
   if (
     (isLoadingWorkout && initialWorkoutId && !isTemplateMode) ||
     (isLoadingTemplate && initialTemplateId && isTemplateMode)
@@ -490,6 +583,7 @@ export const WorkoutForm = ({
     appendExercise({
       id: crypto.randomUUID(),
       name: "",
+      unitType: WORKOUT_UNIT_TYPE.WEIGHT,
       sets: [],
     });
   };
@@ -838,12 +932,121 @@ export const WorkoutForm = ({
                   </Button>
                 </CardHeader>
                 <CardContent className="flex min-w-0 flex-col gap-4">
-                  <ExerciseHistoryStrip
-                    exerciseName={
-                      (form.watch(`exercises.${exerciseIndex}.name`) ?? "") ||
-                      undefined
+                  {(() => {
+                    const unitOpen =
+                      unitSelectVisibleByExerciseId[exercise.id] === true;
+                    const historyOpen =
+                      historyOpenByExerciseId[exercise.id] === true;
+                    const historyStrip = (
+                      <ExerciseHistoryStrip
+                        exerciseName={
+                          (form.watch(`exercises.${exerciseIndex}.name`) ??
+                            "") ||
+                          undefined
+                        }
+                        isOpen={historyOpenByExerciseId[exercise.id] === true}
+                        onOpenChange={(open) =>
+                          setHistoryOpenByExerciseId((prev) => ({
+                            ...prev,
+                            [exercise.id]: open,
+                          }))
+                        }
+                      />
+                    );
+                    const unitButton = (
+                      <button
+                        type="button"
+                        className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline shrink-0"
+                        onClick={() =>
+                          setUnitSelectVisibleByExerciseId((prev) => ({
+                            ...prev,
+                            [exercise.id]: !prev[exercise.id],
+                          }))
+                        }
+                      >
+                        {unitOpen ? "Hide change unit" : "Show change unit"}
+                      </button>
+                    );
+                    if (unitOpen) {
+                      return (
+                        <>
+                          <div className="min-w-0">{historyStrip}</div>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <FormField
+                              control={form.control}
+                              name={`exercises.${exerciseIndex}.unitType`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="sr-only">
+                                    Unit
+                                  </FormLabel>
+                                  <FormControl>
+                                    <RadioGroup
+                                      value={
+                                        field.value ?? WORKOUT_UNIT_TYPE.WEIGHT
+                                      }
+                                      onValueChange={(value: WorkoutUnitType) =>
+                                        handleUnitTypeChange(
+                                          exerciseIndex,
+                                          value
+                                        )
+                                      }
+                                      className="flex flex-row gap-4"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <RadioGroupItem
+                                          value={WORKOUT_UNIT_TYPE.WEIGHT}
+                                          id={`${exercise.id}-${WORKOUT_UNIT_TYPE.WEIGHT}`}
+                                        />
+                                        <Label
+                                          htmlFor={`${exercise.id}-${WORKOUT_UNIT_TYPE.WEIGHT}`}
+                                          className="text-sm font-normal cursor-pointer"
+                                        >
+                                          Weight
+                                        </Label>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <RadioGroupItem
+                                          value={WORKOUT_UNIT_TYPE.DURATION}
+                                          id={`${exercise.id}-${WORKOUT_UNIT_TYPE.DURATION}`}
+                                        />
+                                        <Label
+                                          htmlFor={`${exercise.id}-${WORKOUT_UNIT_TYPE.DURATION}`}
+                                          className="text-sm font-normal cursor-pointer"
+                                        >
+                                          Duration
+                                        </Label>
+                                      </div>
+                                    </RadioGroup>
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            {unitButton}
+                          </div>
+                        </>
+                      );
                     }
-                  />
+                    return (
+                      <>
+                        <div className="flex flex-nowrap items-center justify-between gap-2 min-w-0">
+                          <div
+                            className={
+                              historyOpen
+                                ? "min-w-0 flex-1 overflow-hidden"
+                                : "w-fit min-w-0 shrink-0"
+                            }
+                          >
+                            {historyStrip}
+                          </div>
+                          {!historyOpen && unitButton}
+                        </div>
+                        {historyOpen && (
+                          <div className="flex justify-end">{unitButton}</div>
+                        )}
+                      </>
+                    );
+                  })()}
                   {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
                     (set, setIndex) => (
                       <div key={set.id} className="flex items-center gap-2 ">
@@ -905,62 +1108,67 @@ export const WorkoutForm = ({
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Weight</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  autoComplete="off"
-                                  disabled={isPending}
-                                  value={field.value ?? ""}
-                                  onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>
-                                  ) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Duration</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  autoComplete="off"
-                                  disabled={isPending}
-                                  value={field.value ?? ""}
-                                  onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>
-                                  ) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {(form.watch(`exercises.${exerciseIndex}.unitType`) ??
+                          WORKOUT_UNIT_TYPE.WEIGHT) ===
+                        WORKOUT_UNIT_TYPE.WEIGHT ? (
+                          <FormField
+                            control={form.control}
+                            name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Weight</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    autoComplete="off"
+                                    disabled={isPending}
+                                    value={field.value ?? ""}
+                                    onChange={(
+                                      e: React.ChangeEvent<HTMLInputElement>
+                                    ) =>
+                                      field.onChange(
+                                        e.target.value
+                                          ? Number(e.target.value)
+                                          : undefined
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ) : (
+                          <FormField
+                            control={form.control}
+                            name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Duration</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    autoComplete="off"
+                                    disabled={isPending}
+                                    value={field.value ?? ""}
+                                    onChange={(
+                                      e: React.ChangeEvent<HTMLInputElement>
+                                    ) =>
+                                      field.onChange(
+                                        e.target.value
+                                          ? Number(e.target.value)
+                                          : undefined
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
 
                         <Button
                           type="button"
@@ -1107,6 +1315,23 @@ export const WorkoutForm = ({
         cancelLabel="Cancel"
         onConfirm={handleConfirmRemoveSet}
         isPending={isUpdating}
+      />
+
+      <ConfirmModal
+        open={changeUnitModal.open}
+        onOpenChange={(open) =>
+          !open &&
+          setChangeUnitModal({
+            open: false,
+            exerciseIndex: null,
+            newUnit: null,
+          })
+        }
+        title="Change unit"
+        description="Entered values (weight or duration) for this exercise will be removed. Do you want to continue?"
+        confirmLabel="Yes, change"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmChangeUnit}
       />
     </Form>
   );

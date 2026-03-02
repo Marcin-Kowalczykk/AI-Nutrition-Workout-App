@@ -22,7 +22,13 @@ export interface ConfirmModalProps {
   cancelLabel?: string;
   onConfirm: () => void;
   isPending?: boolean;
-  confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  confirmVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 export const ConfirmModal = ({
@@ -45,7 +51,11 @@ export const ConfirmModal = ({
   );
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange} preventOverlayClose={isPending}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      preventOverlayClose={isPending}
+    >
       <DialogContent isCloseButtonVisible={!isPending}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

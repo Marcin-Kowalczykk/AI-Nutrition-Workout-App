@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const WORKOUT_UNIT_TYPE = {
+  WEIGHT: "weight",
+  DURATION: "duration",
+} as const;
+
+export type WorkoutUnitType =
+  (typeof WORKOUT_UNIT_TYPE)[keyof typeof WORKOUT_UNIT_TYPE];
+
 const workoutSetSchema = z.object({
   id: z.string(),
   set_number: z.number().optional(),
@@ -9,9 +17,15 @@ const workoutSetSchema = z.object({
   isChecked: z.boolean().optional(),
 });
 
+const unitTypeSchema = z.enum([
+  WORKOUT_UNIT_TYPE.WEIGHT,
+  WORKOUT_UNIT_TYPE.DURATION,
+]);
+
 const workoutExerciseSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
+  unitType: unitTypeSchema.optional(),
   sets: z.array(workoutSetSchema),
 });
 

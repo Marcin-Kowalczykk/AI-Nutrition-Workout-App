@@ -11,6 +11,8 @@ import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-w
 interface ExerciseHistoryStripProps {
   exerciseName?: string | null;
   maxWorkouts?: number;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const CARD_MIN_WIDTH = 140;
@@ -18,12 +20,24 @@ const CARD_MIN_WIDTH = 140;
 export const ExerciseHistoryStrip = ({
   exerciseName,
   maxWorkouts = 5,
+  isOpen: controlledOpen,
+  onOpenChange,
 }: ExerciseHistoryStripProps) => {
   const trimmedName = exerciseName?.trim();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
-   const [canPrev, setCanPrev] = useState(false);
-   const [canNext, setCanNext] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined && onOpenChange != null;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const setIsOpen = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const next = typeof value === "function" ? value(isOpen) : value;
+      if (isControlled) onOpenChange?.(next);
+      else setInternalOpen(next);
+    },
+    [isControlled, isOpen, onOpenChange]
+  );
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
 
   const { data, isLoading } = useGetWorkoutHistory({
     enabled: isOpen,
@@ -37,35 +51,35 @@ export const ExerciseHistoryStrip = ({
     const withExercise = data.workouts.filter((workout) =>
       (workout.exercises ?? []).some(
         (exercise: IWorkoutExerciseItem) =>
-          normalizeForComparison(exercise.name ?? "") === nameNorm,
-      ),
+          normalizeForComparison(exercise.name ?? "") === nameNorm
+      )
     );
 
     return withExercise.slice(0, maxWorkouts);
   }, [nameNorm, data, maxWorkouts]);
 
-  const updateArrows = useCallback((el: HTMLDivElement | null) => {
-    if (!el) {
-      setCanPrev(false);
-      setCanNext(false);
-      return;
-    }
-    const { scrollLeft, clientWidth, scrollWidth } = el;
-    const tolerance = 2;
-    setCanPrev(scrollLeft > tolerance);
-    setCanNext(scrollLeft + clientWidth < scrollWidth - tolerance);
-  }, [setCanPrev, setCanNext]);
-
-  const scrollByPage = useCallback(
-    (direction: 1 | -1) => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const viewportWidth = el.clientWidth || CARD_MIN_WIDTH * 2;
-      const step = viewportWidth;
-      el.scrollBy({ left: step * direction, behavior: "smooth" });
+  const updateArrows = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (!el) {
+        setCanPrev(false);
+        setCanNext(false);
+        return;
+      }
+      const { scrollLeft, clientWidth, scrollWidth } = el;
+      const tolerance = 2;
+      setCanPrev(scrollLeft > tolerance);
+      setCanNext(scrollLeft + clientWidth < scrollWidth - tolerance);
     },
-    [],
+    [setCanPrev, setCanNext]
   );
+
+  const scrollByPage = useCallback((direction: 1 | -1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const viewportWidth = el.clientWidth || CARD_MIN_WIDTH * 2;
+    const step = viewportWidth;
+    el.scrollBy({ left: step * direction, behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -129,7 +143,7 @@ export const ExerciseHistoryStrip = ({
       {isOpen && (
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1"
+          className="flex min-w-0 gap-2 overflow-x-auto overflow-y-hidden pb-1"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {isLoading && history.length === 0 ? (
@@ -142,12 +156,12 @@ export const ExerciseHistoryStrip = ({
             </div>
           ) : (
             history.map((workout) => {
-          const exercises = (workout.exercises ?? []).filter(
-            (exercise) =>
-              normalizeForComparison(exercise.name ?? "") === nameNorm,
-          );
+              const exercises = (workout.exercises ?? []).filter(
+                (exercise) =>
+                  normalizeForComparison(exercise.name ?? "") === nameNorm
+              );
 
-          if (!exercises.length) return null;
+              if (!exercises.length) return null;
 
               return (
                 <div
@@ -183,9 +197,10 @@ export const ExerciseHistoryStrip = ({
                           </span>
                           <span className="ml-1 flex-1 truncate text-right">
                             {set.reps} reps
-                            {set.weight !== undefined && set.weight !== null && (
-                              <span>, {set.weight} kg</span>
-                            )}
+                            {set.weight !== undefined &&
+                              set.weight !== null && (
+                                <span>, {set.weight} kg</span>
+                              )}
                             {set.duration !== undefined &&
                               set.duration !== null &&
                               set.duration > 0 && (
@@ -193,7 +208,7 @@ export const ExerciseHistoryStrip = ({
                               )}
                           </span>
                         </div>
-                      )),
+                      ))
                     )}
                   </div>
                 </div>
@@ -205,4 +220,3 @@ export const ExerciseHistoryStrip = ({
     </div>
   );
 };
-
