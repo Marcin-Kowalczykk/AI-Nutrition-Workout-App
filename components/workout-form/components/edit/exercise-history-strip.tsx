@@ -7,6 +7,14 @@ import { pl } from "date-fns/locale";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import type { IWorkoutExerciseItem } from "@/app/api/workouts/types";
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface ExerciseHistoryStripProps {
   exerciseName?: string | null;
@@ -102,7 +110,6 @@ export const ExerciseHistoryStrip = ({
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    // pełna data, np. "26 lutego 2026"
     return format(date, "d MMMM yyyy", { locale: pl });
   };
 
@@ -163,6 +170,25 @@ export const ExerciseHistoryStrip = ({
 
               if (!exercises.length) return null;
 
+              const hasWeight = exercises.some((ex) =>
+                (ex.sets ?? []).some(
+                  (s) => s.weight !== undefined && s.weight !== null
+                )
+              );
+              const hasDuration = exercises.some((ex) =>
+                (ex.sets ?? []).some(
+                  (s) =>
+                    s.duration !== undefined &&
+                    s.duration !== null &&
+                    s.duration > 0
+                )
+              );
+              const unitColumn = hasWeight
+                ? "weight"
+                : hasDuration
+                  ? "duration"
+                  : null;
+
               return (
                 <div
                   key={workout.id}
@@ -176,41 +202,82 @@ export const ExerciseHistoryStrip = ({
                       {workout.name}
                     </span>
                   </div>
-                  <div className="space-y-0.5">
-                    {exercises.map((exercise) =>
-                      exercise.sets.map((set) => (
-                        <div
-                          key={set.id}
-                          className="flex items-center justify-between gap-1"
+                  <Table className="text-[10px] [&_th]:h-6 [&_th]:px-1 [&_td]:px-1 [&_td]:py-0.5 [&_tr]:border-border">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead
+                          className={
+                            unitColumn
+                              ? "w-[30%] text-[9px]"
+                              : "w-[40%] text-[9px]"
+                          }
                         >
-                          <span
-                            className={`text-[10px] ${
-                              set.isChecked
-                                ? "text-success"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {set.isChecked ? "✔" : "✕"}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            S{set.set_number}
-                          </span>
-                          <span className="ml-1 flex-1 truncate text-right">
-                            {set.reps} reps
-                            {set.weight !== undefined &&
-                              set.weight !== null && (
-                                <span>, {set.weight} kg</span>
+                          Set
+                        </TableHead>
+                        <TableHead
+                          className={
+                            unitColumn
+                              ? "w-[25%] text-[9px] text-right"
+                              : "w-[60%] text-[9px] text-right"
+                          }
+                        >
+                          Reps
+                        </TableHead>
+                        {unitColumn !== null && (
+                          <TableHead className="w-[45%] text-[9px] text-right">
+                            {unitColumn === "weight"
+                              ? "Weight"
+                              : "Duration"}
+                          </TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {exercises.map((exercise) =>
+                        exercise.sets.map((set) => {
+                          const isSetChecked =
+                            set.isChecked === true ||
+                            (set as { is_checked?: boolean }).is_checked ===
+                              true;
+                          return (
+                            <TableRow key={set.id}>
+                              <TableCell>
+                                <span
+                                  className={`mr-1 ${
+                                    isSetChecked
+                                      ? "text-(--color-success)"
+                                      : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {isSetChecked ? "✔" : "✕"}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  S{set.set_number}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {set.reps}
+                              </TableCell>
+                              {unitColumn !== null && (
+                                <TableCell className="text-right">
+                                  {unitColumn === "weight"
+                                    ? set.weight !== undefined &&
+                                        set.weight !== null
+                                      ? `${set.weight} kg`
+                                      : "-"
+                                    : set.duration !== undefined &&
+                                        set.duration !== null &&
+                                        set.duration > 0
+                                      ? `${set.duration}s`
+                                      : "-"}
+                                </TableCell>
                               )}
-                            {set.duration !== undefined &&
-                              set.duration !== null &&
-                              set.duration > 0 && (
-                                <span>, {set.duration}s</span>
-                              )}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               );
             })

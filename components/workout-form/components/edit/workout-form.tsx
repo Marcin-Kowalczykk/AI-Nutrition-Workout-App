@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label";
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
+import { formatNumberFieldValue, parseNumberInput } from "@/lib/number-input";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import {
   CreateWorkoutFormType,
@@ -57,9 +58,9 @@ import type {
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 const TEMPLATE_FORM_CACHE_KEY = "workout-template-form-draft";
 
-function inferUnitType(
+const inferUnitType = (
   sets: { weight?: number; duration?: number }[]
-): WorkoutUnitType {
+): WorkoutUnitType => {
   const hasWeight = (sets ?? []).some(
     (s) => s.weight !== undefined && s.weight !== null
   );
@@ -69,7 +70,7 @@ function inferUnitType(
   if (hasWeight) return WORKOUT_UNIT_TYPE.WEIGHT;
   if (hasDuration) return WORKOUT_UNIT_TYPE.DURATION;
   return WORKOUT_UNIT_TYPE.WEIGHT;
-}
+};
 
 function prepareExercisesForSubmission(
   exercises: CreateWorkoutFormType["exercises"]
@@ -169,6 +170,10 @@ export const WorkoutForm = ({
   const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
     Record<string, boolean>
   >({});
+  const [numberInputEditing, setNumberInputEditing] = useState<
+    Record<string, string>
+  >({});
+  const [headerVisible, setHeaderVisible] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
   const hasLoadedWorkoutDataRef = useRef(false);
@@ -296,6 +301,7 @@ export const WorkoutForm = ({
 
   const form = useForm<CreateWorkoutFormType>({
     resolver: zodResolver(createWorkoutFormSchema),
+    mode: "onTouched",
     defaultValues: {
       name: "",
       description: "",
@@ -835,54 +841,83 @@ export const WorkoutForm = ({
     }
   };
 
+  const workoutName = form.watch("name") ?? "";
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} noValidate>
-        <div className="flex flex-col gap-4">
-          <FormField
-            name="name"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {isTemplateMode ? "Template name" : "Workout Name"}*
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="text"
-                    autoComplete="off"
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="flex flex-col gap-3">
+          {!headerVisible && workoutName.toString().trim() && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                onClick={() => setHeaderVisible(true)}
+              >
+                Show header
+              </button>
+            </div>
+          )}
 
-          <FormField
-            name="description"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="text"
-                    autoComplete="off"
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Optional description for your workout
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {headerVisible && (
+            <>
+              <FormField
+                name="name"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center justify-between">
+                      <span>
+                        {isTemplateMode ? "Template name" : "Workout Name"}*
+                      </span>
+                      {workoutName.toString().trim() && (
+                        <button
+                          type="button"
+                          className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                          onClick={() => setHeaderVisible(false)}
+                        >
+                          Hide header
+                        </button>
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        autoComplete="off"
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="flex flex-col gap-4">
+              <FormField
+                name="description"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        autoComplete="off"
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Optional description for your workout
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+
+          <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <FormLabel>Exercises</FormLabel>
               <Button
@@ -899,15 +934,15 @@ export const WorkoutForm = ({
             </div>
 
             {exerciseFields.map((exercise, exerciseIndex) => (
-              <Card key={exercise.id}>
-                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
-                  <CardTitle className="flex-1">
+              <Card key={exercise.id} className="overflow-hidden">
+                <CardHeader className="flex flex-row items-start justify-between gap-1 space-y-0 p-2">
+                  <CardTitle className="flex-1 min-w-0">
                     <FormField
                       control={form.control}
                       name={`exercises.${exerciseIndex}.name`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormControl>
+                          <FormControl className="w-full">
                             <ExercisesSelect
                               value={field.value}
                               onChange={field.onChange}
@@ -925,13 +960,13 @@ export const WorkoutForm = ({
                     size="icon"
                     onClick={() => handleRemoveExerciseClick(exerciseIndex)}
                     disabled={isPending}
-                    className="shrink-0 text-destructive hover:text-destructive"
+                    className="shrink-0 size-8 min-w-0 p-0.5 text-destructive hover:text-destructive"
                     aria-label="Remove exercise"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </CardHeader>
-                <CardContent className="flex min-w-0 flex-col gap-4">
+                <CardContent className="flex min-w-0 flex-col gap-3 p-2 pt-0">
                   {(() => {
                     const unitOpen =
                       unitSelectVisibleByExerciseId[exercise.id] === true;
@@ -1047,144 +1082,215 @@ export const WorkoutForm = ({
                       </>
                     );
                   })()}
+                  <div className="flex flex-col gap-1.5">
                   {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
-                    (set, setIndex) => (
-                      <div key={set.id} className="flex items-center gap-2 ">
-                        {!isTemplateMode && (
-                          <FormField
-                            control={form.control}
-                            name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value ?? false}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isPending}
-                                    className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
-                                  />
-                                </FormControl>
-                              </FormItem>
+                    (set, setIndex) => {
+                      const setErrors =
+                        form.formState.errors?.exercises?.[exerciseIndex]
+                          ?.sets?.[setIndex];
+                      const setErrorMsg =
+                        setErrors?.reps?.message ??
+                        setErrors?.weight?.message ??
+                        setErrors?.duration?.message;
+                      return (
+                        <div key={set.id} className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-1 min-w-0">
+                            {!isTemplateMode && (
+                              <FormField
+                                control={form.control}
+                                name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center shrink-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value ?? false}
+                                        onCheckedChange={field.onChange}
+                                        disabled={isPending}
+                                        className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
                             )}
-                          />
-                        )}
-                        <div className="flex-1">
-                          <FormLabel>Set</FormLabel>
-                          <Input
-                            type="text"
-                            autoComplete="off"
-                            disabled={true}
-                            readOnly
-                            value={set.set_number || setIndex + 1}
-                            data-form-field="false"
-                            className="bg-background cursor-default"
-                          />
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Reps</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  autoComplete="off"
-                                  disabled={isPending}
-                                  value={field.value ?? ""}
-                                  onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>
-                                  ) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {(form.watch(`exercises.${exerciseIndex}.unitType`) ??
-                          WORKOUT_UNIT_TYPE.WEIGHT) ===
-                        WORKOUT_UNIT_TYPE.WEIGHT ? (
-                          <FormField
-                            control={form.control}
-                            name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormLabel>Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    autoComplete="off"
-                                    disabled={isPending}
-                                    value={field.value ?? ""}
-                                    onChange={(
-                                      e: React.ChangeEvent<HTMLInputElement>
-                                    ) =>
-                                      field.onChange(
-                                        e.target.value
-                                          ? Number(e.target.value)
-                                          : undefined
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
+                            <div className="w-14 shrink-0 min-w-0 ml-3">
+                              <FormLabel>Set</FormLabel>
+                              <Input
+                                type="text"
+                                autoComplete="off"
+                                disabled={true}
+                                readOnly
+                                value={set.set_number || setIndex + 1}
+                                data-form-field="false"
+                                className="bg-background cursor-default w-full"
+                              />
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
+                              render={({ field }) => (
+                                <FormItem className="flex-1 min-w-0">
+                                  <FormLabel>Reps</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      ref={field.ref}
+                                      name={field.name}
+                                      type="number"
+                                      step="any"
+                                      min={0}
+                                      autoComplete="off"
+                                      disabled={isPending}
+                                      value={
+                                        numberInputEditing[field.name] !==
+                                        undefined
+                                          ? numberInputEditing[field.name]
+                                          : formatNumberFieldValue(field.value)
+                                      }
+                                      onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>
+                                      ) => {
+                                        const raw = e.target.value;
+                                        setNumberInputEditing((prev) => ({
+                                          ...prev,
+                                          [field.name]: raw,
+                                        }));
+                                        field.onChange(parseNumberInput(raw));
+                                      }}
+                                      onBlur={() => {
+                                        setNumberInputEditing((prev) => {
+                                          const next = { ...prev };
+                                          delete next[field.name];
+                                          return next;
+                                        });
+                                        field.onBlur();
+                                      }}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            {(form.watch(
+                              `exercises.${exerciseIndex}.unitType`
+                            ) ?? WORKOUT_UNIT_TYPE.WEIGHT) ===
+                            WORKOUT_UNIT_TYPE.WEIGHT ? (
+                              <FormField
+                                control={form.control}
+                                name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                render={({ field }) => (
+                                  <FormItem className="flex-1 min-w-0">
+                                    <FormLabel>Weight</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        ref={field.ref}
+                                        name={field.name}
+                                        type="number"
+                                        step="any"
+                                        min={0}
+                                        autoComplete="off"
+                                        disabled={isPending}
+                                        value={
+                                          numberInputEditing[field.name] !==
+                                          undefined
+                                            ? numberInputEditing[field.name]
+                                            : formatNumberFieldValue(
+                                                field.value
+                                              )
+                                        }
+                                        onChange={(
+                                          e: React.ChangeEvent<HTMLInputElement>
+                                        ) => {
+                                          const raw = e.target.value;
+                                          setNumberInputEditing((prev) => ({
+                                            ...prev,
+                                            [field.name]: raw,
+                                          }));
+                                          field.onChange(parseNumberInput(raw));
+                                        }}
+                                        onBlur={() => {
+                                          setNumberInputEditing((prev) => {
+                                            const next = { ...prev };
+                                            delete next[field.name];
+                                            return next;
+                                          });
+                                          field.onBlur();
+                                        }}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            ) : (
+                              <FormField
+                                control={form.control}
+                                name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
+                                render={({ field }) => (
+                                  <FormItem className="flex-1 min-w-0">
+                                    <FormLabel>Duration</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        ref={field.ref}
+                                        name={field.name}
+                                        type="number"
+                                        step="any"
+                                        min={0}
+                                        autoComplete="off"
+                                        disabled={isPending}
+                                        value={
+                                          numberInputEditing[field.name] !==
+                                          undefined
+                                            ? numberInputEditing[field.name]
+                                            : formatNumberFieldValue(
+                                                field.value
+                                              )
+                                        }
+                                        onChange={(
+                                          e: React.ChangeEvent<HTMLInputElement>
+                                        ) => {
+                                          const raw = e.target.value;
+                                          setNumberInputEditing((prev) => ({
+                                            ...prev,
+                                            [field.name]: raw,
+                                          }));
+                                          field.onChange(parseNumberInput(raw));
+                                        }}
+                                        onBlur={() => {
+                                          setNumberInputEditing((prev) => {
+                                            const next = { ...prev };
+                                            delete next[field.name];
+                                            return next;
+                                          });
+                                          field.onBlur();
+                                        }}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
                             )}
-                          />
-                        ) : (
-                          <FormField
-                            control={form.control}
-                            name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormLabel>Duration</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    autoComplete="off"
-                                    disabled={isPending}
-                                    value={field.value ?? ""}
-                                    onChange={(
-                                      e: React.ChangeEvent<HTMLInputElement>
-                                    ) =>
-                                      field.onChange(
-                                        e.target.value
-                                          ? Number(e.target.value)
-                                          : undefined
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleRemoveSetClick(exerciseIndex, setIndex)
-                          }
-                          disabled={isPending}
-                          className="text-destructive hover:text-destructive pt-5"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                handleRemoveSetClick(exerciseIndex, setIndex)
+                              }
+                              disabled={isPending}
+                              className="text-destructive hover:text-destructive shrink-0 size-8 min-w-0 p-0.5 mt-6"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {setErrorMsg && (
+                            <p className="text-destructive text-sm mt-1 text-center">
+                              {setErrorMsg}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
                   )}
+                  </div>
 
                   <div className="flex items-center gap-2 justify-between">
                     <Button

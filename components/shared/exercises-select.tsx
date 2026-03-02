@@ -208,7 +208,7 @@ export const ExercisesSelect = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-9 w-full justify-between font-normal",
+            "h-9 w-full min-w-0 justify-between font-normal",
             !selectedExercise?.name && !value?.trim() && "text-muted-foreground"
           )}
         >

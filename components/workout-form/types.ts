@@ -8,12 +8,17 @@ export const WORKOUT_UNIT_TYPE = {
 export type WorkoutUnitType =
   (typeof WORKOUT_UNIT_TYPE)[keyof typeof WORKOUT_UNIT_TYPE];
 
+const nonNegativeNumber = z
+  .number()
+  .min(0, "Input values must be greater than 0")
+  .optional();
+
 const workoutSetSchema = z.object({
   id: z.string(),
   set_number: z.number().optional(),
-  reps: z.number().optional(),
-  weight: z.number().optional(),
-  duration: z.number().optional(),
+  reps: nonNegativeNumber,
+  weight: nonNegativeNumber,
+  duration: nonNegativeNumber,
   isChecked: z.boolean().optional(),
 });
 

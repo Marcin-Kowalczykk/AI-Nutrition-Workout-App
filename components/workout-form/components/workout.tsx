@@ -21,7 +21,7 @@ const Workout = ({
   return (
     <Suspense fallback={<Loader />}>
       <Card className="w-full xl:w-1/2 min-w-0 shrink-0">
-        <CardContent>
+        <CardContent className="p-2 pt-3">
           <WorkoutForm
             workoutId={workoutId}
             isTemplateMode={isTemplateMode}
