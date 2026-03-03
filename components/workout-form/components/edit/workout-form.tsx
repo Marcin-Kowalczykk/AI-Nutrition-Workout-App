@@ -2,7 +2,7 @@
 
 // dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 // hooks
@@ -120,6 +120,9 @@ export const WorkoutForm = ({
   const [lastSavedBaseline, setLastSavedBaseline] = useState<string | null>(
     null
   );
+  const lastSavedExercisesRef = useRef<
+    CreateWorkoutFormType["exercises"] | null
+  >(null);
   const { setHasUnsavedChanges } = useWorkoutUnsavedChanges();
 
   const baseCacheKey = isTemplateMode
@@ -195,6 +198,7 @@ export const WorkoutForm = ({
       setWorkoutId(null);
       setIsFirstSave(true);
       setLastSavedBaseline(null);
+      lastSavedExercisesRef.current = null;
       setIsDiscardWorkoutModalOpen(false);
       toast.success("Workout discarded");
     },
@@ -234,6 +238,7 @@ export const WorkoutForm = ({
         setTemplateId(null);
         setIsFirstSave(true);
         setLastSavedBaseline(null);
+        lastSavedExercisesRef.current = null;
         setIsDiscardWorkoutModalOpen(false);
         toast.success("Template discarded");
       },
@@ -351,6 +356,7 @@ export const WorkoutForm = ({
 
     form.reset(formData);
     setLastSavedBaseline(getBaselineString(formData, false));
+    lastSavedExercisesRef.current = formData.exercises;
     (async () => {
       try {
         const cached = await getFormCache(cacheKey);
@@ -406,6 +412,7 @@ export const WorkoutForm = ({
 
     form.reset(formData);
     setLastSavedBaseline(getBaselineString(formData, true));
+    lastSavedExercisesRef.current = formData.exercises;
     (async () => {
       try {
         const cached = await getFormCache(cacheKey);
@@ -445,6 +452,44 @@ export const WorkoutForm = ({
     return currentBaseline !== lastSavedBaseline;
   }, [form, isTemplateMode, lastSavedBaseline]);
 
+  const hasExerciseChanges = useCallback(
+    (exerciseIndex: number) => {
+      const currentExercises = form.getValues("exercises");
+      const saved = lastSavedExercisesRef.current;
+      const current = currentExercises[exerciseIndex];
+
+      if (!current) return false;
+
+      if (saved === null) {
+        const hasName = !!(current.name ?? "").trim();
+        const hasSets = (current.sets ?? []).some(
+          (s) =>
+            s.reps !== undefined ||
+            s.weight !== undefined ||
+            s.duration !== undefined
+        );
+        return hasName || hasSets;
+      }
+
+      const savedExercise = saved.find((e) => e.id === current.id);
+      if (!savedExercise) return true;
+
+      return (
+        JSON.stringify({
+          name: current.name,
+          unitType: current.unitType,
+          sets: current.sets,
+        }) !==
+        JSON.stringify({
+          name: savedExercise.name,
+          unitType: savedExercise.unitType,
+          sets: savedExercise.sets,
+        })
+      );
+    },
+    [form]
+  );
+
   const formValues = form.watch();
 
   useEffect(() => {
@@ -481,6 +526,7 @@ export const WorkoutForm = ({
   const setBaselineFromValues = useCallback(
     (values: CreateWorkoutFormType) => {
       setLastSavedBaseline(getBaselineString(values, isTemplateMode));
+      lastSavedExercisesRef.current = values.exercises;
     },
     [isTemplateMode]
   );
@@ -809,6 +855,7 @@ export const WorkoutForm = ({
       setTemplateId(null);
       setIsFirstSave(true);
       setLastSavedBaseline(null);
+      lastSavedExercisesRef.current = null;
       setIsDiscardWorkoutModalOpen(false);
       toast.success(
         isTemplateMode ? "Template discarded" : "Workout discarded"
@@ -919,11 +966,15 @@ export const WorkoutForm = ({
                       variant="destructive"
                       size="icon"
                       onClick={() => form.handleSubmit(onSubmitHandler)()}
-                      disabled={isPending || !hasFormChanges()}
-                      className="shrink-0 size-8 min-w-0"
+                      disabled={isPending || !hasExerciseChanges(exerciseIndex)}
+                      className={`shrink-0 size-8 min-w-0 ${
+                        hasExerciseChanges(exerciseIndex)
+                          ? "ring-1 ring-destructive ring-offset-2 ring-offset-background"
+                          : ""
+                      }`}
                       aria-label="Save workout"
                     >
-                      <Check />
+                      <Save className="h-4 w-4" />
                     </Button>
                     <div className="flex-1 min-w-0">
                       <FormField
