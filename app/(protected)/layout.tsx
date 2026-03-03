@@ -6,6 +6,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TopBar } from "@/components/shared/top-bar";
+import BackgroundImage from "@/components/shared/background-image";
+import { WorkoutUnsavedProvider } from "@/components/workout-form/context/workout-unsaved-context";
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
@@ -14,15 +16,20 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
       <Toaster position="bottom-center" richColors />
       <div className="flex min-h-0 flex-1 flex-col">
         <SidebarProvider defaultOpen={true}>
-          <AppSidebar />
-          <SidebarInset className="flex min-h-0 flex-1 flex-col w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:min-h-svh md:h-svh">
-            {isMobile ? (
-              <TopBar />
-            ) : null}
-            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-3 pb-[min(42.5vh,14rem)] tracking-normal">
-              {children}
-            </div>
-          </SidebarInset>
+          <WorkoutUnsavedProvider>
+            <AppSidebar />
+            <SidebarInset className="flex min-h-0 flex-1 flex-col w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:min-h-svh md:h-svh">
+              {isMobile ? <TopBar /> : null}
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-4 tracking-normal">
+                {children}
+                <BackgroundImage
+                  imagePath="/images/auth-bg.jpeg"
+                  className="w-full flex-none min-h-80 md:min-h-96 lg:h-96 lg:flex-none"
+                  fallbackClassName="bg-black"
+                />
+              </div>
+            </SidebarInset>
+          </WorkoutUnsavedProvider>
         </SidebarProvider>
       </div>
     </>

@@ -29,6 +29,7 @@ export interface ConfirmModalProps {
     | "secondary"
     | "ghost"
     | "link";
+  onCancel?: () => void;
 }
 
 export const ConfirmModal = ({
@@ -41,6 +42,7 @@ export const ConfirmModal = ({
   onConfirm,
   isPending = false,
   confirmVariant = "destructive",
+  onCancel,
 }: ConfirmModalProps) => {
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
@@ -56,7 +58,10 @@ export const ConfirmModal = ({
       onOpenChange={handleOpenChange}
       preventOverlayClose={isPending}
     >
-      <DialogContent isCloseButtonVisible={!isPending}>
+      <DialogContent
+        isCloseButtonVisible={!isPending}
+        className="sm:mx-2 max-w-sm"
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -65,7 +70,13 @@ export const ConfirmModal = ({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              if (onCancel) {
+                onCancel();
+              } else {
+                onOpenChange(false);
+              }
+            }}
             disabled={isPending}
           >
             {cancelLabel}

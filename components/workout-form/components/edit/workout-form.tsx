@@ -2,7 +2,7 @@
 
 // dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 
 // hooks
@@ -49,6 +49,7 @@ import {
   WORKOUT_UNIT_TYPE,
   type WorkoutUnitType,
 } from "../../types";
+import { useWorkoutUnsavedChanges } from "../../context/workout-unsaved-context";
 import { ExerciseHistoryStrip } from "./exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
@@ -182,6 +183,7 @@ export const WorkoutForm = ({
   const [lastSavedBaseline, setLastSavedBaseline] = useState<string | null>(
     null
   );
+  const { setHasUnsavedChanges } = useWorkoutUnsavedChanges();
 
   const cacheKey = isTemplateMode
     ? TEMPLATE_FORM_CACHE_KEY
@@ -464,6 +466,22 @@ export const WorkoutForm = ({
     name: "exercises",
   });
 
+  const hasFormChanges = useCallback(() => {
+    const values = form.getValues();
+    const currentBaseline = getBaselineString(values, isTemplateMode);
+
+    if (lastSavedBaseline === null) {
+      const emptyBaseline = JSON.stringify({
+        name: "",
+        description: "",
+        exercises: [],
+      });
+      return currentBaseline !== emptyBaseline;
+    }
+
+    return currentBaseline !== lastSavedBaseline;
+  }, [form, isTemplateMode, lastSavedBaseline]);
+
   const formValues = form.watch();
 
   useEffect(() => {
@@ -490,21 +508,14 @@ export const WorkoutForm = ({
     };
   }, [formValues, form, saveToCache, currentEntityId]);
 
-  const hasFormChanges = useCallback(() => {
-    const values = form.getValues();
-    const currentBaseline = getBaselineString(values, isTemplateMode);
+  useEffect(() => {
+    const hasChanges = hasFormChanges();
+    setHasUnsavedChanges(hasChanges);
 
-    if (lastSavedBaseline === null) {
-      const emptyBaseline = JSON.stringify({
-        name: "",
-        description: "",
-        exercises: [],
-      });
-      return currentBaseline !== emptyBaseline;
-    }
-
-    return currentBaseline !== lastSavedBaseline;
-  }, [form, isTemplateMode, lastSavedBaseline]);
+    return () => {
+      setHasUnsavedChanges(false);
+    };
+  }, [formValues, hasFormChanges, setHasUnsavedChanges]);
 
   const setBaselineFromValues = useCallback(
     (values: CreateWorkoutFormType) => {
@@ -523,6 +534,68 @@ export const WorkoutForm = ({
     isLoadingTemplate;
   const isError = isCreateError || isUpdateError;
   const error = createError || updateError;
+
+  const onSubmitHandler = async (values: CreateWorkoutFormType) => {
+    const { name, description, exercises } = values;
+    const currentDate = new Date().toISOString();
+    const filteredExercises = prepareExercisesForSubmission(exercises);
+
+    const setBaselineOnSuccess = () => setBaselineFromValues(values);
+
+    if (isTemplateMode) {
+      const templateExercises = prepareExercisesForTemplate(exercises);
+      if (isFirstSave && !currentEntityId) {
+        createTemplate(
+          {
+            name,
+            description: description || undefined,
+            exercises:
+              templateExercises.length > 0 ? templateExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
+      } else if (currentEntityId) {
+        updateTemplate(
+          {
+            id: currentEntityId,
+            name,
+            description: description || undefined,
+            exercises:
+              templateExercises.length > 0 ? templateExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
+      }
+    } else {
+      if (isFirstSave && !workoutId) {
+        createWorkout(
+          {
+            name,
+            description: description || undefined,
+            start_date: currentDate,
+            exercises:
+              filteredExercises.length > 0 ? filteredExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
+      } else if (workoutId) {
+        updateWorkout(
+          {
+            id: workoutId,
+            name,
+            description: description || undefined,
+            end_date: currentDate,
+            exercises:
+              filteredExercises.length > 0 ? filteredExercises : undefined,
+          },
+          { onSuccess: setBaselineOnSuccess }
+        );
+      } else if (!isFirstSave && !workoutId) {
+        console.error("Workout ID is missing during update");
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    }
+  };
 
   const applyUnitChange = useCallback(
     (exerciseIndex: number, newUnit: WorkoutUnitType) => {
@@ -782,65 +855,6 @@ export const WorkoutForm = ({
     }
   };
 
-  const onSubmitHandler = async (values: CreateWorkoutFormType) => {
-    const { name, description, exercises } = values;
-    const currentDate = new Date().toISOString();
-    const filteredExercises = prepareExercisesForSubmission(exercises);
-
-    const setBaselineOnSuccess = () => setBaselineFromValues(values);
-
-    if (isTemplateMode) {
-      const templateExercises = prepareExercisesForTemplate(exercises);
-      if (isFirstSave && !currentEntityId) {
-        createTemplate(
-          {
-            name,
-            description: description || undefined,
-            exercises:
-              templateExercises.length > 0 ? templateExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      } else if (currentEntityId) {
-        updateTemplate(
-          {
-            id: currentEntityId,
-            name,
-            description: description || undefined,
-            exercises:
-              templateExercises.length > 0 ? templateExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      }
-    } else {
-      if (isFirstSave && !workoutId) {
-        createWorkout(
-          {
-            name,
-            description: description || undefined,
-            start_date: currentDate,
-            exercises:
-              filteredExercises.length > 0 ? filteredExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      } else if (workoutId) {
-        updateWorkout(
-          {
-            id: workoutId,
-            name,
-            description: description || undefined,
-            end_date: currentDate,
-            exercises:
-              filteredExercises.length > 0 ? filteredExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      }
-    }
-  };
-
   const workoutName = form.watch("name") ?? "";
 
   return (
@@ -935,36 +949,49 @@ export const WorkoutForm = ({
 
             {exerciseFields.map((exercise, exerciseIndex) => (
               <Card key={exercise.id} className="overflow-hidden">
-                <CardHeader className="flex flex-row items-start justify-between gap-1 space-y-0 p-2">
-                  <CardTitle className="flex-1 min-w-0">
-                    <FormField
-                      control={form.control}
-                      name={`exercises.${exerciseIndex}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl className="w-full">
-                            <ExercisesSelect
-                              value={field.value}
-                              onChange={field.onChange}
-                              disabled={isPending}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <CardHeader className="flex flex-row items-start space-y-0 p-2">
+                  <CardTitle className="flex w-full items-center gap-1 min-w-0">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => form.handleSubmit(onSubmitHandler)()}
+                      disabled={isPending || !hasFormChanges()}
+                      className="shrink-0 size-8 min-w-0"
+                      aria-label="Save workout"
+                    >
+                      <Check />
+                    </Button>
+                    <div className="flex-1 min-w-0">
+                      <FormField
+                        control={form.control}
+                        name={`exercises.${exerciseIndex}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl className="w-full">
+                              <ExercisesSelect
+                                value={field.value}
+                                onChange={field.onChange}
+                                disabled={isPending}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveExerciseClick(exerciseIndex)}
+                      disabled={isPending}
+                      className="shrink-0 size-4 min-w-0 p-0.5 text-destructive hover:text-destructive"
+                      aria-label="Remove exercise"
+                    >
+                      <Trash2 />
+                    </Button>
                   </CardTitle>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveExerciseClick(exerciseIndex)}
-                    disabled={isPending}
-                    className="shrink-0 size-8 min-w-0 p-0.5 text-destructive hover:text-destructive"
-                    aria-label="Remove exercise"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </CardHeader>
                 <CardContent className="flex min-w-0 flex-col gap-3 p-2 pt-0">
                   {(() => {
@@ -1083,102 +1110,54 @@ export const WorkoutForm = ({
                     );
                   })()}
                   <div className="flex flex-col gap-1.5">
-                  {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
-                    (set, setIndex) => {
-                      const setErrors =
-                        form.formState.errors?.exercises?.[exerciseIndex]
-                          ?.sets?.[setIndex];
-                      const setErrorMsg =
-                        setErrors?.reps?.message ??
-                        setErrors?.weight?.message ??
-                        setErrors?.duration?.message;
-                      return (
-                        <div key={set.id} className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-1 min-w-0">
-                            {!isTemplateMode && (
-                              <FormField
-                                control={form.control}
-                                name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
-                                render={({ field }) => (
-                                  <FormItem className="flex items-center shrink-0">
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value ?? false}
-                                        onCheckedChange={field.onChange}
-                                        disabled={isPending}
-                                        className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                            )}
-                            <div className="w-14 shrink-0 min-w-0 ml-3">
-                              <FormLabel>Set</FormLabel>
-                              <Input
-                                type="text"
-                                autoComplete="off"
-                                disabled={true}
-                                readOnly
-                                value={set.set_number || setIndex + 1}
-                                data-form-field="false"
-                                className="bg-background cursor-default w-full"
-                              />
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
-                              render={({ field }) => (
-                                <FormItem className="flex-1 min-w-0">
-                                  <FormLabel>Reps</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      ref={field.ref}
-                                      name={field.name}
-                                      type="number"
-                                      step="any"
-                                      min={0}
-                                      autoComplete="off"
-                                      disabled={isPending}
-                                      value={
-                                        numberInputEditing[field.name] !==
-                                        undefined
-                                          ? numberInputEditing[field.name]
-                                          : formatNumberFieldValue(field.value)
-                                      }
-                                      onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>
-                                      ) => {
-                                        const raw = e.target.value;
-                                        setNumberInputEditing((prev) => ({
-                                          ...prev,
-                                          [field.name]: raw,
-                                        }));
-                                        field.onChange(parseNumberInput(raw));
-                                      }}
-                                      onBlur={() => {
-                                        setNumberInputEditing((prev) => {
-                                          const next = { ...prev };
-                                          delete next[field.name];
-                                          return next;
-                                        });
-                                        field.onBlur();
-                                      }}
-                                    />
-                                  </FormControl>
-                                </FormItem>
+                    {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
+                      (set, setIndex) => {
+                        const setErrors =
+                          form.formState.errors?.exercises?.[exerciseIndex]
+                            ?.sets?.[setIndex];
+                        const setErrorMsg =
+                          setErrors?.reps?.message ??
+                          setErrors?.weight?.message ??
+                          setErrors?.duration?.message;
+                        return (
+                          <div key={set.id} className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1 min-w-0">
+                              {!isTemplateMode && (
+                                <FormField
+                                  control={form.control}
+                                  name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
+                                  render={({ field }) => (
+                                    <FormItem className="flex items-center shrink-0">
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value ?? false}
+                                          onCheckedChange={field.onChange}
+                                          disabled={isPending}
+                                          className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
                               )}
-                            />
-                            {(form.watch(
-                              `exercises.${exerciseIndex}.unitType`
-                            ) ?? WORKOUT_UNIT_TYPE.WEIGHT) ===
-                            WORKOUT_UNIT_TYPE.WEIGHT ? (
+                              <div className="w-14 shrink-0 min-w-0 ml-3">
+                                <FormLabel>Set</FormLabel>
+                                <Input
+                                  type="text"
+                                  autoComplete="off"
+                                  disabled={true}
+                                  readOnly
+                                  value={set.set_number || setIndex + 1}
+                                  data-form-field="false"
+                                  className="bg-background cursor-default w-full"
+                                />
+                              </div>
                               <FormField
                                 control={form.control}
-                                name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
                                 render={({ field }) => (
                                   <FormItem className="flex-1 min-w-0">
-                                    <FormLabel>Weight</FormLabel>
+                                    <FormLabel>Reps</FormLabel>
                                     <FormControl>
                                       <Input
                                         ref={field.ref}
@@ -1219,77 +1198,131 @@ export const WorkoutForm = ({
                                   </FormItem>
                                 )}
                               />
-                            ) : (
-                              <FormField
-                                control={form.control}
-                                name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                                render={({ field }) => (
-                                  <FormItem className="flex-1 min-w-0">
-                                    <FormLabel>Duration</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        ref={field.ref}
-                                        name={field.name}
-                                        type="number"
-                                        step="any"
-                                        min={0}
-                                        autoComplete="off"
-                                        disabled={isPending}
-                                        value={
-                                          numberInputEditing[field.name] !==
-                                          undefined
-                                            ? numberInputEditing[field.name]
-                                            : formatNumberFieldValue(
-                                                field.value
-                                              )
-                                        }
-                                        onChange={(
-                                          e: React.ChangeEvent<HTMLInputElement>
-                                        ) => {
-                                          const raw = e.target.value;
-                                          setNumberInputEditing((prev) => ({
-                                            ...prev,
-                                            [field.name]: raw,
-                                          }));
-                                          field.onChange(parseNumberInput(raw));
-                                        }}
-                                        onBlur={() => {
-                                          setNumberInputEditing((prev) => {
-                                            const next = { ...prev };
-                                            delete next[field.name];
-                                            return next;
-                                          });
-                                          field.onBlur();
-                                        }}
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                            )}
+                              {(form.watch(
+                                `exercises.${exerciseIndex}.unitType`
+                              ) ?? WORKOUT_UNIT_TYPE.WEIGHT) ===
+                              WORKOUT_UNIT_TYPE.WEIGHT ? (
+                                <FormField
+                                  control={form.control}
+                                  name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                  render={({ field }) => (
+                                    <FormItem className="flex-1 min-w-0">
+                                      <FormLabel>Weight</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          ref={field.ref}
+                                          name={field.name}
+                                          type="number"
+                                          step="any"
+                                          min={0}
+                                          autoComplete="off"
+                                          disabled={isPending}
+                                          value={
+                                            numberInputEditing[field.name] !==
+                                            undefined
+                                              ? numberInputEditing[field.name]
+                                              : formatNumberFieldValue(
+                                                  field.value
+                                                )
+                                          }
+                                          onChange={(
+                                            e: React.ChangeEvent<HTMLInputElement>
+                                          ) => {
+                                            const raw = e.target.value;
+                                            setNumberInputEditing((prev) => ({
+                                              ...prev,
+                                              [field.name]: raw,
+                                            }));
+                                            field.onChange(
+                                              parseNumberInput(raw)
+                                            );
+                                          }}
+                                          onBlur={() => {
+                                            setNumberInputEditing((prev) => {
+                                              const next = { ...prev };
+                                              delete next[field.name];
+                                              return next;
+                                            });
+                                            field.onBlur();
+                                          }}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              ) : (
+                                <FormField
+                                  control={form.control}
+                                  name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
+                                  render={({ field }) => (
+                                    <FormItem className="flex-1 min-w-0">
+                                      <FormLabel>Duration</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          ref={field.ref}
+                                          name={field.name}
+                                          type="number"
+                                          step="any"
+                                          min={0}
+                                          autoComplete="off"
+                                          disabled={isPending}
+                                          value={
+                                            numberInputEditing[field.name] !==
+                                            undefined
+                                              ? numberInputEditing[field.name]
+                                              : formatNumberFieldValue(
+                                                  field.value
+                                                )
+                                          }
+                                          onChange={(
+                                            e: React.ChangeEvent<HTMLInputElement>
+                                          ) => {
+                                            const raw = e.target.value;
+                                            setNumberInputEditing((prev) => ({
+                                              ...prev,
+                                              [field.name]: raw,
+                                            }));
+                                            field.onChange(
+                                              parseNumberInput(raw)
+                                            );
+                                          }}
+                                          onBlur={() => {
+                                            setNumberInputEditing((prev) => {
+                                              const next = { ...prev };
+                                              delete next[field.name];
+                                              return next;
+                                            });
+                                            field.onBlur();
+                                          }}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              )}
 
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                handleRemoveSetClick(exerciseIndex, setIndex)
-                              }
-                              disabled={isPending}
-                              className="text-destructive hover:text-destructive shrink-0 size-8 min-w-0 p-0.5 mt-6"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  handleRemoveSetClick(exerciseIndex, setIndex)
+                                }
+                                disabled={isPending}
+                                className="text-destructive size-4 hover:text-destructive shrink-0 min-w-0 p-0.5 mt-6"
+                              >
+                                <Trash2 />
+                              </Button>
+                            </div>
+                            {setErrorMsg && (
+                              <p className="text-destructive text-sm mt-1 text-center">
+                                {setErrorMsg}
+                              </p>
+                            )}
                           </div>
-                          {setErrorMsg && (
-                            <p className="text-destructive text-sm mt-1 text-center">
-                              {setErrorMsg}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }
-                  )}
+                        );
+                      }
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 justify-between">
