@@ -1,11 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState, useEffect } from "react";
-import { format } from "date-fns";
-import { pl } from "date-fns/locale";
 
 import { normalizeForComparison } from "@/lib/normalize-string";
-import type { IWorkoutExerciseItem } from "@/app/api/workouts/types";
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
 import {
   Table,
@@ -15,6 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { WORKOUT_UNIT_TYPE } from "../../../types";
+import {
+  filterHistoryByExerciseName,
+  formatWorkoutDate,
+  getUnitColumn,
+  isSetChecked as isHistorySetChecked,
+} from "./helpers";
 
 interface ExerciseHistoryStripProps {
   exerciseName?: string | null;
@@ -54,16 +58,11 @@ export const ExerciseHistoryStrip = ({
   const nameNorm = trimmedName ? normalizeForComparison(trimmedName) : "";
 
   const history = useMemo(() => {
-    if (!nameNorm || !data?.workouts) return [];
-
-    const withExercise = data.workouts.filter((workout) =>
-      (workout.exercises ?? []).some(
-        (exercise: IWorkoutExerciseItem) =>
-          normalizeForComparison(exercise.name ?? "") === nameNorm
-      )
+    return filterHistoryByExerciseName(
+      data?.workouts ?? null,
+      nameNorm,
+      maxWorkouts
     );
-
-    return withExercise.slice(0, maxWorkouts);
   }, [nameNorm, data, maxWorkouts]);
 
   const updateArrows = useCallback(
@@ -106,12 +105,6 @@ export const ExerciseHistoryStrip = ({
   if (!trimmedName) {
     return null;
   }
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return format(date, "d MMMM yyyy", { locale: pl });
-  };
 
   return (
     <div className="min-w-0 w-full flex flex-col gap-1">
@@ -170,24 +163,7 @@ export const ExerciseHistoryStrip = ({
 
               if (!exercises.length) return null;
 
-              const hasWeight = exercises.some((ex) =>
-                (ex.sets ?? []).some(
-                  (s) => s.weight !== undefined && s.weight !== null
-                )
-              );
-              const hasDuration = exercises.some((ex) =>
-                (ex.sets ?? []).some(
-                  (s) =>
-                    s.duration !== undefined &&
-                    s.duration !== null &&
-                    s.duration > 0
-                )
-              );
-              const unitColumn = hasWeight
-                ? "weight"
-                : hasDuration
-                ? "duration"
-                : null;
+              const unitColumn = getUnitColumn(exercises);
 
               return (
                 <div
@@ -196,7 +172,7 @@ export const ExerciseHistoryStrip = ({
                 >
                   <div className="mb-1 flex flex-wrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0">
                     <span className="text-[9px] text-muted-foreground wrap-break-word">
-                      {formatDate(workout.created_at)}
+                      {formatWorkoutDate(workout.created_at)}
                     </span>
                     <span className="text-[10px] font-medium text-right wrap-break-word">
                       {workout.name}
@@ -224,8 +200,8 @@ export const ExerciseHistoryStrip = ({
                           Reps
                         </TableHead>
                         {unitColumn !== null && (
-                          <TableHead className="w-[45%] text-[9px] text-right">
-                            {unitColumn === "weight" ? "Weight" : "Duration"}
+                          <TableHead className="w-[45%] text-[9px] text-right first-letter:uppercase">
+                            {unitColumn}
                           </TableHead>
                         )}
                       </TableRow>
@@ -233,10 +209,12 @@ export const ExerciseHistoryStrip = ({
                     <TableBody>
                       {exercises.map((exercise) =>
                         exercise.sets.map((set) => {
-                          const isSetChecked =
-                            set.isChecked === true ||
-                            (set as { is_checked?: boolean }).is_checked ===
-                              true;
+                          const isSetChecked = isHistorySetChecked(
+                            set as {
+                              isChecked?: boolean;
+                              is_checked?: boolean;
+                            }
+                          );
                           return (
                             <TableRow key={set.id}>
                               <TableCell>
@@ -258,7 +236,7 @@ export const ExerciseHistoryStrip = ({
                               </TableCell>
                               {unitColumn !== null && (
                                 <TableCell className="text-right">
-                                  {unitColumn === "weight"
+                                  {unitColumn === WORKOUT_UNIT_TYPE.WEIGHT
                                     ? set.weight !== undefined &&
                                       set.weight !== null
                                       ? `${set.weight} kg`

@@ -42,91 +42,28 @@ import { Label } from "@/components/ui/label";
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
 import { formatNumberFieldValue, parseNumberInput } from "@/lib/number-input";
-import { normalizeForComparison } from "@/lib/normalize-string";
 import {
   CreateWorkoutFormType,
   createWorkoutFormSchema,
   WORKOUT_UNIT_TYPE,
   type WorkoutUnitType,
 } from "../../types";
+import { normalizeForComparison } from "@/lib/normalize-string";
 import { useWorkoutUnsavedChanges } from "../../context/workout-unsaved-context";
-import { ExerciseHistoryStrip } from "./exercise-history-strip";
+import { ExerciseHistoryStrip } from "./exercise-history-strip/exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
 } from "@/app/api/workout-templates/types";
+import {
+  getBaselineString,
+  inferUnitType,
+  prepareExercisesForSubmission,
+  prepareExercisesForTemplate,
+} from "./helpers";
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 const TEMPLATE_FORM_CACHE_KEY = "workout-template-form-draft";
-
-const inferUnitType = (
-  sets: { weight?: number; duration?: number }[]
-): WorkoutUnitType => {
-  const hasWeight = (sets ?? []).some(
-    (s) => s.weight !== undefined && s.weight !== null
-  );
-  const hasDuration = (sets ?? []).some(
-    (s) => s.duration !== undefined && s.duration !== null
-  );
-  if (hasWeight) return WORKOUT_UNIT_TYPE.WEIGHT;
-  if (hasDuration) return WORKOUT_UNIT_TYPE.DURATION;
-  return WORKOUT_UNIT_TYPE.WEIGHT;
-};
-
-function prepareExercisesForSubmission(
-  exercises: CreateWorkoutFormType["exercises"]
-) {
-  return exercises
-    .filter((exercise) => exercise.name || exercise.sets?.length > 0)
-    .map((exercise) => {
-      const filteredSets = (exercise.sets ?? [])
-        .filter(
-          (set) =>
-            set.reps !== undefined ||
-            set.weight !== undefined ||
-            set.duration !== undefined
-        )
-        .map((set) => ({
-          id: set.id,
-          set_number: set.set_number ?? 0,
-          reps: set.reps ?? 0,
-          weight: set.weight,
-          duration: set.duration,
-          isChecked: set.isChecked ?? false,
-        }));
-
-      return {
-        id: exercise.id,
-        name: normalizeForComparison(exercise.name ?? ""),
-        sets: filteredSets,
-      };
-    })
-    .filter((exercise) => exercise.name || exercise.sets.length > 0);
-}
-
-function prepareExercisesForTemplate(
-  exercises: CreateWorkoutFormType["exercises"]
-) {
-  return prepareExercisesForSubmission(exercises).map((exercise) => ({
-    ...exercise,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- isChecked excluded for template format
-    sets: exercise.sets.map(({ isChecked, ...set }) => set),
-  }));
-}
-
-function getBaselineString(
-  values: CreateWorkoutFormType,
-  isTemplateMode: boolean
-): string {
-  const exercises = isTemplateMode
-    ? prepareExercisesForTemplate(values.exercises)
-    : prepareExercisesForSubmission(values.exercises);
-  return JSON.stringify({
-    name: values.name,
-    description: values.description ?? "",
-    exercises,
-  });
-}
 
 interface WorkoutFormProps {
   workoutId?: string | null;
