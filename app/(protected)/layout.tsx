@@ -20,7 +20,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
             <AppSidebar />
             <SidebarInset className="flex min-h-0 flex-1 flex-col w-full md:w-[calc(100%-var(--sidebar-width-expanded))] md:peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-collapsed))] md:min-h-svh md:h-svh">
               {isMobile ? <TopBar /> : null}
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-4 tracking-normal">
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-0 tracking-normal">
                 {children}
                 <BackgroundImage
                   imagePath="/images/auth-bg.jpeg"
