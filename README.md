@@ -1,32 +1,94 @@
 # Training Diet App
 
-A modern web application for tracking training plans, diet history, and body measurements. Built with Next.js and Supabase for authentication and data management.
+A focused fitness app for managing **workouts, templates, exercises, diet history, calories and body measurements**.  
+Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tailwind).
 
-## 🔐 Features / Description
+## 🔍 Overview
 
-- **User Authentication**
+- **Dashboard – Workout history**
 
-  - Email/password registration and login
-  - Password reset via email
-  - Protected routes with middleware
-  - Session management
+  - List of past workouts with date, name and description
+  - Date range filters
+  - Quick actions: **view**, **edit**, **delete** past workouts
 
-- **User Profile**
+- **Workout creation & editing**
 
-  - Update full name
-  - Update password
-  - Update theme (dark/light mode)
+  - Step‑by‑step workout form with autosave (draft cached in `localStorage`)
+  - Create from scratch or reuse structure via **templates**
+  - Rich editing: exercise list, sets, reps, weights, notes
+  - Protecting from lose data due to changing tab during create/editing workout
 
-- **Features**
+- **Templates**
 
-  - Training plans tracking
-  - Kcal calculator
-  - Diet history logging
-  - Body measurements (coming soon)
+  - Create reusable **workout templates** (name, description, exercises)
+  - Browse and search templates
+  - View details in a side sheet
+  - Edit or delete with confirmation dialogs
 
-## 🚀 Technologies
+- **Exercises**
 
-This project is built with the following technologies:
+  - Manage exercise **categories** and **exercises**
+  - Search and filtering
+  - Quick add / delete, multi‑delete mode with confirmation
+  - Designed to be your single source of truth for exercise names
+
+- **Diet & body tracking**
+
+  - **Diet history** page for logging diet‑related entries
+  - **Kcal calculator** for estimating daily calorie needs
+  - **Body measurements** section (structure in place, easy to extend with more metrics)
+
+- **Authentication & profile**
+  - Email/password sign up & login via Supabase
+  - Password reset flow
+  - Profile screen to update name, password and **theme (dark/light)**
+  - All main routes are protected; anonymous users are redirected to auth
+
+## 🧭 Main user flows
+
+- **New user**
+
+  - Registers with email and password
+  - Sets basic profile data and preferred theme
+  - Define exercises
+  - Create templates (optional)
+  - Create first workout
+
+- **Typical training day**
+
+  - Opens **Workout history** to see last sessions
+  - Creates a new workout (optionally from a template)
+  - Uses **Exercises** to keep names consistent
+  - Edit past workout (optional)
+  - Logs diet history and checks **Kcal calculator** if needed
+
+- **Progress tracking**
+
+  - Filters **Workout history** by date range
+  - Reviews **diet history** and updates **body measurements**
+
+## 🧠 How it works (architecture)
+
+- **Frontend**
+
+  - **Next.js 16 App Router** with protected routes in `app/(protected)/…`
+  - Client components where needed (forms, sheets, search, react-query hooks)
+  - **TanStack Query** for all server data: caching, refetching, optimistic UX
+
+- **Backend / data**
+
+  - **Supabase** PostgreSQL as data store
+  - Supabase Auth for sessions; Row Level Security to keep each user’s data isolated
+  - Next Api
+  - All CRUD operations for workouts, templates, exercises, diet entries and measurements go through typed API handlers/hooks
+
+- **CI/CD**
+  - Main branch → production
+  - Repo is connected to Vercel
+  - Every push to `main` automatically triggers a **production deployment**.
+  - You don’t run any extra commands
+
+## 🧩 Tech stack
 
 - **[Next.js 16](https://nextjs.org/)** - React framework with App Router for server-side rendering and routing
 - **[React 19](https://react.dev/)** - UI library for building user interfaces
@@ -40,89 +102,3 @@ This project is built with the following technologies:
   - Authentication (email/password, password reset)
   - Row Level Security (RLS) for data protection
   - Real-time subscriptions
-
-## 📋 Prerequisites
-
-- **Node.js v20** or higher
-- **npm**, **yarn**, **pnpm**, or **bun** package manager
-- A Supabase account (free tier available)
-- Git (for version control)
-
-## 🛠️ Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-cd Training-diet-app
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
-
-### 3. Set up Supabase
-
-1. Create a project on [Supabase](https://supabase.com)
-2. Go to **Settings** → **API** to get your keys
-3. Create a `.env.local` file in the root directory:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Password encryption key
-# NEXT_PUBLIC_ENCRYPTION_KEY is required (used on client-side)
-# ENCRYPTION_KEY is optional but recommended for server-side (more secure)
-# If ENCRYPTION_KEY is not set, NEXT_PUBLIC_ENCRYPTION_KEY will be used as fallback
-NEXT_PUBLIC_ENCRYPTION_KEY=your-secure-encryption-key-here
-# Optional: ENCRYPTION_KEY=your-secure-encryption-key-here (same value)
-```
-
-**Note:** The encryption key should be a strong, random string (at least 32 characters). You can generate one using:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-**Security Note:** `NEXT_PUBLIC_ENCRYPTION_KEY` is visible in the browser, so this encryption provides obfuscation rather than true security. The main security comes from HTTPS and Supabase's password hashing.
-
-## 🚀 Deployment on Vercel
-
-The easiest way to deploy this Next.js app is using [Vercel](https://vercel.com), the platform created by the Next.js team.
-
-### Quick Deploy
-
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com/new)
-3. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `NEXT_PUBLIC_ENCRYPTION_KEY` (required)
-   - `ENCRYPTION_KEY` (optional, will use `NEXT_PUBLIC_ENCRYPTION_KEY` as fallback)
-4. Deploy
-
-### Environment Variables on Vercel
-
-Make sure to add all your Supabase environment variables in the Vercel dashboard:
-
-- Go to your project → **Settings** → **Environment Variables**
-- Add all variables from your `.env.local` file
-- **Note:** `ENCRYPTION_KEY` is optional - if not set, `NEXT_PUBLIC_ENCRYPTION_KEY` will be used
-
-## 🛠️ Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
