@@ -185,9 +185,13 @@ export const WorkoutForm = ({
   );
   const { setHasUnsavedChanges } = useWorkoutUnsavedChanges();
 
-  const cacheKey = isTemplateMode
+  const baseCacheKey = isTemplateMode
     ? TEMPLATE_FORM_CACHE_KEY
     : WORKOUT_FORM_CACHE_KEY;
+  const entityCacheId = isTemplateMode ? initialTemplateId : initialWorkoutId;
+  const cacheKey = entityCacheId
+    ? `${baseCacheKey}:${entityCacheId}`
+    : baseCacheKey;
 
   const { data: workoutData, isLoading: isLoadingWorkout } = useGetWorkout({
     workoutId: initialWorkoutId || null,
@@ -410,8 +414,19 @@ export const WorkoutForm = ({
 
     form.reset(formData);
     setLastSavedBaseline(getBaselineString(formData, false));
+    (async () => {
+      try {
+        const cached = await getFormCache(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          form.reset(parsed);
+        }
+      } catch (error) {
+        console.error("Error loading cached workout form:", error);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutData, initialWorkoutId]);
+  }, [workoutData, initialWorkoutId, cacheKey]);
 
   useEffect(() => {
     if (!initialTemplateId || !templateData) {
@@ -454,8 +469,19 @@ export const WorkoutForm = ({
 
     form.reset(formData);
     setLastSavedBaseline(getBaselineString(formData, true));
+    (async () => {
+      try {
+        const cached = await getFormCache(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          form.reset(parsed);
+        }
+      } catch (error) {
+        console.error("Error loading cached template form:", error);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateData, initialTemplateId]);
+  }, [templateData, initialTemplateId, cacheKey]);
 
   const {
     fields: exerciseFields,
@@ -490,8 +516,6 @@ export const WorkoutForm = ({
       return;
     }
 
-    if (currentEntityId) return;
-
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
@@ -506,7 +530,7 @@ export const WorkoutForm = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [formValues, form, saveToCache, currentEntityId]);
+  }, [formValues, form, saveToCache]);
 
   useEffect(() => {
     const hasChanges = hasFormChanges();
