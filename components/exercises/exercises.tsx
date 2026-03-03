@@ -20,10 +20,8 @@ import { ExercisesSearchInput } from "./exercises-search";
 import { useExercisesSearch } from "./hooks/use-exercises-search";
 
 import { normalizeForComparison } from "@/lib/normalize-string";
-import type {
-  IExercise,
-  IExerciseCategory,
-} from "@/app/api/exercises/types";
+import type { IExercise, IExerciseCategory } from "@/app/api/exercises/types";
+import CenterWrapper from "../shared/center-wrapper";
 
 export const Exercises = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -45,28 +43,33 @@ export const Exercises = () => {
     exerciseId: string | null;
   }>({ open: false, exerciseId: null });
   const [deleteSelectedModalOpen, setDeleteSelectedModalOpen] = useState(false);
+  const [multiDeleteMode, setMultiDeleteMode] = useState(false);
 
   const { data: categoriesData, isLoading: loadingCategories } =
     useListCategories();
   const { data: exercisesData, isLoading: loadingExercises } =
     useListExercises();
 
-  const createCategory = useCreateCategory({
-    onSuccess: () => setNewCategoryName(""),
-    onError: (msg) => console.error(msg),
-  });
-  const createExercise = useCreateExercise({
-    onError: (msg) => console.error(msg),
-  });
-  const deleteCategories = useDeleteCategories({
-    onSuccess: () => {
-      setSelectedCategoryIds(new Set());
-      setSelectedExerciseIds(new Set());
-    },
-  });
-  const deleteExercises = useDeleteExercises({
-    onSuccess: () => setSelectedExerciseIds(new Set()),
-  });
+  const { mutate: createCategory, isPending: isCreatingCategory } =
+    useCreateCategory({
+      onSuccess: () => setNewCategoryName(""),
+      onError: (msg) => console.error(msg),
+    });
+  const { mutate: createExercise, isPending: isCreatingExercise } =
+    useCreateExercise({
+      onError: (msg) => console.error(msg),
+    });
+  const { mutate: deleteCategories, isPending: isDeletingCategories } =
+    useDeleteCategories({
+      onSuccess: () => {
+        setSelectedCategoryIds(new Set());
+        setSelectedExerciseIds(new Set());
+      },
+    });
+  const { mutate: deleteExercises, isPending: isDeletingExercises } =
+    useDeleteExercises({
+      onSuccess: () => setSelectedExerciseIds(new Set()),
+    });
 
   const categories = useMemo(
     () => categoriesData?.categories ?? [],
@@ -144,7 +147,7 @@ export const Exercises = () => {
       return;
     }
 
-    createCategory.mutate({ name });
+    createCategory({ name });
   };
 
   const handleAddExercise = (categoryId: string) => {
@@ -160,7 +163,7 @@ export const Exercises = () => {
       return;
     }
 
-    createExercise.mutate(
+    createExercise(
       { name, categoryId },
       {
         onSuccess: () =>
@@ -172,49 +175,61 @@ export const Exercises = () => {
   const handleDeleteSelected = () => {
     const catIds = Array.from(selectedCategoryIds);
     const exIds = Array.from(selectedExerciseIds);
-    if (catIds.length > 0) deleteCategories.mutate(catIds);
-    if (exIds.length > 0) deleteExercises.mutate(exIds);
+    if (catIds.length > 0) deleteCategories(catIds);
+    if (exIds.length > 0) deleteExercises(exIds);
     setDeleteSelectedModalOpen(false);
   };
 
   const handleConfirmDeleteCategory = () => {
     if (deleteCategoryModal.categoryId) {
-      deleteCategories.mutate([deleteCategoryModal.categoryId]);
+      deleteCategories([deleteCategoryModal.categoryId]);
       setDeleteCategoryModal({ open: false, categoryId: null });
     }
   };
 
   const handleConfirmDeleteExercise = () => {
     if (deleteExerciseModal.exerciseId) {
-      deleteExercises.mutate([deleteExerciseModal.exerciseId]);
+      deleteExercises([deleteExerciseModal.exerciseId]);
       setDeleteExerciseModal({ open: false, exerciseId: null });
     }
   };
 
   const hasSelection =
     selectedCategoryIds.size > 0 || selectedExerciseIds.size > 0;
-  const isDeleting = deleteCategories.isPending || deleteExercises.isPending;
+  const isDeleting = isDeletingCategories || isDeletingExercises;
 
   if (loadingCategories || loadingExercises) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <CenterWrapper className="flex w-full min-h-[50vh] items-center justify-center">
         <Loader />
-      </div>
+      </CenterWrapper>
     );
   }
 
+  const toggleMultiDeleteMode = () => {
+    setMultiDeleteMode((prev) => {
+      if (prev) {
+        setSelectedCategoryIds(new Set());
+        setSelectedExerciseIds(new Set());
+        return false;
+      }
+      return true;
+    });
+  };
+
   return (
-    <div className="flex flex-col gap-4 max-w-2xl">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       <div className="flex flex-col gap-2 border-b-2 border-destructive pb-4">
         <ExercisesSearchInput value={search} onChange={setSearch} />
       </div>
 
-      <div className="flex flex-col gap-2 max-w-sm">
+      <div className="flex flex-col gap-2">
         <Input
           placeholder="New category name"
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+          disabled={isCreatingCategory}
           className="w-full"
         />
         <Button
@@ -222,21 +237,38 @@ export const Exercises = () => {
           className="w-full"
           onClick={handleAddCategory}
           variant="outline"
-          disabled={!newCategoryName.trim() || createCategory.isPending}
+          disabled={!newCategoryName.trim() || isCreatingCategory}
         >
-          <Plus className="h-4 w-4" />
-          Add category
+          {isCreatingCategory ? (
+            <Loader size={16} />
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Add category
+            </>
+          )}
         </Button>
       </div>
 
-      {hasSelection && (
+      <div className="flex justify-end pr-1 -my-2">
+        <Button
+          type="button"
+          variant="showHide"
+          size="showHide"
+          onClick={toggleMultiDeleteMode}
+        >
+          {multiDeleteMode ? "Hide multi-delete" : "Show multi-delete"}
+        </Button>
+      </div>
+
+      {multiDeleteMode && hasSelection && (
         <Button
           variant="destructive"
           size="sm"
           onClick={() => setDeleteSelectedModalOpen(true)}
           disabled={isDeleting}
         >
-          <Trash2 className="h-4 w-4" />
+          {isDeleting ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
           Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size}
           )
         </Button>
@@ -260,11 +292,15 @@ export const Exercises = () => {
                   className="flex items-center gap-2 p-3 hover:bg-muted/50 cursor-pointer min-h-12"
                   onClick={() => toggleExpanded(category.id)}
                 >
-                  <Checkbox
-                    checked={isCategorySelected}
-                    onCheckedChange={() => toggleCategorySelection(category.id)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                  {multiDeleteMode && (
+                    <Checkbox
+                      checked={isCategorySelected}
+                      onCheckedChange={() =>
+                        toggleCategorySelection(category.id)
+                      }
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
                   {isExpanded ? (
                     <ChevronDown className="h-4 w-4 shrink-0" />
                   ) : (
@@ -309,12 +345,14 @@ export const Exercises = () => {
                           }`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Checkbox
-                            checked={isExSelected}
-                            onCheckedChange={() =>
-                              toggleExerciseSelection(ex.id)
-                            }
-                          />
+                          {multiDeleteMode && (
+                            <Checkbox
+                              checked={isExSelected}
+                              onCheckedChange={() =>
+                                toggleExerciseSelection(ex.id)
+                              }
+                            />
+                          )}
                           <span className="flex-1">{ex.name}</span>
                           <Button
                             size="icon"
@@ -349,6 +387,7 @@ export const Exercises = () => {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleAddExercise(category.id);
                         }}
+                        disabled={isCreatingExercise}
                         className="flex-1 max-w-full h-8"
                       />
                       <Button
@@ -358,11 +397,17 @@ export const Exercises = () => {
                         onClick={() => handleAddExercise(category.id)}
                         disabled={
                           !(newExerciseByCategory[category.id] ?? "").trim() ||
-                          createExercise.isPending
+                          isCreatingExercise
                         }
                       >
-                        <Plus className="h-3 w-3" />
-                        Add
+                        {isCreatingExercise ? (
+                          <Loader size={16} />
+                        ) : (
+                          <>
+                            <Plus className="h-3 w-3" />
+                            Add
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -373,7 +418,7 @@ export const Exercises = () => {
         )}
       </div>
 
-      {hasSelection && (
+      {multiDeleteMode && hasSelection && (
         <Button
           variant="destructive"
           size="sm"
@@ -396,7 +441,7 @@ export const Exercises = () => {
         confirmLabel="Delete"
         cancelLabel="Cancel"
         onConfirm={handleConfirmDeleteCategory}
-        isPending={deleteCategories.isPending}
+        isPending={isDeletingCategories}
       />
 
       <ConfirmModal
@@ -409,7 +454,7 @@ export const Exercises = () => {
         confirmLabel="Delete"
         cancelLabel="Cancel"
         onConfirm={handleConfirmDeleteExercise}
-        isPending={deleteExercises.isPending}
+        isPending={isDeletingExercises}
       />
 
       <ConfirmModal

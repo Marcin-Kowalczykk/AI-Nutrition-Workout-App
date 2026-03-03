@@ -652,7 +652,7 @@ export const WorkoutForm = ({
     (isLoadingTemplate && initialTemplateId && isTemplateMode)
   ) {
     return (
-      <CenterWrapper>
+      <CenterWrapper className="flex w-full min-h-[50vh] items-center justify-center">
         <Loader />
       </CenterWrapper>
     );
@@ -863,13 +863,14 @@ export const WorkoutForm = ({
         <div className="flex flex-col gap-3">
           {!headerVisible && workoutName.toString().trim() && (
             <div className="flex justify-end">
-              <button
+              <Button
                 type="button"
-                className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                variant="showHide"
+                size="showHide"
                 onClick={() => setHeaderVisible(true)}
               >
                 Show header
-              </button>
+              </Button>
             </div>
           )}
 
@@ -885,13 +886,14 @@ export const WorkoutForm = ({
                         {isTemplateMode ? "Template name" : "Workout Name"}*
                       </span>
                       {workoutName.toString().trim() && (
-                        <button
+                        <Button
                           type="button"
-                          className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                          variant="showHide"
+                          size="showHide"
                           onClick={() => setHeaderVisible(false)}
                         >
                           Hide header
-                        </button>
+                        </Button>
                       )}
                     </FormLabel>
                     <FormControl>
@@ -1016,9 +1018,11 @@ export const WorkoutForm = ({
                       />
                     );
                     const unitButton = (
-                      <button
+                      <Button
                         type="button"
-                        className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline shrink-0"
+                        variant="showHide"
+                        size="showHide"
+                        className="shrink-0"
                         onClick={() =>
                           setUnitSelectVisibleByExerciseId((prev) => ({
                             ...prev,
@@ -1027,7 +1031,7 @@ export const WorkoutForm = ({
                         }
                       >
                         {unitOpen ? "Hide change unit" : "Show change unit"}
-                      </button>
+                      </Button>
                     );
                     if (unitOpen) {
                       return (
@@ -1207,7 +1211,7 @@ export const WorkoutForm = ({
                                   name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
                                   render={({ field }) => (
                                     <FormItem className="flex-1 min-w-0">
-                                      <FormLabel>Weight</FormLabel>
+                                      <FormLabel>Weight [kg]</FormLabel>
                                       <FormControl>
                                         <Input
                                           ref={field.ref}
@@ -1256,7 +1260,7 @@ export const WorkoutForm = ({
                                   name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
                                   render={({ field }) => (
                                     <FormItem className="flex-1 min-w-0">
-                                      <FormLabel>Duration</FormLabel>
+                                      <FormLabel>Duration [s]</FormLabel>
                                       <FormControl>
                                         <Input
                                           ref={field.ref}

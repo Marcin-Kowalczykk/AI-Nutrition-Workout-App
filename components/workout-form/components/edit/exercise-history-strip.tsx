@@ -186,8 +186,8 @@ export const ExerciseHistoryStrip = ({
               const unitColumn = hasWeight
                 ? "weight"
                 : hasDuration
-                  ? "duration"
-                  : null;
+                ? "duration"
+                : null;
 
               return (
                 <div
@@ -225,9 +225,7 @@ export const ExerciseHistoryStrip = ({
                         </TableHead>
                         {unitColumn !== null && (
                           <TableHead className="w-[45%] text-[9px] text-right">
-                            {unitColumn === "weight"
-                              ? "Weight"
-                              : "Duration"}
+                            {unitColumn === "weight" ? "Weight" : "Duration"}
                           </TableHead>
                         )}
                       </TableRow>
@@ -245,14 +243,14 @@ export const ExerciseHistoryStrip = ({
                                 <span
                                   className={`mr-1 ${
                                     isSetChecked
-                                      ? "text-(--color-success)"
+                                      ? "text-green-700"
                                       : "text-muted-foreground"
                                   }`}
                                 >
                                   {isSetChecked ? "✔" : "✕"}
                                 </span>
                                 <span className="text-muted-foreground">
-                                  S{set.set_number}
+                                  {set.set_number}
                                 </span>
                               </TableCell>
                               <TableCell className="text-right">
@@ -262,14 +260,14 @@ export const ExerciseHistoryStrip = ({
                                 <TableCell className="text-right">
                                   {unitColumn === "weight"
                                     ? set.weight !== undefined &&
-                                        set.weight !== null
+                                      set.weight !== null
                                       ? `${set.weight} kg`
                                       : "-"
                                     : set.duration !== undefined &&
-                                        set.duration !== null &&
-                                        set.duration > 0
-                                      ? `${set.duration}s`
-                                      : "-"}
+                                      set.duration !== null &&
+                                      set.duration > 0
+                                    ? `${set.duration} s`
+                                    : "-"}
                                 </TableCell>
                               )}
                             </TableRow>

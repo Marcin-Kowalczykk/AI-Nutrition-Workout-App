@@ -7,7 +7,15 @@ import { useGetWorkout } from "../../api/use-get-workout";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, XCircle } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 
@@ -100,70 +108,100 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
         {!workoutData.exercises || workoutData.exercises.length === 0 ? (
           <p className="text-muted-foreground text-sm">No exercises added</p>
         ) : (
-          workoutData.exercises.map((exercise) => (
-            <Card key={exercise.id}>
-              <CardHeader>
-                <CardTitle>{exercise.name || "Unnamed Exercise"}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                {!exercise.sets || exercise.sets.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No sets added</p>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-12 gap-2 pb-2 border-b">
-                      <div className="col-span-1 text-xs font-medium text-muted-foreground text-center">
-                        ✓
-                      </div>
-                      <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                        Set
-                      </div>
-                      <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                        Reps
-                      </div>
-                      <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                        Weight
-                      </div>
-                      <div className="col-span-3 text-xs font-medium text-muted-foreground text-center">
-                        Duration
-                      </div>
-                    </div>
+          workoutData.exercises.map((exercise) => {
+            const sets = exercise.sets ?? [];
+            const hasWeight = sets.some(
+              (set) => set.weight !== undefined && set.weight !== null
+            );
+            const hasDuration = sets.some(
+              (set) =>
+                set.duration !== undefined &&
+                set.duration !== null &&
+                set.duration > 0
+            );
 
-                    {exercise.sets.map((set) => (
-                      <div
-                        key={set.id}
-                        className="grid grid-cols-12 gap-2 items-center"
-                      >
-                        <div className="col-span-1 flex items-center justify-center">
-                          {set.isChecked ? (
-                            <CheckCircle2
-                              className="h-5 w-5 text-success"
-                              strokeWidth={2}
-                            />
-                          ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
+            return (
+              <Card key={exercise.id}>
+                <CardHeader>
+                  <CardTitle>{exercise.name || "Unnamed Exercise"}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  {sets.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">
+                      No sets added
+                    </p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[48px] text-center">
+                            ✓
+                          </TableHead>
+                          <TableHead className="w-[60px] text-center">
+                            Set
+                          </TableHead>
+                          <TableHead className="w-[80px] text-center">
+                            Reps
+                          </TableHead>
+                          {hasWeight && (
+                            <TableHead className="w-[90px] text-center">
+                              Weight
+                            </TableHead>
                           )}
-                        </div>
-                        <div className="col-span-2 text-sm text-center">
-                          {set.set_number ?? "-"}
-                        </div>
-                        <div className="col-span-2 text-sm text-center">
-                          {set.reps !== undefined ? set.reps : "-"}
-                        </div>
-                        <div className="col-span-2 text-sm text-center">
-                          {set.weight !== undefined ? `${set.weight} kg` : "-"}
-                        </div>
-                        <div className="col-span-3 text-sm text-center">
-                          {set.duration !== undefined
-                            ? `${set.duration} min`
-                            : "-"}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
+                          {hasDuration && (
+                            <TableHead className="w-[110px] text-center">
+                              Duration
+                            </TableHead>
+                          )}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sets.map((set) => (
+                          <TableRow key={set.id}>
+                            <TableCell className="text-center flex items-center justify-center gap-1">
+                              {set.isChecked ? (
+                                <CheckCircle2
+                                  className="h-5 w-5 text-success"
+                                  strokeWidth={2}
+                                />
+                              ) : (
+                                <XCircle
+                                  className="h-5 w-5 text-destructive"
+                                  strokeWidth={2}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {set.set_number ?? "-"}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {set.reps !== undefined ? set.reps : "-"}
+                            </TableCell>
+                            {hasWeight && (
+                              <TableCell className="text-center">
+                                {set.weight !== undefined && set.weight !== null
+                                  ? `${set.weight} kg`
+                                  : "-"}
+                              </TableCell>
+                            )}
+                            {hasDuration && (
+                              <TableCell className="text-center">
+                                {set.duration !== undefined &&
+                                set.duration !== null &&
+                                set.duration > 0
+                                  ? `${set.duration} s`
+                                  : "-"}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

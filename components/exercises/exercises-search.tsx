@@ -14,8 +14,7 @@ export const ExercisesSearchInput = ({
       placeholder="Search categories and exercises..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="max-w-sm"
+      className="w-full"
     />
   );
 };
-

@@ -14,7 +14,7 @@ export const TemplateSearchInput = ({
       placeholder="Search templates..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 max-w-xs sm:max-w-sm"
+      className="w-full mr-2"
       containerClassName="flex-1"
     />
   );

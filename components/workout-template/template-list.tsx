@@ -56,7 +56,7 @@ export function TemplateList() {
 
   if (isLoading) {
     return (
-      <CenterWrapper className="w-full xl:w-1/2">
+      <CenterWrapper className="flex w-full min-h-[50vh] items-center justify-center xl:w-1/2">
         <Loader />
       </CenterWrapper>
     );
@@ -74,7 +74,7 @@ export function TemplateList() {
 
   return (
     <div className="w-full xl:w-1/2">
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex items-center justify-between mb-2">
         <TemplateSearchInput value={search} onChange={setSearch} />
         <Button
           asChild
