@@ -17,6 +17,7 @@ import { SidebarGroup, SidebarMenu } from "@/components/ui/sidebar";
 import { CustomMenuItem, NavSettingsType } from "./custom-menu-item";
 import LogoutButton from "../../auth/logout-button/logout-button";
 import { ThemeToggle } from "../theme-toggle/theme-toggle";
+import { clearAllFormCache } from "@/lib/form-cache";
 
 export enum EnableRoutes {
   WorkoutHistory = "/main-page",
@@ -43,15 +44,9 @@ export enum NavMainTitles {
   ProfileSettings = "Profile settings",
 }
 
-const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
-
 export function NavMain() {
   const handleCreateWorkoutClick = () => {
-    try {
-      localStorage.removeItem(WORKOUT_FORM_CACHE_KEY);
-    } catch (error) {
-      console.error("Error clearing workout form cache:", error);
-    }
+    void clearAllFormCache();
   };
 
   const topSideSettings: NavSettingsType[] = [
