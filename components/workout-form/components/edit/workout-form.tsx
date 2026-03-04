@@ -2,7 +2,15 @@
 
 // dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Save } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Save,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import { toast } from "sonner";
 
 // hooks
@@ -877,7 +885,10 @@ export const WorkoutForm = ({
                 size="showHide"
                 onClick={() => setHeaderVisible(true)}
               >
-                Show header
+                <span className="flex items-center gap-1">
+                  <span>Header</span>
+                  <ChevronDown className="h-3 w-3" />
+                </span>
               </Button>
             </div>
           )}
@@ -900,7 +911,10 @@ export const WorkoutForm = ({
                           size="showHide"
                           onClick={() => setHeaderVisible(false)}
                         >
-                          Hide header
+                          <span className="flex items-center gap-1">
+                            <span>Header</span>
+                            <ChevronUp className="h-3 w-3" />
+                          </span>
                         </Button>
                       )}
                     </FormLabel>
@@ -1042,7 +1056,14 @@ export const WorkoutForm = ({
                           }))
                         }
                       >
-                        {unitOpen ? "Hide change unit" : "Show change unit"}
+                        <span className="flex items-center gap-1">
+                          {unitOpen ? (
+                            <ChevronRight className="h-3 w-3" />
+                          ) : (
+                            <ChevronLeft className="h-3 w-3" />
+                          )}
+                          <span>Unit</span>
+                        </span>
                       </Button>
                     );
                     if (unitOpen) {

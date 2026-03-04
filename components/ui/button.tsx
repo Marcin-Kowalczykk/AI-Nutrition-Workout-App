@@ -21,14 +21,14 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary-foreground underline-offset-4 hover:underline",
         showHide:
-          "text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline bg-transparent border-0 shadow-none p-0 h-auto min-h-0 rounded-none",
+          "text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline bg-transparent border border-muted-foreground/40 shadow-none px-1.5 py-0.5 h-auto min-h-0 rounded-md",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
-        showHide: "h-auto min-h-0 px-0 py-0",
+        showHide: "h-auto min-h-0",
       },
     },
     defaultVariants: {

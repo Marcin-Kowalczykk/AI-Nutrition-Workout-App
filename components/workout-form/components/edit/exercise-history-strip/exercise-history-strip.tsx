@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState, useEffect } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { normalizeForComparison } from "@/lib/normalize-string";
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
@@ -19,6 +20,7 @@ import {
   getUnitColumn,
   isSetChecked as isHistorySetChecked,
 } from "./helpers";
+import { Button } from "@/components/ui/button";
 
 interface ExerciseHistoryStripProps {
   exerciseName?: string | null;
@@ -109,14 +111,23 @@ export const ExerciseHistoryStrip = ({
   return (
     <div className="min-w-0 w-full flex flex-col gap-1">
       <div className="flex items-center justify-between gap-2 min-w-0">
-        <button
+        <Button
           type="button"
           className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline text-left"
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={isLoading}
+          variant="showHide"
+          size="showHide"
         >
-          {isOpen ? "Hide history" : "Show history"}
-        </button>
+          <span className="flex items-center gap-1">
+            <span>History</span>
+            {isOpen ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+          </span>
+        </Button>
         {isOpen && history.length > 0 && (
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
             <button

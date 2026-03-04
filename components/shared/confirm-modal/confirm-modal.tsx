@@ -60,7 +60,7 @@ export const ConfirmModal = ({
     >
       <DialogContent
         isCloseButtonVisible={!isPending}
-        className="sm:mx-2 max-w-sm"
+        className="sm:mx-2 max-w-sm rounded-lg"
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
