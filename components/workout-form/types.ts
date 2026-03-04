@@ -37,6 +37,8 @@ const workoutExerciseSchema = z.object({
 export const createWorkoutFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
+  /** ISO date string (YYYY-MM-DD) – date of workout (created_at); only for workout mode */
+  workout_date: z.string().optional(),
   exercises: z.array(workoutExerciseSchema),
 });
 

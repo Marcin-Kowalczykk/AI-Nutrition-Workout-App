@@ -5,6 +5,11 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 ## 🔍 Overview
 
+- **Recommended usage**
+
+  - **Best experience on mobile** (layout and interactions are mobile‑first)
+  - The app is designed as a **PWA** – ideally install it to your home screen and use it like a native app
+
 - **Dashboard – Workout history**
 
   - List of past workouts with date, name and description

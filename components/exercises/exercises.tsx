@@ -200,7 +200,7 @@ export const Exercises = () => {
 
   if (loadingCategories || loadingExercises) {
     return (
-      <CenterWrapper className="flex w-full min-h-[50vh] items-center justify-center">
+      <CenterWrapper className="flex w-full min-h-[50vh] items-center justify-center xl:w-1/2">
         <Loader />
       </CenterWrapper>
     );
@@ -218,7 +218,7 @@ export const Exercises = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <div className="flex w-full xl:w-1/2 flex-col gap-4">
       <div className="flex flex-col gap-2 border-b-2 border-destructive pb-4">
         <ExercisesSearchInput value={search} onChange={setSearch} />
       </div>

@@ -20,7 +20,7 @@ const Workout = ({
 }: WorkoutProps) => {
   return (
     <Suspense fallback={<Loader />}>
-      <Card className="w-full xl:w-1/2 min-w-0 shrink-0">
+      <Card className="w-full min-w-0 shrink-0">
         <CardContent className="p-2 pt-3">
           <WorkoutForm
             workoutId={workoutId}

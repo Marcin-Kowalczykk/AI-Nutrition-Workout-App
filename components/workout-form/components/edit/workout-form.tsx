@@ -12,6 +12,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { format, startOfDay, subDays } from "date-fns";
 
 // hooks
 import { useFieldArray } from "react-hook-form";
@@ -46,6 +47,7 @@ import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/shared/date-picker";
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
@@ -202,7 +204,12 @@ export const WorkoutForm = ({
   const { mutate: deleteWorkout, isPending: isDeleting } = useDeleteWorkout({
     onSuccess: () => {
       clearCache();
-      form.reset({ name: "", description: "", exercises: [] });
+      form.reset({
+        name: "",
+        description: "",
+        workout_date: defaultWorkoutDate,
+        exercises: [],
+      });
       setWorkoutId(null);
       setIsFirstSave(true);
       setLastSavedBaseline(null);
@@ -255,12 +262,15 @@ export const WorkoutForm = ({
       },
     });
 
+  const defaultWorkoutDate = format(new Date(), "yyyy-MM-dd");
+
   const form = useForm<CreateWorkoutFormType>({
     resolver: zodResolver(createWorkoutFormSchema),
     mode: "onTouched",
     defaultValues: {
       name: "",
       description: "",
+      workout_date: defaultWorkoutDate,
       exercises: [],
     },
   });
@@ -275,7 +285,11 @@ export const WorkoutForm = ({
         const cached = await getFormCache(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
-          form.reset(parsed);
+          const toReset =
+            isTemplateMode || parsed.workout_date !== undefined
+              ? parsed
+              : { ...parsed, workout_date: defaultWorkoutDate };
+          form.reset(toReset);
         }
       } catch (error) {
         console.error("Error loading cached form:", error);
@@ -297,6 +311,7 @@ export const WorkoutForm = ({
     const formData: CreateWorkoutFormType = {
       name: prefillTemplateData.name || "",
       description: prefillTemplateData.description || "",
+      workout_date: defaultWorkoutDate,
       exercises: (prefillTemplateData.exercises || []).map(
         (exercise: IWorkoutTemplateExerciseItem) => {
           const sets = (exercise.sets || []).map(
@@ -325,6 +340,7 @@ export const WorkoutForm = ({
     isTemplateMode,
     initialWorkoutId,
     form,
+    defaultWorkoutDate,
   ]);
 
   useEffect(() => {
@@ -344,6 +360,9 @@ export const WorkoutForm = ({
     const formData: CreateWorkoutFormType = {
       name: workoutData.name || "",
       description: workoutData.description || "",
+      workout_date: workoutData.created_at
+        ? format(new Date(workoutData.created_at), "yyyy-MM-dd")
+        : defaultWorkoutDate,
       exercises: (workoutData.exercises || []).map((exercise) => {
         const sets = (exercise.sets || []).map((set) => ({
           id: set.id,
@@ -370,7 +389,14 @@ export const WorkoutForm = ({
         const cached = await getFormCache(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
-          form.reset(parsed);
+          const toReset =
+            parsed.workout_date !== undefined
+              ? parsed
+              : {
+                  ...parsed,
+                  workout_date: formData.workout_date ?? defaultWorkoutDate,
+                };
+          form.reset(toReset);
         }
       } catch (error) {
         console.error("Error loading cached workout form:", error);
@@ -453,12 +479,13 @@ export const WorkoutForm = ({
         name: "",
         description: "",
         exercises: [],
+        ...(!isTemplateMode && { workout_date: defaultWorkoutDate }),
       });
       return currentBaseline !== emptyBaseline;
     }
 
     return currentBaseline !== lastSavedBaseline;
-  }, [form, isTemplateMode, lastSavedBaseline]);
+  }, [form, isTemplateMode, lastSavedBaseline, defaultWorkoutDate]);
 
   const hasExerciseChanges = useCallback(
     (exerciseIndex: number) => {
@@ -550,10 +577,17 @@ export const WorkoutForm = ({
   const isError = isCreateError || isUpdateError;
   const error = createError || updateError;
 
+  const getCreatedAtFromWorkoutDate = (workoutDateStr: string) =>
+    startOfDay(new Date(workoutDateStr + "T12:00:00")).toISOString();
+
   const onSubmitHandler = async (values: CreateWorkoutFormType) => {
-    const { name, description, exercises } = values;
+    const { name, description, exercises, workout_date } = values;
     const currentDate = new Date().toISOString();
     const filteredExercises = prepareExercisesForSubmission(exercises);
+    const created_at =
+      workout_date && !isTemplateMode
+        ? getCreatedAtFromWorkoutDate(workout_date)
+        : undefined;
 
     const setBaselineOnSuccess = () => setBaselineFromValues(values);
 
@@ -588,6 +622,7 @@ export const WorkoutForm = ({
             name,
             description: description || undefined,
             start_date: currentDate,
+            ...(created_at && { created_at }),
             exercises:
               filteredExercises.length > 0 ? filteredExercises : undefined,
           },
@@ -600,6 +635,7 @@ export const WorkoutForm = ({
             name,
             description: description || undefined,
             end_date: currentDate,
+            ...(created_at && { created_at }),
             exercises:
               filteredExercises.length > 0 ? filteredExercises : undefined,
           },
@@ -721,12 +757,15 @@ export const WorkoutForm = ({
         }
       );
     } else {
+      const created_at =
+        values.workout_date && getCreatedAtFromWorkoutDate(values.workout_date);
       updateWorkout(
         {
           id: currentEntityId,
           name: values.name,
           description: values.description,
           end_date: new Date().toISOString(),
+          ...(created_at && { created_at }),
           exercises: prepared.length > 0 ? prepared : undefined,
         },
         {
@@ -824,12 +863,15 @@ export const WorkoutForm = ({
         }
       );
     } else {
+      const created_at =
+        values.workout_date && getCreatedAtFromWorkoutDate(values.workout_date);
       updateWorkout(
         {
           id: currentEntityId,
           name: values.name,
           description: values.description,
           end_date: new Date().toISOString(),
+          ...(created_at && { created_at }),
           exercises: prepared.length > 0 ? prepared : undefined,
         },
         {
@@ -858,7 +900,12 @@ export const WorkoutForm = ({
       deleteWorkout(workoutId);
     } else {
       clearCache();
-      form.reset({ name: "", description: "", exercises: [] });
+      form.reset({
+        name: "",
+        description: "",
+        workout_date: defaultWorkoutDate,
+        exercises: [],
+      });
       setWorkoutId(null);
       setTemplateId(null);
       setIsFirstSave(true);
@@ -952,6 +999,45 @@ export const WorkoutForm = ({
                   </FormItem>
                 )}
               />
+
+              {!isTemplateMode && (
+                <FormField
+                  name="workout_date"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Workout date</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          label=""
+                          value={
+                            field.value
+                              ? new Date(field.value + "T12:00:00")
+                              : undefined
+                          }
+                          onChange={(date) =>
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : undefined
+                            )
+                          }
+                          placeholder="Wybierz datę"
+                          showClear={false}
+                          fromYear={new Date().getFullYear() - 1}
+                          toYear={new Date().getFullYear()}
+                          disabled={(date) => {
+                            const d = startOfDay(date);
+                            const today = startOfDay(new Date());
+                            const oneYearAgo = subDays(today, 365);
+                            return d < oneYearAgo || d > today;
+                          }}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </>
           )}
 

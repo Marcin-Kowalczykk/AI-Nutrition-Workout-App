@@ -22,6 +22,9 @@ interface DatePickerProps {
   className?: string;
   placeholder?: string;
   disabled?: (date: Date) => boolean;
+  showClear?: boolean;
+  fromYear?: number;
+  toYear?: number;
 }
 
 // eslint-disable-next-line
@@ -34,6 +37,9 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       placeholder = "wybierz datę",
       label,
       disabled,
+      showClear = true,
+      fromYear,
+      toYear,
     },
     ref
   ) => {
@@ -88,7 +94,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               className={cn(
                 "w-full justify-start text-left font-normal px-2 relative text-sm",
                 !value && "text-muted-foreground",
-                value && !isPopoverOpen && "pr-8",
+                value && !isPopoverOpen && showClear && "pr-8",
                 className
               )}
             >
@@ -100,7 +106,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
                   <span>{placeholder}</span>
                 )}
               </span>
-              {value && !isPopoverOpen && (
+              {value && !isPopoverOpen && showClear && (
                 <span
                   role="button"
                   tabIndex={0}
@@ -134,6 +140,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
             captionLayout="dropdown"
             onSelect={(date) => handleOnSelect(date as Date)}
             disabled={disabled ? disabled : undefined}
+            fromYear={fromYear}
+            toYear={toYear}
             locale={pl}
           />
         </PopoverContent>

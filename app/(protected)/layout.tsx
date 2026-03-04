@@ -22,11 +22,13 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               {isMobile ? <TopBar /> : null}
               <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-0 tracking-normal">
                 {children}
-                <BackgroundImage
-                  imagePath="/images/auth-bg.jpeg"
-                  className="w-full flex-none min-h-80 md:min-h-96 lg:h-96 lg:flex-none"
-                  fallbackClassName="bg-black"
-                />
+                <div className="flex w-full justify-start pt-2 pb-1">
+                  <BackgroundImage
+                    imagePath="/images/auth-bg.jpeg"
+                    className="w-full xl:w-1/2 flex-none min-h-80 md:min-h-96 lg:h-96 lg:flex-none"
+                    fallbackClassName="bg-black"
+                  />
+                </div>
               </div>
             </SidebarInset>
           </WorkoutUnsavedProvider>

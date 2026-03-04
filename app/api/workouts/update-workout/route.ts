@@ -66,6 +66,9 @@ export async function PUT(request: Request) {
     if (body.exercises !== undefined) {
       updateData.exercises = body.exercises;
     }
+    if (body.created_at !== undefined) {
+      updateData.created_at = body.created_at;
+    }
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(

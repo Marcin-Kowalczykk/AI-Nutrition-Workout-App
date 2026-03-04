@@ -10,7 +10,7 @@ import { IWorkoutItem } from "../types";
 export type ICreateWorkoutRequestBody = Omit<
   IWorkoutItem,
   "user_id" | "created_at" | "updated_at" | "id"
->;
+> & { created_at?: string };
 
 export type ICreateWorkoutResponse = IWorkoutItem;
 
@@ -33,16 +33,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
+    const insertPayload: Record<string, unknown> = {
+      user_id: user.id,
+      name: body.name,
+      description: body.description,
+      start_date: body.start_date,
+      end_date: body.end_date,
+      exercises: body.exercises,
+    };
+    if (body.created_at) {
+      insertPayload.created_at = body.created_at;
+    }
+
     const { data, error } = await supabase
       .from(TABLE_NAMES.WORKOUT_PLANS)
-      .insert({
-        user_id: user.id,
-        name: body.name,
-        description: body.description,
-        start_date: body.start_date,
-        end_date: body.end_date,
-        exercises: body.exercises,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
