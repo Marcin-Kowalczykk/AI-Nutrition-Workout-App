@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import ThemeInitializer from "@/components/providers/theme-initializer";
 import { IosViewportListener } from "@/components/shared/ios-viewport";
+import { ServiceWorkerRegister } from "@/components/service-worker/service-worker-register";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="h-full min-h-full overflow-x-hidden">
+        <ServiceWorkerRegister />
         <IosViewportListener />
         <div className="flex h-full min-h-full flex-col">
           <ThemeProvider
