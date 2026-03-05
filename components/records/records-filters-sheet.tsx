@@ -16,6 +16,8 @@ interface RecordsFiltersSheetProps {
   onExerciseChange: (name: string) => void;
   trimmedExerciseName: string;
   isLoading: boolean;
+  isRepsOnlyExercise: boolean;
+  isTimeBasedExercise: boolean;
   allReps: number[];
   effectiveSelectedReps: number[];
   onToggleRep: (reps: number, checked: boolean | string) => void;
@@ -28,6 +30,8 @@ export const RecordsFiltersSheet = ({
   onExerciseChange,
   trimmedExerciseName,
   isLoading,
+  isRepsOnlyExercise,
+  isTimeBasedExercise,
   allReps,
   effectiveSelectedReps,
   onToggleRep,
@@ -55,26 +59,25 @@ export const RecordsFiltersSheet = ({
               Reps
             </div>
 
-            {!trimmedExerciseName && (
+            {(isRepsOnlyExercise || isTimeBasedExercise) && trimmedExerciseName ? (
+              <p className="text-sm text-muted-foreground">
+                For this exercise records are based on a single best result. Reps
+                filters are not available.
+              </p>
+            ) : !trimmedExerciseName ? (
               <p className="text-sm text-muted-foreground">
                 Select an exercise to see all reps you have ever performed for
                 it.
               </p>
-            )}
-
-            {trimmedExerciseName && isLoading && (
+            ) : isLoading && trimmedExerciseName ? (
               <p className="text-sm text-muted-foreground">
                 Loading reps history...
               </p>
-            )}
-
-            {trimmedExerciseName && !isLoading && allReps.length === 0 && (
+            ) : !isLoading && trimmedExerciseName && allReps.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No history found for this exercise yet.
               </p>
-            )}
-
-            {trimmedExerciseName && allReps.length > 0 && (
+            ) : trimmedExerciseName && allReps.length > 0 ? (
               <>
                 {allReps.length <= 10 ? (
                   <div className="flex flex-col gap-2">
@@ -130,7 +133,7 @@ export const RecordsFiltersSheet = ({
                   </div>
                 )}
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </SheetContent>

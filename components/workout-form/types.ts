@@ -3,6 +3,7 @@ import { z } from "zod";
 export const WORKOUT_UNIT_TYPE = {
   WEIGHT: "weight",
   DURATION: "duration",
+  REPS_ONLY: "reps-only",
 } as const;
 
 export type WorkoutUnitType =
@@ -25,6 +26,7 @@ const workoutSetSchema = z.object({
 const unitTypeSchema = z.enum([
   WORKOUT_UNIT_TYPE.WEIGHT,
   WORKOUT_UNIT_TYPE.DURATION,
+  WORKOUT_UNIT_TYPE.REPS_ONLY,
 ]);
 
 const workoutExerciseSchema = z.object({
@@ -37,7 +39,6 @@ const workoutExerciseSchema = z.object({
 export const createWorkoutFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  /** ISO date string (YYYY-MM-DD) – date of workout (created_at); only for workout mode */
   workout_date: z.string().optional(),
   exercises: z.array(workoutExerciseSchema),
 });

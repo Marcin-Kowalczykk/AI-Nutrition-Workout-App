@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { TABLE_NAMES } from "@/app/api/tableNames";
 
 // types
-import { IExercise } from "./types";
+import { IExercise, type ExerciseUnitType } from "./types";
 
 const DEFAULT_CATEGORY_NAME = "other";
 
@@ -63,6 +63,7 @@ export async function GET(request: Request) {
 export interface ICreateExerciseRequestBody {
   name: string;
   categoryId?: string;
+  unitType?: ExerciseUnitType;
 }
 
 export type ICreateExerciseResponse = IExercise;
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         category_id: categoryId,
         name: normalizeForComparison(name),
+        unit_type: body.unitType ?? "weighted",
       })
       .select()
       .single();

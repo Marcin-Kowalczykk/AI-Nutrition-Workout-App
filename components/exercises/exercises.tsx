@@ -14,6 +14,10 @@ import { useListCategories } from "./api/use-list-categories";
 import { useListExercises } from "./api/use-list-exercises";
 import { useCreateCategory } from "./api/use-create-category";
 import { useCreateExercise } from "./api/use-create-exercise";
+import {
+  EXERCISE_UNIT_TYPE,
+  type ExerciseUnitType,
+} from "@/app/api/exercises/types";
 import { useDeleteCategories } from "./api/use-delete-categories";
 import { useDeleteExercises } from "./api/use-delete-exercises";
 import { ExercisesSearchInput } from "./exercises-search";
@@ -27,6 +31,9 @@ export const Exercises = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newExerciseByCategory, setNewExerciseByCategory] = useState<
     Record<string, string>
+  >({});
+  const [newExerciseUnitByCategory, setNewExerciseUnitByCategory] = useState<
+    Record<string, ExerciseUnitType | "">
   >({});
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(
     new Set()
@@ -152,7 +159,8 @@ export const Exercises = () => {
 
   const handleAddExercise = (categoryId: string) => {
     const name = (newExerciseByCategory[categoryId] ?? "").trim();
-    if (!name) return;
+    const unitType = newExerciseUnitByCategory[categoryId] ?? "";
+    if (!name || !unitType) return;
 
     const nameNorm = normalizeForComparison(name);
     const isDuplicate = exercises.some(
@@ -164,10 +172,12 @@ export const Exercises = () => {
     }
 
     createExercise(
-      { name, categoryId },
+      { name, categoryId, unitType },
       {
-        onSuccess: () =>
-          setNewExerciseByCategory((prev) => ({ ...prev, [categoryId]: "" })),
+        onSuccess: () => {
+          setNewExerciseByCategory((prev) => ({ ...prev, [categoryId]: "" }));
+          setNewExerciseUnitByCategory((prev) => ({ ...prev, [categoryId]: "" }));
+        },
       }
     );
   };
@@ -353,7 +363,17 @@ export const Exercises = () => {
                               }
                             />
                           )}
-                          <span className="flex-1">{ex.name}</span>
+                          <span className="flex-1 flex items-center gap-2">
+                            <span>{ex.name}</span>
+                            <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                              {ex.unit_type === EXERCISE_UNIT_TYPE.WEIGHTED &&
+                                "Weighted"}
+                              {ex.unit_type === EXERCISE_UNIT_TYPE.REPS_ONLY &&
+                                "Reps only"}
+                              {ex.unit_type === EXERCISE_UNIT_TYPE.TIME_BASED &&
+                                "Time based"}
+                            </span>
+                          </span>
                           <Button
                             size="icon"
                             variant="ghost"
@@ -390,6 +410,29 @@ export const Exercises = () => {
                         disabled={isCreatingExercise}
                         className="flex-1 max-w-full h-8"
                       />
+                      <select
+                        value={newExerciseUnitByCategory[category.id] ?? ""}
+                        onChange={(e) =>
+                          setNewExerciseUnitByCategory((prev) => ({
+                            ...prev,
+                            [category.id]: e.target
+                              .value as ExerciseUnitType | "",
+                          }))
+                        }
+                        disabled={isCreatingExercise}
+                        className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
+                      >
+                        <option value="">Select unit type</option>
+                        <option value={EXERCISE_UNIT_TYPE.WEIGHTED}>
+                          Weighted
+                        </option>
+                        <option value={EXERCISE_UNIT_TYPE.REPS_ONLY}>
+                          Reps only
+                        </option>
+                        <option value={EXERCISE_UNIT_TYPE.TIME_BASED}>
+                          Time based
+                        </option>
+                      </select>
                       <Button
                         size="sm"
                         variant="outline"
@@ -397,6 +440,7 @@ export const Exercises = () => {
                         onClick={() => handleAddExercise(category.id)}
                         disabled={
                           !(newExerciseByCategory[category.id] ?? "").trim() ||
+                          !(newExerciseUnitByCategory[category.id] ?? "") ||
                           isCreatingExercise
                         }
                       >

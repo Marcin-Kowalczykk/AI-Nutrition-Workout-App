@@ -7,6 +7,7 @@ import { Loader } from "@/components/shared/loader";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import { useListCategories } from "@/components/exercises/api/use-list-categories";
 import { useListExercises } from "@/components/exercises/api/use-list-exercises";
+import { ExerciseUnitType } from "@/app/api/exercises/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,12 +55,18 @@ interface ExercisesSelectProps {
   value?: string | null;
   onChange: (value: string) => void;
   disabled?: boolean;
+  onExerciseSelectedMeta?: (meta: {
+    id: string;
+    name: string;
+    unitType?: ExerciseUnitType;
+  }) => void;
 }
 
 export const ExercisesSelect = ({
   value,
   onChange,
   disabled,
+  onExerciseSelectedMeta,
 }: ExercisesSelectProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -179,6 +186,24 @@ export const ExercisesSelect = ({
 
   const handleSelectExercise = (name: string) => {
     onChange(name);
+
+    if (onExerciseSelectedMeta) {
+      const selected =
+        exercises.find(
+          (exercise: { name: string }) =>
+            normalizeForComparison(exercise.name) ===
+            normalizeForComparison(name)
+        ) ?? null;
+
+      if (selected) {
+        onExerciseSelectedMeta({
+          id: selected.id,
+          name: selected.name,
+          unitType: (selected as { unit_type?: ExerciseUnitType }).unit_type,
+        });
+      }
+    }
+
     setOpen(false);
   };
 
