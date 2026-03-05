@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EXERCISE_UNIT_TYPE } from "@/app/api/exercises/types";
 
 interface RecordsFiltersSheetProps {
   open: boolean;
@@ -36,6 +38,9 @@ export const RecordsFiltersSheet = ({
   effectiveSelectedReps,
   onToggleRep,
 }: RecordsFiltersSheetProps) => {
+  const [portalContainer, setPortalContainer] =
+    useState<HTMLElement | null>(null);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex max-h-full w-full flex-col gap-0 overflow-auto p-0 sm:w-[70%] sm:max-w-[600px]">
@@ -43,7 +48,10 @@ export const RecordsFiltersSheet = ({
           <SheetTitle className="m-0">Records filters</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-auto px-6 py-6 space-y-6">
+        <div
+          ref={(el) => setPortalContainer(el)}
+          className="flex-1 overflow-auto px-6 py-6 space-y-6"
+        >
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Exercise
@@ -51,6 +59,13 @@ export const RecordsFiltersSheet = ({
             <ExercisesSelect
               value={selectedExercise ?? ""}
               onChange={onExerciseChange}
+              portalContainer={portalContainer}
+              onExerciseSelectedMeta={(meta) => {
+                const isNonWeighted =
+                  meta.unitType === EXERCISE_UNIT_TYPE.REPS_ONLY ||
+                  meta.unitType === EXERCISE_UNIT_TYPE.TIME_BASED;
+                if (isNonWeighted) onOpenChange(false);
+              }}
             />
           </div>
 

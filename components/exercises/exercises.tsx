@@ -1,27 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/shared/loader";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 
 import { useListCategories } from "./api/use-list-categories";
 import { useListExercises } from "./api/use-list-exercises";
 import { useCreateCategory } from "./api/use-create-category";
 import { useCreateExercise } from "./api/use-create-exercise";
-import {
-  EXERCISE_UNIT_TYPE,
-  type ExerciseUnitType,
-} from "@/app/api/exercises/types";
 import { useDeleteCategories } from "./api/use-delete-categories";
 import { useDeleteExercises } from "./api/use-delete-exercises";
 import { ExercisesSearchInput } from "./exercises-search";
 import { useExercisesSearch } from "./hooks/use-exercises-search";
+import { ExercisesCategoryList } from "./exercises-category-list";
+import type { ExerciseUnitType } from "@/app/api/exercises/types";
 
 import { normalizeForComparison } from "@/lib/normalize-string";
 import type { IExercise, IExerciseCategory } from "@/app/api/exercises/types";
@@ -107,36 +104,17 @@ export const Exercises = () => {
 
   const toggleCategorySelection = (id: string) => {
     const categoryExercises = exercisesByCategory[id] ?? [];
-
     setSelectedCategoryIds((prev) => {
       const next = new Set(prev);
       const willSelect = !next.has(id);
-
-      if (willSelect) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-
-      setSelectedExerciseIds((prevExercises) => {
-        const nextExercises = new Set(prevExercises);
-        if (willSelect) {
-          categoryExercises.forEach((ex) => nextExercises.add(ex.id));
-        } else {
-          categoryExercises.forEach((ex) => nextExercises.delete(ex.id));
-        }
-        return nextExercises;
+      if (willSelect) next.add(id);
+      else next.delete(id);
+      setSelectedExerciseIds((prevEx) => {
+        const nextEx = new Set(prevEx);
+        if (willSelect) categoryExercises.forEach((ex) => nextEx.add(ex.id));
+        else categoryExercises.forEach((ex) => nextEx.delete(ex.id));
+        return nextEx;
       });
-
-      return next;
-    });
-  };
-
-  const toggleExerciseSelection = (id: string) => {
-    setSelectedExerciseIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
       return next;
     });
   };
@@ -144,16 +122,11 @@ export const Exercises = () => {
   const handleAddCategory = () => {
     const name = newCategoryName.trim();
     if (!name) return;
-
     const nameNorm = normalizeForComparison(name);
-    const isDuplicate = categories.some(
-      (c: IExerciseCategory) => normalizeForComparison(c.name) === nameNorm
-    );
-    if (isDuplicate) {
+    if (categories.some((c: IExerciseCategory) => normalizeForComparison(c.name) === nameNorm)) {
       toast.warning("A category with this name already exists.");
       return;
     }
-
     createCategory({ name });
   };
 
@@ -161,16 +134,11 @@ export const Exercises = () => {
     const name = (newExerciseByCategory[categoryId] ?? "").trim();
     const unitType = newExerciseUnitByCategory[categoryId] ?? "";
     if (!name || !unitType) return;
-
     const nameNorm = normalizeForComparison(name);
-    const isDuplicate = exercises.some(
-      (e: IExercise) => normalizeForComparison(e.name ?? "") === nameNorm
-    );
-    if (isDuplicate) {
+    if (exercises.some((e: IExercise) => normalizeForComparison(e.name ?? "") === nameNorm)) {
       toast.warning("An exercise with this name already exists.");
       return;
     }
-
     createExercise(
       { name, categoryId, unitType },
       {
@@ -190,20 +158,6 @@ export const Exercises = () => {
     setDeleteSelectedModalOpen(false);
   };
 
-  const handleConfirmDeleteCategory = () => {
-    if (deleteCategoryModal.categoryId) {
-      deleteCategories([deleteCategoryModal.categoryId]);
-      setDeleteCategoryModal({ open: false, categoryId: null });
-    }
-  };
-
-  const handleConfirmDeleteExercise = () => {
-    if (deleteExerciseModal.exerciseId) {
-      deleteExercises([deleteExerciseModal.exerciseId]);
-      setDeleteExerciseModal({ open: false, exerciseId: null });
-    }
-  };
-
   const hasSelection =
     selectedCategoryIds.size > 0 || selectedExerciseIds.size > 0;
   const isDeleting = isDeletingCategories || isDeletingExercises;
@@ -215,17 +169,6 @@ export const Exercises = () => {
       </CenterWrapper>
     );
   }
-
-  const toggleMultiDeleteMode = () => {
-    setMultiDeleteMode((prev) => {
-      if (prev) {
-        setSelectedCategoryIds(new Set());
-        setSelectedExerciseIds(new Set());
-        return false;
-      }
-      return true;
-    });
-  };
 
   return (
     <div className="flex w-full xl:w-1/2 flex-col gap-4">
@@ -265,7 +208,16 @@ export const Exercises = () => {
           type="button"
           variant="showHide"
           size="showHide"
-          onClick={toggleMultiDeleteMode}
+          onClick={() => {
+            setMultiDeleteMode((prev) => {
+              if (prev) {
+                setSelectedCategoryIds(new Set());
+                setSelectedExerciseIds(new Set());
+                return false;
+              }
+              return true;
+            });
+          }}
         >
           {multiDeleteMode ? "Hide multi-delete" : "Show multi-delete"}
         </Button>
@@ -279,201 +231,50 @@ export const Exercises = () => {
           disabled={isDeleting}
         >
           {isDeleting ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
-          Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size}
-          )
+          Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size})
         </Button>
       )}
 
       <div className="border rounded-lg divide-y bg-card">
-        {filteredCategories.length === 0 ? (
-          <div className="p-4 text-muted-foreground text-sm">
-            {categories.length === 0
-              ? "Add a category above or add an exercise using the input above (it will go to the default category)."
-              : "No categories or exercises match your search."}
-          </div>
-        ) : (
-          filteredCategories.map(({ category, exercises: catExercises }) => {
-            const isExpanded = expandedIds.has(category.id);
-            const isCategorySelected = selectedCategoryIds.has(category.id);
-
-            return (
-              <div key={category.id} className="flex flex-col">
-                <div
-                  className="flex items-center gap-2 p-3 hover:bg-muted/50 cursor-pointer min-h-12"
-                  onClick={() => toggleExpanded(category.id)}
-                >
-                  {multiDeleteMode && (
-                    <Checkbox
-                      checked={isCategorySelected}
-                      onCheckedChange={() =>
-                        toggleCategorySelection(category.id)
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  )}
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0" />
-                  )}
-                  <span className="font-medium flex-1">{category.name}</span>
-                  {catExercises.length > 0 && (
-                    <span className="text-muted-foreground text-sm">
-                      {catExercises.length}
-                    </span>
-                  )}
-                  {category.name.toLowerCase() !== "other" && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-destructive hover:text-destructive/80"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteCategoryModal({
-                          open: true,
-                          categoryId: category.id,
-                        });
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
-                {isExpanded && (
-                  <div className="pl-10 pr-3 pb-3 pt-0 space-y-2 bg-muted/20">
-                    {catExercises.map((ex) => {
-                      const isExSelected = selectedExerciseIds.has(ex.id);
-                      const isMatch =
-                        searchLower &&
-                        ex.name.toLowerCase().includes(searchLower);
-                      return (
-                        <div
-                          key={ex.id}
-                          className={`flex items-center gap-2 py-1.5 pl-2 rounded hover:bg-muted/50 ${
-                            isMatch ? "border-b bg-muted/50 rounded-lg" : ""
-                          }`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {multiDeleteMode && (
-                            <Checkbox
-                              checked={isExSelected}
-                              onCheckedChange={() =>
-                                toggleExerciseSelection(ex.id)
-                              }
-                            />
-                          )}
-                          <span className="flex-1 flex items-center gap-2">
-                            <span>{ex.name}</span>
-                            <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                              {ex.unit_type === EXERCISE_UNIT_TYPE.WEIGHTED &&
-                                "Weighted"}
-                              {ex.unit_type === EXERCISE_UNIT_TYPE.REPS_ONLY &&
-                                "Reps only"}
-                              {ex.unit_type === EXERCISE_UNIT_TYPE.TIME_BASED &&
-                                "Time based"}
-                            </span>
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-destructive hover:text-destructive/80"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteExerciseModal({
-                                open: true,
-                                exerciseId: ex.id,
-                              });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                    <div
-                      className="flex items-center gap-2 pt-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Input
-                        placeholder="New exercise in this category"
-                        value={newExerciseByCategory[category.id] ?? ""}
-                        onChange={(e) =>
-                          setNewExerciseByCategory((prev) => ({
-                            ...prev,
-                            [category.id]: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleAddExercise(category.id);
-                        }}
-                        disabled={isCreatingExercise}
-                        className="flex-1 max-w-full h-8"
-                      />
-                      <select
-                        value={newExerciseUnitByCategory[category.id] ?? ""}
-                        onChange={(e) =>
-                          setNewExerciseUnitByCategory((prev) => ({
-                            ...prev,
-                            [category.id]: e.target
-                              .value as ExerciseUnitType | "",
-                          }))
-                        }
-                        disabled={isCreatingExercise}
-                        className="h-8 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
-                      >
-                        <option value="">Select unit type</option>
-                        <option value={EXERCISE_UNIT_TYPE.WEIGHTED}>
-                          Weighted
-                        </option>
-                        <option value={EXERCISE_UNIT_TYPE.REPS_ONLY}>
-                          Reps only
-                        </option>
-                        <option value={EXERCISE_UNIT_TYPE.TIME_BASED}>
-                          Time based
-                        </option>
-                      </select>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8"
-                        onClick={() => handleAddExercise(category.id)}
-                        disabled={
-                          !(newExerciseByCategory[category.id] ?? "").trim() ||
-                          !(newExerciseUnitByCategory[category.id] ?? "") ||
-                          isCreatingExercise
-                        }
-                      >
-                        {isCreatingExercise ? (
-                          <Loader size={16} />
-                        ) : (
-                          <>
-                            <Plus className="h-3 w-3" />
-                            Add
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+        <ExercisesCategoryList
+          categories={filteredCategories}
+          hasAnyCategories={categories.length > 0}
+          expandedIds={expandedIds}
+          multiDeleteMode={multiDeleteMode}
+          selectedCategoryIds={selectedCategoryIds}
+          selectedExerciseIds={selectedExerciseIds}
+          searchLower={searchLower}
+          newExerciseByCategory={newExerciseByCategory}
+          newExerciseUnitByCategory={newExerciseUnitByCategory}
+          isCreatingExercise={isCreatingExercise}
+          onToggleExpanded={toggleExpanded}
+          onToggleCategorySelection={toggleCategorySelection}
+          onToggleExerciseSelection={(id) =>
+            setSelectedExerciseIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            })
+          }
+          onOpenDeleteCategory={(id) =>
+            setDeleteCategoryModal({ open: true, categoryId: id })
+          }
+          onOpenDeleteExercise={(id) =>
+            setDeleteExerciseModal({ open: true, exerciseId: id })
+          }
+          onAddExercise={handleAddExercise}
+          onNewExerciseNameChange={(categoryId, value) =>
+            setNewExerciseByCategory((prev) => ({ ...prev, [categoryId]: value }))
+          }
+          onNewExerciseUnitChange={(categoryId, value) =>
+            setNewExerciseUnitByCategory((prev) => ({
+              ...prev,
+              [categoryId]: value,
+            }))
+          }
+        />
       </div>
-
-      {multiDeleteMode && hasSelection && (
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => setDeleteSelectedModalOpen(true)}
-          disabled={isDeleting}
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size}
-          )
-        </Button>
-      )}
 
       <ConfirmModal
         open={deleteCategoryModal.open}
@@ -484,7 +285,12 @@ export const Exercises = () => {
         description="This will permanently delete this category and all exercises in it. This action cannot be undone."
         confirmLabel="Delete"
         cancelLabel="Cancel"
-        onConfirm={handleConfirmDeleteCategory}
+        onConfirm={() => {
+          if (deleteCategoryModal.categoryId) {
+            deleteCategories([deleteCategoryModal.categoryId]);
+            setDeleteCategoryModal({ open: false, categoryId: null });
+          }
+        }}
         isPending={isDeletingCategories}
       />
 
@@ -497,7 +303,12 @@ export const Exercises = () => {
         description="This will permanently delete this exercise. This action cannot be undone."
         confirmLabel="Delete"
         cancelLabel="Cancel"
-        onConfirm={handleConfirmDeleteExercise}
+        onConfirm={() => {
+          if (deleteExerciseModal.exerciseId) {
+            deleteExercises([deleteExerciseModal.exerciseId]);
+            setDeleteExerciseModal({ open: false, exerciseId: null });
+          }
+        }}
         isPending={isDeletingExercises}
       />
 

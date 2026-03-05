@@ -60,6 +60,8 @@ interface ExercisesSelectProps {
     name: string;
     unitType?: ExerciseUnitType;
   }) => void;
+  /** Portal dropdown into this element so scroll works inside Sheet/Dialog (e.g. Records filters). */
+  portalContainer?: HTMLElement | null;
 }
 
 export const ExercisesSelect = ({
@@ -67,6 +69,7 @@ export const ExercisesSelect = ({
   onChange,
   disabled,
   onExerciseSelectedMeta,
+  portalContainer,
 }: ExercisesSelectProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -245,6 +248,7 @@ export const ExercisesSelect = ({
       </PopoverTrigger>
       <PopoverContent
         ref={popoverContentRef}
+        container={portalContainer ?? undefined}
         className="w-(--radix-popover-trigger-width) p-0 max-h-[min(85vh,28rem)] flex flex-col overflow-hidden"
         align="start"
         side="bottom"

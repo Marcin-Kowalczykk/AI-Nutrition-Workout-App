@@ -55,6 +55,12 @@ body,
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-warning: var(--warning);
+  --color-exercise-badge-weighted: var(--exercise-badge-weighted);
+  --color-exercise-badge-weighted-bg: var(--exercise-badge-weighted-bg);
+  --color-exercise-badge-time-based: var(--exercise-badge-time-based);
+  --color-exercise-badge-time-based-bg: var(--exercise-badge-time-based-bg);
+  --color-exercise-badge-reps-only: var(--exercise-badge-reps-only);
+  --color-exercise-badge-reps-only-bg: var(--exercise-badge-reps-only-bg);
 }
 
 :root {
@@ -62,6 +68,13 @@ body,
   --sidebar-width-expanded: 16rem;
   --sidebar-width-collapsed: 4rem;
   --warning: #f59e0b;
+  /* Exercise unit-type badge colors (default / fallback) */
+  --exercise-badge-weighted: #a06565;
+  --exercise-badge-weighted-bg: #2d1818;
+  --exercise-badge-time-based: #5a7a8a;
+  --exercise-badge-time-based-bg: #1a2832;
+  --exercise-badge-reps-only: #5a7a5a;
+  --exercise-badge-reps-only-bg: #1a2a1a;
 }
 
 :root,
@@ -90,6 +103,12 @@ body,
   --popover-border: #404040;
   --accent: #262626;
   --accent-foreground: #fafafa;
+  --exercise-badge-weighted: #b89090;
+  --exercise-badge-weighted-bg: #2d1818;
+  --exercise-badge-time-based: #7a9caa;
+  --exercise-badge-time-based-bg: #1a2832;
+  --exercise-badge-reps-only: #7a9a7a;
+  --exercise-badge-reps-only-bg: #1a2a1a;
 }
 
 .light {
@@ -117,6 +136,30 @@ body,
   --popover-border: #262626;
   --accent: #f4f4f5;
   --accent-foreground: #0a0a0a;
+  --exercise-badge-weighted: #9a5c5c;
+  --exercise-badge-weighted-bg: #f5e8e8;
+  --exercise-badge-time-based: #5a7a8a;
+  --exercise-badge-time-based-bg: #e8eef2;
+  --exercise-badge-reps-only: #5a7a5a;
+  --exercise-badge-reps-only-bg: #e8f0e8;
+}
+
+.exercise-badge-weighted {
+  background-color: var(--exercise-badge-weighted-bg);
+  color: var(--exercise-badge-weighted);
+  border-color: var(--exercise-badge-weighted);
+}
+
+.exercise-badge-time-based {
+  background-color: var(--exercise-badge-time-based-bg);
+  color: var(--exercise-badge-time-based);
+  border-color: var(--exercise-badge-time-based);
+}
+
+.exercise-badge-reps-only {
+  background-color: var(--exercise-badge-reps-only-bg);
+  color: var(--exercise-badge-reps-only);
+  border-color: var(--exercise-badge-reps-only);
 }
 
 @layer base {
