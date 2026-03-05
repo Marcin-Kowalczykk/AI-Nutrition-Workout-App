@@ -91,7 +91,9 @@ export const ExercisesCategoryList = ({
               ) : (
                 <ChevronRight className="h-4 w-4 shrink-0" />
               )}
-              <span className="font-medium flex-1">{category.name}</span>
+              <span className="font-medium flex-1 capitalize">
+                {category.name}
+              </span>
               {catExercises.length > 0 && (
                 <span className="text-muted-foreground text-sm">
                   {catExercises.length}

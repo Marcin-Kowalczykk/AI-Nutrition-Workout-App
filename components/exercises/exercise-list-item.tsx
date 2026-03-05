@@ -35,7 +35,9 @@ export const ExerciseListItem = ({
         onCheckedChange={() => onToggleSelection(exercise.id)}
       />
     )}
-    <span className="min-w-0 flex-1 truncate">{exercise.name}</span>
+    <span className="min-w-0 flex-1 truncate capitalize">
+      {exercise.name}
+    </span>
     <ExerciseUnitBadge unitType={exercise.unit_type} />
     <Button
       size="icon"

@@ -26,7 +26,7 @@ interface ExerciseUnitBadgeProps {
 export const ExerciseUnitBadge = ({ unitType, className }: ExerciseUnitBadgeProps) => (
   <span
     className={cn(
-      "inline-flex shrink-0 items-center justify-center rounded-full border w-24 min-w-24 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-center",
+      "inline-flex shrink-0 items-center justify-center rounded-full border w-16 min-w-16 px-1 py-0.5 text-[8px] font-medium uppercase tracking-wide text-center",
       BADGE_CLASS[unitType],
       className
     )}

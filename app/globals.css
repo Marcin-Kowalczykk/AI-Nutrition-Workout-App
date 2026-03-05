@@ -68,13 +68,13 @@ body,
   --sidebar-width-expanded: 16rem;
   --sidebar-width-collapsed: 4rem;
   --warning: #f59e0b;
-  /* Exercise unit-type badge colors (default / fallback) */
-  --exercise-badge-weighted: #a06565;
-  --exercise-badge-weighted-bg: #2d1818;
-  --exercise-badge-time-based: #5a7a8a;
-  --exercise-badge-time-based-bg: #1a2832;
-  --exercise-badge-reps-only: #5a7a5a;
-  --exercise-badge-reps-only-bg: #1a2a1a;
+  /* Exercise unit-type badge colors (darker / muted) */
+  --exercise-badge-weighted: #7a5050;
+  --exercise-badge-weighted-bg: #1f1212;
+  --exercise-badge-time-based: #3d5560;
+  --exercise-badge-time-based-bg: #121a1f;
+  --exercise-badge-reps-only: #3d553d;
+  --exercise-badge-reps-only-bg: #121a12;
 }
 
 :root,
@@ -103,12 +103,12 @@ body,
   --popover-border: #404040;
   --accent: #262626;
   --accent-foreground: #fafafa;
-  --exercise-badge-weighted: #b89090;
-  --exercise-badge-weighted-bg: #2d1818;
-  --exercise-badge-time-based: #7a9caa;
-  --exercise-badge-time-based-bg: #1a2832;
-  --exercise-badge-reps-only: #7a9a7a;
-  --exercise-badge-reps-only-bg: #1a2a1a;
+  --exercise-badge-weighted: #8a6a6a;
+  --exercise-badge-weighted-bg: #221414;
+  --exercise-badge-time-based: #5a7280;
+  --exercise-badge-time-based-bg: #141c22;
+  --exercise-badge-reps-only: #5a725a;
+  --exercise-badge-reps-only-bg: #141a14;
 }
 
 .light {
@@ -136,12 +136,12 @@ body,
   --popover-border: #262626;
   --accent: #f4f4f5;
   --accent-foreground: #0a0a0a;
-  --exercise-badge-weighted: #9a5c5c;
-  --exercise-badge-weighted-bg: #f5e8e8;
-  --exercise-badge-time-based: #5a7a8a;
-  --exercise-badge-time-based-bg: #e8eef2;
-  --exercise-badge-reps-only: #5a7a5a;
-  --exercise-badge-reps-only-bg: #e8f0e8;
+  --exercise-badge-weighted: #7a4545;
+  --exercise-badge-weighted-bg: #efe0e0;
+  --exercise-badge-time-based: #455a66;
+  --exercise-badge-time-based-bg: #dce4e8;
+  --exercise-badge-reps-only: #455a45;
+  --exercise-badge-reps-only-bg: #dce8dc;
 }
 
 .exercise-badge-weighted {
