@@ -38,7 +38,7 @@ export const AddExerciseForm = ({
       disabled={isPending}
       className="w-full h-9"
     />
-    <div className="flex items-center gap-2 w-full flex-wrap">
+    <div className="flex items-center gap-2 w-full flex-nowrap overflow-x-auto">
       <ExerciseUnitTypeButtons
         value={unitType}
         onChange={(value) => onUnitTypeChange(categoryId, value)}
@@ -48,7 +48,7 @@ export const AddExerciseForm = ({
       <Button
         size="sm"
         variant="outline"
-        className="h-9 shrink-0"
+        className="h-9 shrink-0 whitespace-nowrap"
         onClick={() => onAdd(categoryId)}
         disabled={!name.trim() || !unitType || isPending}
       >
@@ -56,8 +56,8 @@ export const AddExerciseForm = ({
           <Loader size={16} />
         ) : (
           <>
-            <Plus className="h-3 w-3" />
-            <span className="capitalize">add exercise</span>
+            <Plus />
+            <span className="sm:inline capitalize">add exercise</span>
           </>
         )}
       </Button>

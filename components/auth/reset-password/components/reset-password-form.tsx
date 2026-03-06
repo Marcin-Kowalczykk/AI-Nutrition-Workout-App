@@ -95,7 +95,7 @@ const ResetPasswordFormContent = () => {
   if (authError) {
     return (
       <div className="flex flex-col gap-4">
-        <FormMessage className="text-destructive text-center">
+        <FormMessage className="text-primary-element text-center">
           {authError}
         </FormMessage>
         <Button type="button" variant="secondary" asChild>
@@ -157,11 +157,11 @@ const ResetPasswordFormContent = () => {
             )}
           />
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               {error?.message}
             </FormMessage>
           )}
-          <Button type="submit" variant="destructive" disabled={isPending}>
+          <Button type="submit" variant="default" disabled={isPending}>
             {isPending ? <Loader /> : "Reset Password"}
           </Button>
           <Button

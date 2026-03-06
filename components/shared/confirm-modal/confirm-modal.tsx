@@ -41,7 +41,7 @@ export const ConfirmModal = ({
   cancelLabel = "Cancel",
   onConfirm,
   isPending = false,
-  confirmVariant = "destructive",
+  confirmVariant = "default",
   onCancel,
 }: ConfirmModalProps) => {
   const handleOpenChange = React.useCallback(

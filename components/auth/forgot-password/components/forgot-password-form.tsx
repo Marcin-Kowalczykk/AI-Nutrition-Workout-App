@@ -102,11 +102,11 @@ const ForgotPasswordFormContent = () => {
             )}
           />
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               Failed to send reset link. Please check your email and try again.
             </FormMessage>
           )}
-          <Button type="submit" variant="destructive" disabled={isPending}>
+          <Button type="submit" variant="default" disabled={isPending}>
             {isPending ? <Loader /> : "Send Reset Link"}
           </Button>
           <Button type="button" variant="outline" disabled={isPending} asChild>

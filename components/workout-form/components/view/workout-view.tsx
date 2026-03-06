@@ -45,7 +45,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
   if (isError || !workoutData) {
     return (
       <CenterWrapper>
-        <div className="text-center text-destructive">
+        <div className="text-center text-primary-element">
           {error?.message || "Failed to load workout data"}
         </div>
       </CenterWrapper>
@@ -166,7 +166,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                                 />
                               ) : (
                                 <XCircle
-                                  className="h-5 w-5 text-destructive"
+                                  className="h-5 w-5 text-primary-element"
                                   strokeWidth={2}
                                 />
                               )}

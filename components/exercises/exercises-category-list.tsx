@@ -115,7 +115,7 @@ export const ExercisesCategoryList = ({
             </div>
 
             {isExpanded && (
-              <div className="pl-10 pr-3 pb-3 pt-0 space-y-2 bg-muted/20">
+              <div className="pl-4 pr-3 pb-3 pt-0 space-y-2 bg-muted/20">
                 {catExercises.map((ex) => (
                   <ExerciseListItem
                     key={ex.id}

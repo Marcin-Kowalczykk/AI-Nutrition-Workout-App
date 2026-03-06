@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { pl } from "date-fns/locale";
 
@@ -71,7 +71,7 @@ const WorkoutHistory = () => {
   if (isError) {
     return (
       <CenterWrapper>
-        <div className="text-destructive">
+        <div className="text-primary-element">
           Error: {error?.message || "Failed to load workout history"}
         </div>
       </CenterWrapper>
@@ -119,9 +119,10 @@ const WorkoutHistory = () => {
               onChange={(date) => setEndDate(date || undefined)}
               placeholder="select end date"
               disabled={(date) => {
-                if (startDate) {
-                  return date < startDate;
-                }
+                const d = startOfDay(date);
+                const today = startOfDay(new Date());
+                if (d > today) return true;
+                if (startDate) return d < startOfDay(startDate);
                 return false;
               }}
             />
@@ -141,7 +142,7 @@ const WorkoutHistory = () => {
                 <CardContent className="p-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <div className="text-sm text-muted-foreground border-b-2 border-destructive pb-2 w-fit">
+                      <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
                         {formatDate(workout.created_at)}
                       </div>
                       <div className="font-semibold text-lg">

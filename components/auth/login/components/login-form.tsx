@@ -89,12 +89,12 @@ const LoginFormContent = () => {
             )}
           />
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               Invalid login credentials. Check your credentials and make sure
               you are not using CAPS LOCK.
             </FormMessage>
           )}
-          <Button type="submit" variant="destructive" disabled={isPending}>
+          <Button type="submit" variant="default" disabled={isPending}>
             {isPending ? <Loader /> : "Login"}
           </Button>
           <Button type="button" variant="outline" disabled={isPending} asChild>

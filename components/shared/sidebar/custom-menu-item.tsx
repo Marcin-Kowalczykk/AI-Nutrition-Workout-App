@@ -37,7 +37,7 @@ export const CustomMenuItem = ({
   const { isMobile, setOpenMobile } = useSidebar();
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-  const { hasUnsavedChanges } = useWorkoutUnsavedChanges();
+  const { hasUnsavedChanges, discardRef } = useWorkoutUnsavedChanges();
 
   const IconComponent = icon;
   const isActive = appRoute === url;
@@ -71,6 +71,9 @@ export const CustomMenuItem = ({
     const targetUrl = pendingUrl;
     setPendingUrl(null);
     setShowUnsavedModal(false);
+
+    // Clear workout/template draft cache so when user re-opens from history they see backend data
+    discardRef.current?.();
 
     if (onClick) {
       onClick();

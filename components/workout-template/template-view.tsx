@@ -35,7 +35,7 @@ export function TemplateView({ templateId }: TemplateViewProps) {
   if (isError || !templateData) {
     return (
       <CenterWrapper>
-        <div className="text-center text-destructive">
+        <div className="text-center text-primary-element">
           {error?.message || "Failed to load template"}
         </div>
       </CenterWrapper>

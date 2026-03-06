@@ -8,4 +8,7 @@ export {
   prepareExercisesForTemplate,
   type TemplateExercise,
 } from "./prepare-exercises-for-template";
-export { getBaselineString } from "./get-baseline-string";
+export {
+  getBaselineString,
+  getComparisonBaselineString,
+} from "./get-baseline-string";

@@ -37,6 +37,7 @@ body,
   --color-border: var(--border);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
+  --color-primary-element: var(--primary-element);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -89,8 +90,9 @@ body,
   --secondary-foreground: #ffffff;
   --muted: #262626;
   --muted-foreground: #a3a3a3;
-  --destructive: #ef4444;
+  --destructive: #831818;
   --destructive-foreground: #fafafa;
+  --primary-element:#992BFF;
   --border: #262626;
   --input: #404040;
   --ring: #404040;
@@ -118,6 +120,7 @@ body,
   --card-foreground: #0a0a0a;
   --primary: #0076f4;
   --primary-foreground: #ffffff;
+  --primary-element: #992BFF;
   --secondary: rgb(255, 255, 255);
   --secondary-foreground: #000000;
   --muted: #f4f4f5;

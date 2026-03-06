@@ -192,7 +192,7 @@ export const Records = () => {
                   <span>Loading your default exercise and records...</span>
                 </p>
               ) : error ? (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-primary-element">
                   Failed to load workout history. You can still select an
                   exercise manually.
                 </p>
@@ -209,7 +209,7 @@ export const Records = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 font-semibold text-destructive whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 font-semibold text-primary-element whitespace-nowrap">
                         {maxRepsRecord.reps} reps
                         <Trophy className="h-4 w-4 text-yellow-400" />
                       </span>
@@ -238,7 +238,7 @@ export const Records = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 font-semibold text-destructive whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 font-semibold text-primary-element whitespace-nowrap">
                         {maxDurationRecord.duration} s
                         <Trophy className="h-4 w-4 text-yellow-400" />
                       </span>
@@ -311,7 +311,7 @@ export const Records = () => {
                           <TableCell className="whitespace-nowrap">
                             {record.reps} rep{record.reps !== 1 ? "s" : ""}
                           </TableCell>
-                          <TableCell className="text-center font-semibold text-destructive whitespace-nowrap">
+                          <TableCell className="text-center font-semibold text-primary-element whitespace-nowrap">
                             <span className="inline-flex items-center justify-center gap-1 w-full whitespace-nowrap">
                               {record.weight} kg
                               {isBest && (

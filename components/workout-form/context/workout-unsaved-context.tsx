@@ -1,10 +1,18 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 
 type WorkoutUnsavedContextValue = {
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
+  /** Ref so the form can register a callback to run when user chooses "Leave without saving" (e.g. clear draft cache). */
+  discardRef: React.MutableRefObject<(() => void) | null>;
 };
 
 const WorkoutUnsavedContext = createContext<WorkoutUnsavedContextValue | null>(
@@ -17,6 +25,7 @@ export const WorkoutUnsavedProvider = ({
   children: React.ReactNode;
 }) => {
   const [hasUnsavedChanges, setHasUnsavedChangesState] = useState(false);
+  const discardRef = useRef<(() => void) | null>(null);
 
   const setHasUnsavedChanges = useCallback((value: boolean) => {
     setHasUnsavedChangesState(value);
@@ -27,6 +36,7 @@ export const WorkoutUnsavedProvider = ({
       value={{
         hasUnsavedChanges,
         setHasUnsavedChanges,
+        discardRef,
       }}
     >
       {children}

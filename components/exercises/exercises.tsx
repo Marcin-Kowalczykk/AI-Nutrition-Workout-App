@@ -172,7 +172,7 @@ export const Exercises = () => {
 
   return (
     <div className="flex w-full xl:w-1/2 flex-col gap-4">
-      <div className="flex flex-col gap-2 border-b-2 border-destructive pb-4">
+      <div className="flex flex-col gap-2 border-b-2 border-primary-element pb-4">
         <ExercisesSearchInput value={search} onChange={setSearch} />
       </div>
 

@@ -65,7 +65,7 @@ export function TemplateList() {
   if (isError) {
     return (
       <CenterWrapper>
-        <div className="text-destructive">
+        <div className="text-primary-element">
           Error: {error?.message || "Failed to load templates"}
         </div>
       </CenterWrapper>
@@ -104,7 +104,7 @@ export function TemplateList() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="font-semibold text-lg mb-1">
-                        <span className="inline-block border-b-2 border-destructive pb-1">
+                        <span className="inline-block border-b-2 border-primary-element pb-1">
                           {template.name}
                         </span>
                       </div>

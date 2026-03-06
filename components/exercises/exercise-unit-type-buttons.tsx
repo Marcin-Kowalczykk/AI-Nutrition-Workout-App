@@ -26,7 +26,7 @@ export const ExerciseUnitTypeButtons = ({
   disabled,
   className,
 }: ExerciseUnitTypeButtonsProps) => (
-  <div className={cn("flex items-center gap-2 flex-wrap", className)}>
+  <div className={cn("flex items-center gap-2 flex-nowrap", className)}>
     {UNIT_TYPES.map((unitValue) => {
       const isSelected = value === unitValue;
       return (

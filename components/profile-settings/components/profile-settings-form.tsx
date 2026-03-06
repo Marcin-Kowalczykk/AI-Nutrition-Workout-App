@@ -255,14 +255,14 @@ const ProfileSettingsFormContent = () => {
           </div>
 
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               {error?.message || "Failed to update profile. Please try again."}
             </FormMessage>
           )}
 
           <Button
             type="submit"
-            variant="destructive"
+            variant="default"
             disabled={isPending || !isFormDirty}
           >
             {isPending ? <Loader /> : "Update Profile"}

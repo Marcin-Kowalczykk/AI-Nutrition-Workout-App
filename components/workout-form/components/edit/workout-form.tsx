@@ -7,9 +7,12 @@ import { toast } from "sonner";
 import { format, startOfDay, subDays } from "date-fns";
 
 // hooks
-import { useFieldArray } from "react-hook-form";
+import {
+  useFieldArray,
+  useForm,
+  type Resolver,
+} from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useForm } from "react-hook-form";
 import { useCreateWorkout } from "../../api/use-create-workout";
 import { useUpdateWorkout } from "../../api/use-update-workout";
 import { useGetWorkout } from "../../api/use-get-workout";
@@ -57,7 +60,7 @@ import type {
   IWorkoutTemplateSetItem,
 } from "@/app/api/workout-templates/types";
 import {
-  getBaselineString,
+  getComparisonBaselineString,
   inferUnitType,
   prepareExercisesForSubmission,
   prepareExercisesForTemplate,
@@ -109,9 +112,6 @@ export const WorkoutForm = ({
   const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
     Record<string, boolean>
   >({});
-  const [numberInputEditing, setNumberInputEditing] = useState<
-    Record<string, string>
-  >({});
   const [headerVisible, setHeaderVisible] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
@@ -124,7 +124,7 @@ export const WorkoutForm = ({
   const lastSavedExercisesRef = useRef<
     CreateWorkoutFormType["exercises"] | null
   >(null);
-  const { setHasUnsavedChanges } = useWorkoutUnsavedChanges();
+  const { setHasUnsavedChanges, discardRef } = useWorkoutUnsavedChanges();
 
   const baseCacheKey = isTemplateMode
     ? TEMPLATE_FORM_CACHE_KEY
@@ -159,6 +159,13 @@ export const WorkoutForm = ({
   const clearCache = useCallback(() => {
     removeFormCache(cacheKey);
   }, [cacheKey]);
+
+  useEffect(() => {
+    discardRef.current = clearCache;
+    return () => {
+      discardRef.current = null;
+    };
+  }, [discardRef, clearCache]);
 
   const {
     mutate: createWorkout,
@@ -256,7 +263,9 @@ export const WorkoutForm = ({
   const defaultWorkoutDate = format(new Date(), "yyyy-MM-dd");
 
   const form = useForm<CreateWorkoutFormType>({
-    resolver: zodResolver(createWorkoutFormSchema),
+    resolver: zodResolver(
+      createWorkoutFormSchema
+    ) as Resolver<CreateWorkoutFormType>,
     mode: "onTouched",
     defaultValues: {
       name: "",
@@ -373,7 +382,7 @@ export const WorkoutForm = ({
     };
 
     form.reset(formData);
-    setLastSavedBaseline(getBaselineString(formData, false));
+    setLastSavedBaseline(getComparisonBaselineString(formData, false));
     lastSavedExercisesRef.current = formData.exercises;
     (async () => {
       try {
@@ -436,7 +445,7 @@ export const WorkoutForm = ({
     };
 
     form.reset(formData);
-    setLastSavedBaseline(getBaselineString(formData, true));
+    setLastSavedBaseline(getComparisonBaselineString(formData, true));
     lastSavedExercisesRef.current = formData.exercises;
     (async () => {
       try {
@@ -463,15 +472,18 @@ export const WorkoutForm = ({
 
   const hasFormChanges = useCallback(() => {
     const values = form.getValues();
-    const currentBaseline = getBaselineString(values, isTemplateMode);
+    const currentBaseline = getComparisonBaselineString(values, isTemplateMode);
 
     if (lastSavedBaseline === null) {
-      const emptyBaseline = JSON.stringify({
-        name: "",
-        description: "",
-        exercises: [],
-        ...(!isTemplateMode && { workout_date: defaultWorkoutDate }),
-      });
+      const emptyBaseline = getComparisonBaselineString(
+        {
+          name: "",
+          description: "",
+          workout_date: defaultWorkoutDate,
+          exercises: [],
+        },
+        isTemplateMode
+      );
       return currentBaseline !== emptyBaseline;
     }
 
@@ -500,17 +512,33 @@ export const WorkoutForm = ({
       const savedExercise = saved.find((e) => e.id === current.id);
       if (!savedExercise) return true;
 
+      const normalizeNumber = (val: unknown): number | undefined => {
+        if (val === null || val === undefined || val === "") return undefined;
+        const num = Number(val);
+        return Number.isNaN(num) ? undefined : num;
+      };
+
+      const normalizeExercise = (
+        exercise: (typeof currentExercises)[number]
+      ) => ({
+        id: exercise.id,
+        name: (exercise.name ?? "").trim(),
+        unitType: exercise.unitType,
+        sets: (exercise.sets ?? []).map((set) => ({
+          id: set.id,
+          set_number: set.set_number ?? 0,
+          reps: normalizeNumber(set.reps),
+          weight: normalizeNumber(set.weight),
+          duration: normalizeNumber(set.duration),
+          isChecked: !!set.isChecked,
+        })),
+      });
+
+      const normalizedCurrent = normalizeExercise(current);
+      const normalizedSaved = normalizeExercise(savedExercise);
+
       return (
-        JSON.stringify({
-          name: current.name,
-          unitType: current.unitType,
-          sets: current.sets,
-        }) !==
-        JSON.stringify({
-          name: savedExercise.name,
-          unitType: savedExercise.unitType,
-          sets: savedExercise.sets,
-        })
+        JSON.stringify(normalizedCurrent) !== JSON.stringify(normalizedSaved)
       );
     },
     [form]
@@ -551,7 +579,7 @@ export const WorkoutForm = ({
 
   const setBaselineFromValues = useCallback(
     (values: CreateWorkoutFormType) => {
-      setLastSavedBaseline(getBaselineString(values, isTemplateMode));
+      setLastSavedBaseline(getComparisonBaselineString(values, isTemplateMode));
       lastSavedExercisesRef.current = values.exercises;
     },
     [isTemplateMode]
@@ -923,7 +951,16 @@ export const WorkoutForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmitHandler)} noValidate>
+      <form
+        onSubmit={
+          (
+            form.handleSubmit as unknown as (
+              fn: (data: CreateWorkoutFormType) => void | Promise<void>
+            ) => (e?: React.BaseSyntheticEvent) => void
+          )(onSubmitHandler)
+        }
+        noValidate
+      >
         <div className="flex flex-col gap-3">
           {!headerVisible && workoutName.toString().trim() && (
             <div className="flex justify-end">
@@ -1062,21 +1099,6 @@ export const WorkoutForm = ({
               <Card key={exercise.id} className="overflow-hidden">
                 <CardHeader className="flex flex-row items-start space-y-0 p-2">
                   <CardTitle className="flex w-full items-center gap-1 min-w-0">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => form.handleSubmit(onSubmitHandler)()}
-                      disabled={isPending || !hasExerciseChanges(exerciseIndex)}
-                      className={`shrink-0 size-8 min-w-0 ${
-                        hasExerciseChanges(exerciseIndex)
-                          ? "ring-1 ring-destructive ring-offset-2 ring-offset-background"
-                          : ""
-                      }`}
-                      aria-label="Save workout"
-                    >
-                      <Save className="h-4 w-4" />
-                    </Button>
                     <div className="flex-1 min-w-0">
                       <FormField
                         control={form.control}
@@ -1208,57 +1230,41 @@ export const WorkoutForm = ({
                                     <FormField
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                                      render={({ field }) => (
-                                        <FormItem className="flex-1 min-w-0">
-                                          <FormLabel>Duration [s]</FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              ref={field.ref}
-                                              name={field.name}
-                                              type="number"
-                                              step="any"
-                                              min={0}
-                                              autoComplete="off"
-                                              disabled={isPending}
-                                              value={
-                                                numberInputEditing[
-                                                  field.name
-                                                ] !== undefined
-                                                  ? numberInputEditing[
-                                                      field.name
-                                                    ]
-                                                  : formatNumberFieldValue(
-                                                      field.value
-                                                    )
-                                              }
-                                              onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>
-                                              ) => {
-                                                const raw = e.target.value;
-                                                setNumberInputEditing(
-                                                  (prev) => ({
-                                                    ...prev,
-                                                    [field.name]: raw,
-                                                  })
-                                                );
-                                                field.onChange(
-                                                  parseNumberInput(raw)
-                                                );
-                                              }}
-                                              onBlur={() => {
-                                                setNumberInputEditing(
-                                                  (prev) => {
-                                                    const next = { ...prev };
-                                                    delete next[field.name];
-                                                    return next;
-                                                  }
-                                                );
-                                                field.onBlur();
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </FormItem>
-                                      )}
+                                      render={({ field }) => {
+                                        const raw =
+                                          field.value !== undefined &&
+                                          field.value !== null
+                                            ? String(field.value)
+                                            : "";
+                                        return (
+                                          <FormItem className="flex-1 min-w-0">
+                                            <FormLabel>Duration [s]</FormLabel>
+                                            <FormControl>
+                                              <Input
+                                                ref={field.ref}
+                                                name={field.name}
+                                                type="number"
+                                                step="any"
+                                                min={0}
+                                                autoComplete="off"
+                                                disabled={isPending}
+                                                value={raw}
+                                                onChange={(e) => {
+                                                  const v = e.target.value;
+                                                  const num = Number(v);
+                                                  field.onChange(
+                                                    v === "" ||
+                                                      Number.isNaN(num)
+                                                      ? undefined
+                                                      : num
+                                                  );
+                                                }}
+                                                onBlur={field.onBlur}
+                                              />
+                                            </FormControl>
+                                          </FormItem>
+                                        );
+                                      }}
                                     />
                                   );
                                 }
@@ -1269,65 +1275,15 @@ export const WorkoutForm = ({
                                     <FormField
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
-                                      render={({ field }) => (
-                                        <FormItem className="flex-1 min-w-0">
-                                          <FormLabel>Reps</FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              ref={field.ref}
-                                              name={field.name}
-                                              type="number"
-                                              step="any"
-                                              min={0}
-                                              autoComplete="off"
-                                              disabled={isPending}
-                                              value={
-                                                numberInputEditing[
-                                                  field.name
-                                                ] !== undefined
-                                                  ? numberInputEditing[
-                                                      field.name
-                                                    ]
-                                                  : formatNumberFieldValue(
-                                                      field.value
-                                                    )
-                                              }
-                                              onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>
-                                              ) => {
-                                                const raw = e.target.value;
-                                                setNumberInputEditing(
-                                                  (prev) => ({
-                                                    ...prev,
-                                                    [field.name]: raw,
-                                                  })
-                                                );
-                                                field.onChange(
-                                                  parseNumberInput(raw)
-                                                );
-                                              }}
-                                              onBlur={() => {
-                                                setNumberInputEditing(
-                                                  (prev) => {
-                                                    const next = { ...prev };
-                                                    delete next[field.name];
-                                                    return next;
-                                                  }
-                                                );
-                                                field.onBlur();
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </FormItem>
-                                      )}
-                                    />
-                                    {unitType === WORKOUT_UNIT_TYPE.WEIGHT && (
-                                      <FormField
-                                        control={form.control}
-                                        name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
-                                        render={({ field }) => (
+                                      render={({ field }) => {
+                                        const raw =
+                                          field.value !== undefined &&
+                                          field.value !== null
+                                            ? String(field.value)
+                                            : "";
+                                        return (
                                           <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Weight [kg]</FormLabel>
+                                            <FormLabel>Reps</FormLabel>
                                             <FormControl>
                                               <Input
                                                 ref={field.ref}
@@ -1337,45 +1293,63 @@ export const WorkoutForm = ({
                                                 min={0}
                                                 autoComplete="off"
                                                 disabled={isPending}
-                                                value={
-                                                  numberInputEditing[
-                                                    field.name
-                                                  ] !== undefined
-                                                    ? numberInputEditing[
-                                                        field.name
-                                                      ]
-                                                    : formatNumberFieldValue(
-                                                        field.value
-                                                      )
-                                                }
-                                                onChange={(
-                                                  e: React.ChangeEvent<HTMLInputElement>
-                                                ) => {
-                                                  const raw = e.target.value;
-                                                  setNumberInputEditing(
-                                                    (prev) => ({
-                                                      ...prev,
-                                                      [field.name]: raw,
-                                                    })
-                                                  );
+                                                value={raw}
+                                                onChange={(e) => {
+                                                  const v = e.target.value;
+                                                  const num = Number(v);
                                                   field.onChange(
-                                                    parseNumberInput(raw)
+                                                    v === "" ||
+                                                      Number.isNaN(num)
+                                                      ? undefined
+                                                      : num
                                                   );
                                                 }}
-                                                onBlur={() => {
-                                                  setNumberInputEditing(
-                                                    (prev) => {
-                                                      const next = { ...prev };
-                                                      delete next[field.name];
-                                                      return next;
-                                                    }
-                                                  );
-                                                  field.onBlur();
-                                                }}
+                                                onBlur={field.onBlur}
                                               />
                                             </FormControl>
                                           </FormItem>
-                                        )}
+                                        );
+                                      }}
+                                    />
+                                    {unitType === WORKOUT_UNIT_TYPE.WEIGHT && (
+                                      <FormField
+                                        control={form.control}
+                                        name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                        render={({ field }) => {
+                                          const raw =
+                                            field.value !== undefined &&
+                                            field.value !== null
+                                              ? String(field.value)
+                                              : "";
+                                          return (
+                                            <FormItem className="flex-1 min-w-0">
+                                              <FormLabel>Weight [kg]</FormLabel>
+                                              <FormControl>
+                                                <Input
+                                                  ref={field.ref}
+                                                  name={field.name}
+                                                  type="number"
+                                                  step="any"
+                                                  min={0}
+                                                  autoComplete="off"
+                                                  disabled={isPending}
+                                                  value={raw}
+                                                  onChange={(e) => {
+                                                    const v = e.target.value;
+                                                    const num = Number(v);
+                                                    field.onChange(
+                                                      v === "" ||
+                                                        Number.isNaN(num)
+                                                        ? undefined
+                                                        : num
+                                                    );
+                                                  }}
+                                                  onBlur={field.onBlur}
+                                                />
+                                              </FormControl>
+                                            </FormItem>
+                                          );
+                                        }}
                                       />
                                     )}
                                   </>
@@ -1396,7 +1370,7 @@ export const WorkoutForm = ({
                               </Button>
                             </div>
                             {setErrorMsg && (
-                              <p className="text-destructive text-sm mt-1 text-center">
+                              <p className="text-primary-element text-sm mt-1 text-center">
                                 {setErrorMsg}
                               </p>
                             )}
@@ -1430,19 +1404,48 @@ export const WorkoutForm = ({
                       size="sm"
                       onClick={() => handleRemoveExerciseClick(exerciseIndex)}
                       disabled={isPending}
-                      className="gap-2 self-start text-destructive hover:text-destructive"
+                      className="gap-2 self-start hover:text-primary text-muted-foreground"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-destructive" />
                       Remove Exercise
                     </Button>
                   </div>
+                  {exerciseIndex < exerciseFields.length - 1 && (
+                    <Button
+                      type="button"
+                      variant="default"
+                      disabled={isPending || !hasExerciseChanges(exerciseIndex)}
+                      onClick={() =>
+                        (
+                          form.handleSubmit as unknown as (
+                            fn: (data: CreateWorkoutFormType) => void | Promise<void>
+                          ) => (e?: React.BaseSyntheticEvent) => void
+                        )(onSubmitHandler)()
+                      }
+                      className="mt-2 w-full"
+                    >
+                      {isPending ? (
+                        <Loader />
+                      ) : isFirstSave ? (
+                        isTemplateMode ? (
+                          "Save Template"
+                        ) : (
+                          "Save Workout"
+                        )
+                      ) : isTemplateMode ? (
+                        "Update Template"
+                      ) : (
+                        "Update Workout"
+                      )}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               {error?.message || "Failed to save workout. Please try again."}
             </FormMessage>
           )}
@@ -1459,7 +1462,7 @@ export const WorkoutForm = ({
           <div className="flex flex-col gap-2">
             <Button
               type="submit"
-              variant="destructive"
+              variant="default"
               disabled={isPending || !hasFormChanges()}
             >
               {isPending ? (

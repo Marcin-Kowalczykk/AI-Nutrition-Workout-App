@@ -120,11 +120,11 @@ const RegisterFormContent = () => {
             )}
           />
           {isError && (
-            <FormMessage className="text-destructive text-center">
+            <FormMessage className="text-primary-element text-center">
               Registration failed. Please check your information and try again.
             </FormMessage>
           )}
-          <Button type="submit" variant="destructive" disabled={isPending}>
+          <Button type="submit" variant="default" disabled={isPending}>
             {isPending ? <Loader /> : "Register"}
           </Button>
           <Button type="button" variant="outline" disabled={isPending} asChild>

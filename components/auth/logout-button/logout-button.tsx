@@ -30,7 +30,7 @@ const LogoutButton = () => {
         <SidebarMenuButton
           onClick={handleLogout}
           disabled={isPending}
-          className="bg-transparent hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:justify-center"
+          className="bg-transparent hover:bg-primary-element/10 hover:text-primary-element group-data-[collapsible=icon]:justify-center"
           tooltip="Logout"
         >
           <LogOut className="h-4 w-4" />
@@ -43,7 +43,7 @@ const LogoutButton = () => {
   return (
     <Button
       onClick={handleLogout}
-      variant="destructive"
+      variant="default"
       className="w-full"
       disabled={isPending}
     >
