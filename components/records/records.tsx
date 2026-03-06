@@ -60,10 +60,12 @@ export const Records = () => {
     if (!trimmedExerciseName) return null;
     const normName = normalizeForComparison(trimmedExerciseName);
     const match =
-      exercises.find((exercise: { name: string; unit_type?: ExerciseUnitType }) => {
-        const exerciseName = exercise.name ?? "";
-        return normalizeForComparison(exerciseName) === normName;
-      }) ?? null;
+      exercises.find(
+        (exercise: { name: string; unit_type?: ExerciseUnitType }) => {
+          const exerciseName = exercise.name ?? "";
+          return normalizeForComparison(exerciseName) === normName;
+        }
+      ) ?? null;
 
     return (match?.unit_type as ExerciseUnitType | undefined) ?? null;
   })();
@@ -108,7 +110,12 @@ export const Records = () => {
             effectiveSelectedReps
           )
         : [],
-    [isWeightedExercise, workouts, normalizedExerciseName, effectiveSelectedReps]
+    [
+      isWeightedExercise,
+      workouts,
+      normalizedExerciseName,
+      effectiveSelectedReps,
+    ]
   );
 
   const maxWeight = useMemo(() => {
@@ -192,7 +199,7 @@ export const Records = () => {
                   <span>Loading your default exercise and records...</span>
                 </p>
               ) : error ? (
-                <p className="text-sm text-primary-element">
+                <p className="text-sm text-destructive">
                   Failed to load workout history. You can still select an
                   exercise manually.
                 </p>
@@ -209,17 +216,15 @@ export const Records = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 font-semibold text-primary-element whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
                         {maxRepsRecord.reps} reps
                         <Trophy className="h-4 w-4 text-yellow-400" />
                       </span>
                       {maxRepsRecord.date && (
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {format(
-                            new Date(maxRepsRecord.date),
-                            "d MMMM yyyy",
-                            { locale: pl }
-                          )}
+                          {format(new Date(maxRepsRecord.date), "d MMMM yyyy", {
+                            locale: pl,
+                          })}
                         </span>
                       )}
                     </div>
@@ -238,7 +243,7 @@ export const Records = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 font-semibold text-primary-element whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
                         {maxDurationRecord.duration} s
                         <Trophy className="h-4 w-4 text-yellow-400" />
                       </span>
@@ -311,8 +316,8 @@ export const Records = () => {
                           <TableCell className="whitespace-nowrap">
                             {record.reps} rep{record.reps !== 1 ? "s" : ""}
                           </TableCell>
-                          <TableCell className="text-center font-semibold text-primary-element whitespace-nowrap">
-                            <span className="inline-flex items-center justify-center gap-1 w-full whitespace-nowrap">
+                          <TableCell className="text-center">
+                            <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
                               {record.weight} kg
                               {isBest && (
                                 <Trophy className="h-4 w-4 text-yellow-400" />
