@@ -123,7 +123,11 @@ export const Exercises = () => {
     const name = newCategoryName.trim();
     if (!name) return;
     const nameNorm = normalizeForComparison(name);
-    if (categories.some((c: IExerciseCategory) => normalizeForComparison(c.name) === nameNorm)) {
+    if (
+      categories.some(
+        (c: IExerciseCategory) => normalizeForComparison(c.name) === nameNorm
+      )
+    ) {
       toast.warning("A category with this name already exists.");
       return;
     }
@@ -135,7 +139,11 @@ export const Exercises = () => {
     const unitType = newExerciseUnitByCategory[categoryId] ?? "";
     if (!name || !unitType) return;
     const nameNorm = normalizeForComparison(name);
-    if (exercises.some((e: IExercise) => normalizeForComparison(e.name ?? "") === nameNorm)) {
+    if (
+      exercises.some(
+        (e: IExercise) => normalizeForComparison(e.name ?? "") === nameNorm
+      )
+    ) {
       toast.warning("An exercise with this name already exists.");
       return;
     }
@@ -144,7 +152,10 @@ export const Exercises = () => {
       {
         onSuccess: () => {
           setNewExerciseByCategory((prev) => ({ ...prev, [categoryId]: "" }));
-          setNewExerciseUnitByCategory((prev) => ({ ...prev, [categoryId]: "" }));
+          setNewExerciseUnitByCategory((prev) => ({
+            ...prev,
+            [categoryId]: "",
+          }));
         },
       }
     );
@@ -231,7 +242,8 @@ export const Exercises = () => {
           disabled={isDeleting}
         >
           {isDeleting ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
-          Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size})
+          Delete selected ({selectedCategoryIds.size + selectedExerciseIds.size}
+          )
         </Button>
       )}
 
@@ -265,7 +277,10 @@ export const Exercises = () => {
           }
           onAddExercise={handleAddExercise}
           onNewExerciseNameChange={(categoryId, value) =>
-            setNewExerciseByCategory((prev) => ({ ...prev, [categoryId]: value }))
+            setNewExerciseByCategory((prev) => ({
+              ...prev,
+              [categoryId]: value,
+            }))
           }
           onNewExerciseUnitChange={(categoryId, value) =>
             setNewExerciseUnitByCategory((prev) => ({
@@ -284,6 +299,7 @@ export const Exercises = () => {
         title="Delete category?"
         description="This will permanently delete this category and all exercises in it. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={() => {
           if (deleteCategoryModal.categoryId) {
@@ -302,6 +318,7 @@ export const Exercises = () => {
         title="Delete exercise?"
         description="This will permanently delete this exercise. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={() => {
           if (deleteExerciseModal.exerciseId) {
@@ -318,6 +335,7 @@ export const Exercises = () => {
         title="Delete selected?"
         description="This will permanently delete the selected categories and exercises. Categories will be deleted with all their exercises. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={handleDeleteSelected}
         isPending={isDeleting}

@@ -103,6 +103,7 @@ export function ViewTemplateSheet() {
         title="Delete template?"
         description="This will permanently delete this template. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={handleConfirmDelete}
         isPending={isDeleting}

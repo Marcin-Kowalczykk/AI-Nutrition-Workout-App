@@ -171,6 +171,7 @@ export function TemplateList() {
         title="Delete template?"
         description="This will permanently delete this template. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={() =>
           templateIdToDelete && deleteTemplate(templateIdToDelete)

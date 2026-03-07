@@ -3,4 +3,5 @@ export const TABLE_NAMES = {
   WORKOUT_TEMPLATES: "workout_templates",
   EXERCISE_CATEGORIES: "exercise_categories",
   EXERCISES: "exercises",
+  BODY_MEASUREMENTS: "body_measurements",
 };

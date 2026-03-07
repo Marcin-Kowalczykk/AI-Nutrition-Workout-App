@@ -201,6 +201,7 @@ const WorkoutHistory = () => {
         title="Delete workout?"
         description="This will permanently delete this workout. This action cannot be undone."
         confirmLabel="Delete"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={handleConfirmDelete}
         isPending={isDeleting}
