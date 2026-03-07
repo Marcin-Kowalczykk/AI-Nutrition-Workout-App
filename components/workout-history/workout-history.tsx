@@ -80,6 +80,20 @@ const WorkoutHistory = () => {
 
   const workouts = data?.workouts || [];
 
+  if (workouts.length === 0) {
+    return (
+      <Card>
+        <CardContent>
+          <ul className="text-sm text-muted-foreground py-2">
+            <li>No workouts found.</li>
+            <li>You can start creating your first workout now.</li>
+            <li>You can also create a template to reuse it later.</li>
+          </ul>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -130,64 +144,56 @@ const WorkoutHistory = () => {
         </div>
       </div>
 
-      {workouts.length === 0 ? (
-        <div className="text-center text-muted-foreground">
-          No workouts found. Start creating your first workout!
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-2 xl:w-1/2 w-full">
-          {workouts.map((workout: IWorkoutItem) => (
-            <li key={workout.id}>
-              <Card className="w-full">
-                <CardContent className="p-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
-                        {formatDate(workout.created_at)}
-                      </div>
-                      <div className="font-semibold text-lg">
-                        {workout.name}
-                      </div>
-                      {workout.description && (
-                        <div className="text-sm text-muted-foreground">
-                          {workout.description}
-                        </div>
-                      )}
+      <ul className="flex flex-col gap-2 xl:w-1/2 w-full">
+        {workouts.map((workout: IWorkoutItem) => (
+          <li key={workout.id}>
+            <Card className="w-full">
+              <CardContent className="p-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
+                      {formatDate(workout.created_at)}
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEdit(workout.id)}
-                        className="h-9 w-9 text-foreground"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleView(workout.id)}
-                        className="h-9 w-9 text-foreground"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setWorkoutIdToDelete(workout.id)}
-                        className="h-9 w-9 text-destructive hover:text-destructive"
-                        aria-label="Delete workout"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <div className="font-semibold text-lg">{workout.name}</div>
+                    {workout.description && (
+                      <div className="text-sm text-muted-foreground">
+                        {workout.description}
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEdit(workout.id)}
+                      className="h-9 w-9 text-foreground"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleView(workout.id)}
+                      className="h-9 w-9 text-foreground"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setWorkoutIdToDelete(workout.id)}
+                      className="h-9 w-9 text-destructive hover:text-destructive"
+                      aria-label="Delete workout"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </li>
+        ))}
+      </ul>
 
       <ConfirmModal
         open={workoutIdToDelete !== null}
