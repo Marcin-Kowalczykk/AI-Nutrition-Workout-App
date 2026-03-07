@@ -2,16 +2,12 @@
 
 // dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Save, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { format, startOfDay, subDays } from "date-fns";
 
 // hooks
-import {
-  useFieldArray,
-  useForm,
-  type Resolver,
-} from "react-hook-form";
+import { useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useCreateWorkout } from "../../api/use-create-workout";
 import { useUpdateWorkout } from "../../api/use-update-workout";
@@ -44,7 +40,6 @@ import { DatePicker } from "@/components/shared/date-picker";
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
-import { formatNumberFieldValue, parseNumberInput } from "@/lib/number-input";
 import {
   CreateWorkoutFormType,
   createWorkoutFormSchema,
@@ -62,6 +57,7 @@ import type {
 import {
   getComparisonBaselineString,
   inferUnitType,
+  normalizeCachedFormData,
   prepareExercisesForSubmission,
   prepareExercisesForTemplate,
 } from "./helpers";
@@ -286,10 +282,13 @@ export const WorkoutForm = ({
         if (cached) {
           const parsed = JSON.parse(cached);
           const toReset =
-            isTemplateMode || parsed.workout_date !== undefined
+            isTemplateMode ||
+            (parsed as Record<string, unknown>).workout_date !== undefined
               ? parsed
               : { ...parsed, workout_date: defaultWorkoutDate };
-          form.reset(toReset);
+          form.reset(
+            normalizeCachedFormData(toReset, defaultWorkoutDate, isTemplateMode)
+          );
         }
       } catch (error) {
         console.error("Error loading cached form:", error);
@@ -318,9 +317,9 @@ export const WorkoutForm = ({
             (set: IWorkoutTemplateSetItem) => ({
               id: set.id,
               set_number: set.set_number || 0,
-              reps: set.reps,
-              weight: set.weight,
-              duration: set.duration,
+              reps: set.reps != null ? String(set.reps) : "",
+              weight: set.weight != null ? String(set.weight) : "",
+              duration: set.duration != null ? String(set.duration) : "",
               isChecked: false,
             })
           );
@@ -367,9 +366,9 @@ export const WorkoutForm = ({
         const sets = (exercise.sets || []).map((set) => ({
           id: set.id,
           set_number: set.set_number || 0,
-          reps: set.reps,
-          weight: set.weight,
-          duration: set.duration,
+          reps: set.reps != null ? String(set.reps) : "",
+          weight: set.weight != null ? String(set.weight) : "",
+          duration: set.duration != null ? String(set.duration) : "",
           isChecked: set.isChecked || false,
         }));
         return {
@@ -390,13 +389,15 @@ export const WorkoutForm = ({
         if (cached) {
           const parsed = JSON.parse(cached);
           const toReset =
-            parsed.workout_date !== undefined
+            (parsed as Record<string, unknown>).workout_date !== undefined
               ? parsed
               : {
                   ...parsed,
                   workout_date: formData.workout_date ?? defaultWorkoutDate,
                 };
-          form.reset(toReset);
+          form.reset(
+            normalizeCachedFormData(toReset, defaultWorkoutDate, false)
+          );
         }
       } catch (error) {
         console.error("Error loading cached workout form:", error);
@@ -428,9 +429,9 @@ export const WorkoutForm = ({
             (set: IWorkoutTemplateSetItem) => ({
               id: set.id,
               set_number: set.set_number || 0,
-              reps: set.reps,
-              weight: set.weight,
-              duration: set.duration,
+              reps: set.reps != null ? String(set.reps) : "",
+              weight: set.weight != null ? String(set.weight) : "",
+              duration: set.duration != null ? String(set.duration) : "",
               isChecked: false,
             })
           );
@@ -452,7 +453,7 @@ export const WorkoutForm = ({
         const cached = await getFormCache(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
-          form.reset(parsed);
+          form.reset(normalizeCachedFormData(parsed, defaultWorkoutDate, true));
         }
       } catch (error) {
         console.error("Error loading cached template form:", error);
@@ -502,9 +503,9 @@ export const WorkoutForm = ({
         const hasName = !!(current.name ?? "").trim();
         const hasSets = (current.sets ?? []).some(
           (s) =>
-            s.reps !== undefined ||
-            s.weight !== undefined ||
-            s.duration !== undefined
+            (s.reps ?? "") !== "" ||
+            (s.weight ?? "") !== "" ||
+            (s.duration ?? "") !== ""
         );
         return hasName || hasSets;
       }
@@ -675,8 +676,8 @@ export const WorkoutForm = ({
         if (i !== exerciseIndex) return exercise;
         const sets = (exercise.sets ?? []).map((set) => ({
           ...set,
-          weight: undefined,
-          duration: undefined,
+          weight: "",
+          duration: "",
         }));
         return { ...exercise, unitType: newUnit, sets };
       });
@@ -822,9 +823,9 @@ export const WorkoutForm = ({
       {
         id: crypto.randomUUID(),
         set_number: nextSetNumber,
-        reps: undefined,
-        weight: undefined,
-        duration: undefined,
+        reps: "",
+        weight: "",
+        duration: "",
         isChecked: false,
       },
     ]);
@@ -952,13 +953,11 @@ export const WorkoutForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={
-          (
-            form.handleSubmit as unknown as (
-              fn: (data: CreateWorkoutFormType) => void | Promise<void>
-            ) => (e?: React.BaseSyntheticEvent) => void
-          )(onSubmitHandler)
-        }
+        onSubmit={(
+          form.handleSubmit as unknown as (
+            fn: (data: CreateWorkoutFormType) => void | Promise<void>
+          ) => (e?: React.BaseSyntheticEvent) => void
+        )(onSubmitHandler)}
         noValidate
       >
         <div className="flex flex-col gap-3">
@@ -1230,41 +1229,25 @@ export const WorkoutForm = ({
                                     <FormField
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                                      render={({ field }) => {
-                                        const raw =
-                                          field.value !== undefined &&
-                                          field.value !== null
-                                            ? String(field.value)
-                                            : "";
-                                        return (
-                                          <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Duration [s]</FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                ref={field.ref}
-                                                name={field.name}
-                                                type="number"
-                                                step="any"
-                                                min={0}
-                                                autoComplete="off"
-                                                disabled={isPending}
-                                                value={raw}
-                                                onChange={(e) => {
-                                                  const v = e.target.value;
-                                                  const num = Number(v);
-                                                  field.onChange(
-                                                    v === "" ||
-                                                      Number.isNaN(num)
-                                                      ? undefined
-                                                      : num
-                                                  );
-                                                }}
-                                                onBlur={field.onBlur}
-                                              />
-                                            </FormControl>
-                                          </FormItem>
-                                        );
-                                      }}
+                                      render={({ field }) => (
+                                        <FormItem className="flex-1 min-w-0">
+                                          <FormLabel>Duration [s]</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              step="any"
+                                              min={0}
+                                              autoComplete="off"
+                                              disabled={isPending}
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              onChange={(e) =>
+                                                field.onChange(e.target.value)
+                                              }
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
                                     />
                                   );
                                 }
@@ -1275,81 +1258,49 @@ export const WorkoutForm = ({
                                     <FormField
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
-                                      render={({ field }) => {
-                                        const raw =
-                                          field.value !== undefined &&
-                                          field.value !== null
-                                            ? String(field.value)
-                                            : "";
-                                        return (
-                                          <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Reps</FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                ref={field.ref}
-                                                name={field.name}
-                                                type="number"
-                                                step="any"
-                                                min={0}
-                                                autoComplete="off"
-                                                disabled={isPending}
-                                                value={raw}
-                                                onChange={(e) => {
-                                                  const v = e.target.value;
-                                                  const num = Number(v);
-                                                  field.onChange(
-                                                    v === "" ||
-                                                      Number.isNaN(num)
-                                                      ? undefined
-                                                      : num
-                                                  );
-                                                }}
-                                                onBlur={field.onBlur}
-                                              />
-                                            </FormControl>
-                                          </FormItem>
-                                        );
-                                      }}
+                                      render={({ field }) => (
+                                        <FormItem className="flex-1 min-w-0">
+                                          <FormLabel>Reps</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              step="any"
+                                              min={0}
+                                              autoComplete="off"
+                                              disabled={isPending}
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              onChange={(e) =>
+                                                field.onChange(e.target.value)
+                                              }
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
                                     />
                                     {unitType === WORKOUT_UNIT_TYPE.WEIGHT && (
                                       <FormField
                                         control={form.control}
                                         name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
-                                        render={({ field }) => {
-                                          const raw =
-                                            field.value !== undefined &&
-                                            field.value !== null
-                                              ? String(field.value)
-                                              : "";
-                                          return (
-                                            <FormItem className="flex-1 min-w-0">
-                                              <FormLabel>Weight [kg]</FormLabel>
-                                              <FormControl>
-                                                <Input
-                                                  ref={field.ref}
-                                                  name={field.name}
-                                                  type="number"
-                                                  step="any"
-                                                  min={0}
-                                                  autoComplete="off"
-                                                  disabled={isPending}
-                                                  value={raw}
-                                                  onChange={(e) => {
-                                                    const v = e.target.value;
-                                                    const num = Number(v);
-                                                    field.onChange(
-                                                      v === "" ||
-                                                        Number.isNaN(num)
-                                                        ? undefined
-                                                        : num
-                                                    );
-                                                  }}
-                                                  onBlur={field.onBlur}
-                                                />
-                                              </FormControl>
-                                            </FormItem>
-                                          );
-                                        }}
+                                        render={({ field }) => (
+                                          <FormItem className="flex-1 min-w-0">
+                                            <FormLabel>Weight [kg]</FormLabel>
+                                            <FormControl>
+                                              <Input
+                                                type="number"
+                                                step="any"
+                                                min={0}
+                                                autoComplete="off"
+                                                disabled={isPending}
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={(e) =>
+                                                  field.onChange(e.target.value)
+                                                }
+                                              />
+                                            </FormControl>
+                                          </FormItem>
+                                        )}
                                       />
                                     )}
                                   </>
@@ -1418,7 +1369,9 @@ export const WorkoutForm = ({
                       onClick={() =>
                         (
                           form.handleSubmit as unknown as (
-                            fn: (data: CreateWorkoutFormType) => void | Promise<void>
+                            fn: (
+                              data: CreateWorkoutFormType
+                            ) => void | Promise<void>
                           ) => (e?: React.BaseSyntheticEvent) => void
                         )(onSubmitHandler)()
                       }

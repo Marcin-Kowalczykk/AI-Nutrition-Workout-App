@@ -248,13 +248,11 @@ export const ExerciseHistoryStrip = ({
                               {unitColumn !== null && (
                                 <TableCell className="text-right">
                                   {unitColumn === WORKOUT_UNIT_TYPE.WEIGHT
-                                    ? set.weight !== undefined &&
-                                      set.weight !== null
+                                    ? (set.weight ?? "") !== ""
                                       ? `${set.weight} kg`
                                       : "-"
-                                    : set.duration !== undefined &&
-                                      set.duration !== null &&
-                                      set.duration > 0
+                                    : (set.duration ?? "") !== "" &&
+                                      Number(set.duration) > 0
                                     ? `${set.duration} s`
                                     : "-"}
                                 </TableCell>

@@ -9,34 +9,24 @@ export const WORKOUT_UNIT_TYPE = {
 export type WorkoutUnitType =
   (typeof WORKOUT_UNIT_TYPE)[keyof typeof WORKOUT_UNIT_TYPE];
 
-const preprocessOptionalNumber = (val: unknown) => {
-  if (val === null || val === undefined || val === "") {
-    return undefined;
-  }
-  if (typeof val === "number") {
-    return val;
-  }
-  if (typeof val === "string") {
-    const trimmed = val.trim();
-    if (trimmed === "") return undefined;
-    const num = Number(trimmed);
-    if (Number.isNaN(num)) return undefined;
-    return num;
-  }
-  return undefined;
-};
-
-const nonNegativeNumber = z.preprocess(
-  preprocessOptionalNumber,
-  z.union([z.number().min(0, "Input values must be greater than 0"), z.undefined()])
-);
+const optionalNumericString = z
+  .string()
+  .optional()
+  .refine(
+    (v) => {
+      if (v === undefined || v === null || v === "") return true;
+      const num = Number(String(v).trim());
+      return !Number.isNaN(num) && num >= 0;
+    },
+    { message: "Must be a non-negative number or empty" }
+  );
 
 const workoutSetSchema = z.object({
   id: z.string(),
   set_number: z.number().optional(),
-  reps: nonNegativeNumber,
-  weight: nonNegativeNumber,
-  duration: nonNegativeNumber,
+  reps: optionalNumericString,
+  weight: optionalNumericString,
+  duration: optionalNumericString,
   isChecked: z.boolean().optional(),
 });
 

@@ -12,3 +12,4 @@ export {
   getBaselineString,
   getComparisonBaselineString,
 } from "./get-baseline-string";
+export { normalizeCachedFormData } from "./normalize-cached-form-data";

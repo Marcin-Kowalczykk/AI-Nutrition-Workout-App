@@ -19,6 +19,19 @@ export type PreparedExercise = {
   sets: PreparedSet[];
 };
 
+const toNum = (v: string | number | undefined): number =>
+  v === undefined || v === null || v === ""
+    ? 0
+    : typeof v === "number"
+      ? v
+      : Number(v) || 0;
+
+const toNumOptional = (v: string | number | undefined): number | undefined => {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
 export const prepareExercisesForSubmission = (
   exercises: CreateWorkoutFormType["exercises"]
 ): PreparedExercise[] =>
@@ -28,16 +41,16 @@ export const prepareExercisesForSubmission = (
       const filteredSets = (exercise.sets ?? [])
         .filter(
           (set: FormSet) =>
-            set.reps !== undefined ||
-            set.weight !== undefined ||
-            set.duration !== undefined
+            (set.reps ?? "") !== "" ||
+            (set.weight ?? "") !== "" ||
+            (set.duration ?? "") !== ""
         )
         .map((set: FormSet) => ({
           id: set.id,
           set_number: set.set_number ?? 0,
-          reps: set.reps ?? 0,
-          weight: set.weight,
-          duration: set.duration,
+          reps: toNum(set.reps),
+          weight: toNumOptional(set.weight),
+          duration: toNumOptional(set.duration),
           isChecked: set.isChecked ?? false,
         }));
 
