@@ -333,6 +333,8 @@ export const WorkoutForm = ({
       ),
     };
     form.reset(formData);
+    setLastSavedBaseline(getComparisonBaselineString(formData, false));
+    lastSavedExercisesRef.current = formData.exercises;
   }, [
     prefillFromTemplateId,
     prefillTemplateData,
@@ -753,6 +755,7 @@ export const WorkoutForm = ({
       setRemoveExerciseModal({ open: true, exerciseIndex });
     } else {
       removeExercise(exerciseIndex);
+      setBaselineFromValues(form.getValues());
     }
   };
 
@@ -764,10 +767,11 @@ export const WorkoutForm = ({
     const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
     const prepared = prepareExercisesForSubmission(newExercises);
 
-    const newValues = {
+    const newValues: CreateWorkoutFormType = {
       name: values.name,
       description: values.description,
       exercises: newExercises,
+      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
     };
 
     if (isTemplateMode) {
@@ -847,6 +851,7 @@ export const WorkoutForm = ({
       setRemoveSetModal({ open: true, exerciseIndex, setIndex });
     } else {
       doRemoveSetFromForm(exerciseIndex, setIndex);
+      setBaselineFromValues(form.getValues());
     }
   };
 
@@ -866,10 +871,11 @@ export const WorkoutForm = ({
     );
     const prepared = prepareExercisesForSubmission(newExercises);
 
-    const newValues = {
+    const newValues: CreateWorkoutFormType = {
       name: values.name,
       description: values.description,
       exercises: newExercises,
+      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
     };
 
     if (isTemplateMode) {
@@ -1361,6 +1367,40 @@ export const WorkoutForm = ({
                       Remove Exercise
                     </Button>
                   </div>
+                  {/* Show Save button only when there are changes in this exercise (new variant) */}
+                  {exerciseIndex < exerciseFields.length - 1 &&
+                    hasExerciseChanges(exerciseIndex) && (
+                    <Button
+                      type="button"
+                      variant="default"
+                      disabled={isPending}
+                      onClick={() =>
+                        (
+                          form.handleSubmit as unknown as (
+                            fn: (
+                              data: CreateWorkoutFormType
+                            ) => void | Promise<void>
+                          ) => (e?: React.BaseSyntheticEvent) => void
+                        )(onSubmitHandler)()
+                      }
+                      className="mt-2 w-full"
+                    >
+                      {isPending ? (
+                        <Loader />
+                      ) : isFirstSave ? (
+                        isTemplateMode ? (
+                          "Save Template"
+                        ) : (
+                          "Save Workout"
+                        )
+                      ) : isTemplateMode ? (
+                        "Update Template"
+                      ) : (
+                        "Update Workout"
+                      )}
+                    </Button>
+                  )}
+                  {/* OLD: Button always visible, disabled when no changes
                   {exerciseIndex < exerciseFields.length - 1 && (
                     <Button
                       type="button"
@@ -1392,6 +1432,7 @@ export const WorkoutForm = ({
                       )}
                     </Button>
                   )}
+                  */}
                 </CardContent>
               </Card>
             ))}
@@ -1470,6 +1511,7 @@ export const WorkoutForm = ({
         title="Remove exercise?"
         description="This exercise will be removed from the workout. This action will be saved to the workout."
         confirmLabel="Remove"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={handleConfirmRemoveExercise}
         isPending={isUpdating}
@@ -1488,6 +1530,7 @@ export const WorkoutForm = ({
         title="Remove set?"
         description="This set will be removed from the exercise. This action will be saved to the workout."
         confirmLabel="Remove"
+        confirmVariant="destructive"
         cancelLabel="Cancel"
         onConfirm={handleConfirmRemoveSet}
         isPending={isUpdating}
