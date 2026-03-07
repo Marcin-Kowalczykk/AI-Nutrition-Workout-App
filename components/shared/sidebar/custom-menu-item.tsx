@@ -15,14 +15,16 @@ import { ConfirmModal } from "../confirm-modal/confirm-modal";
 import { useWorkoutUnsavedChanges } from "@/components/workout-form/context/workout-unsaved-context";
 
 // types
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, XCircleIcon } from "lucide-react";
 
+// TODO: comming soon to remove this type
 export type NavSettingsType = {
   title: string;
   url: string;
   icon?: LucideIcon;
   iconComponent?: React.ReactNode;
   onClick?: () => void;
+  comingSoon?: boolean;
 };
 
 export const CustomMenuItem = ({
@@ -31,6 +33,7 @@ export const CustomMenuItem = ({
   icon,
   iconComponent,
   onClick,
+  comingSoon,
 }: NavSettingsType) => {
   const appRoute = usePathname();
   const router = useRouter();
@@ -105,12 +108,24 @@ export const CustomMenuItem = ({
           asChild
           tooltip={title}
         >
-          <Link href={url} onClick={handleClick}>
+          <Link
+            href={url}
+            onClick={handleClick}
+            className={`flex w-full items-center gap-4 ${
+              comingSoon ? "opacity-70 text-red-500" : ""
+            }`}
+          >
             {iconComponent && iconComponent}
             {IconComponent && <IconComponent />}
-            <span className="group-data-[collapsible=icon]:hidden">
+            <span className="group-data-[collapsible=icon]:hidden flex-1">
               {title}
             </span>
+            {comingSoon && (
+              <XCircleIcon
+                className="h-4 w-4 shrink-0 text-red-500 opacity-60 group-data-[collapsible=icon]:hidden"
+                aria-label="In progress"
+              />
+            )}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

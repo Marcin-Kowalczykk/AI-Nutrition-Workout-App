@@ -83,11 +83,13 @@ export function NavMain() {
       title: NavMainTitles.DietHistory,
       url: EnableRoutes.DietHistory,
       icon: FilesIcon,
+      comingSoon: true,
     },
     {
       title: NavMainTitles.KcalCalculator,
       url: EnableRoutes.KcalCalculator,
       icon: CalculatorIcon,
+      comingSoon: true,
     },
     {
       title: NavMainTitles.BodyMeasurements,
