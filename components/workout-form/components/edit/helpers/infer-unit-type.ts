@@ -13,5 +13,5 @@ export const inferUnitType = (sets: SetLike[]): WorkoutUnitType => {
   const hasDuration = (sets ?? []).some((s) => hasValue(s.duration));
   if (hasWeight) return WORKOUT_UNIT_TYPE.WEIGHT;
   if (hasDuration) return WORKOUT_UNIT_TYPE.DURATION;
-  return WORKOUT_UNIT_TYPE.WEIGHT;
+  return WORKOUT_UNIT_TYPE.REPS_ONLY;
 };
