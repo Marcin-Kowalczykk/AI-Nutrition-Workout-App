@@ -49,7 +49,10 @@ import {
 import { ExerciseUnitType } from "@/app/api/exercises/types";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import { useWorkoutUnsavedChanges } from "../../context/workout-unsaved-context";
-import { ExerciseHistoryStrip } from "./exercise-history-strip/exercise-history-strip";
+import {
+  ExerciseHistoryStrip,
+  ExerciseHistoryStripContent,
+} from "./exercise-history-strip/exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
@@ -1103,13 +1106,30 @@ export const WorkoutForm = ({
             {exerciseFields.map((exercise, exerciseIndex) => (
               <Card key={exercise.id} className="overflow-hidden">
                 <CardHeader className="flex flex-row items-start space-y-0 p-2">
-                  <CardTitle className="flex w-full items-center gap-1 min-w-0">
-                    <div className="flex-1 min-w-0">
+                  <CardTitle className="flex w-full flex-wrap items-stretch gap-x-1 gap-y-2 min-w-0">
+                    <div className="flex shrink-0 items-center">
+                      <ExerciseHistoryStrip
+                        layout="split"
+                        exerciseName={
+                          (form.watch(`exercises.${exerciseIndex}.name`) ??
+                            "") ||
+                          undefined
+                        }
+                        isOpen={historyOpenByExerciseId[exercise.id] === true}
+                        onOpenChange={(open) =>
+                          setHistoryOpenByExerciseId((prev) => ({
+                            ...prev,
+                            [exercise.id]: open,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-1 min-w-0 items-center">
                       <FormField
                         control={form.control}
                         name={`exercises.${exerciseIndex}.name`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="w-full">
                             <FormControl className="w-full">
                               <ExercisesSelect
                                 value={field.value}
@@ -1128,57 +1148,29 @@ export const WorkoutForm = ({
                         )}
                       />
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveExerciseClick(exerciseIndex)}
-                      disabled={isPending}
-                      className="shrink-0 size-4 min-w-0 p-0.5 text-destructive hover:text-destructive"
-                      aria-label="Remove exercise"
-                    >
-                      <Trash2 />
-                    </Button>
+                    <div className="flex shrink-0 items-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveExerciseClick(exerciseIndex)}
+                        disabled={isPending}
+                        className="shrink-0 size-4 min-w-0 p-0.5 text-destructive hover:text-destructive"
+                        aria-label="Remove exercise"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex min-w-0 flex-col gap-3 p-2 pt-0">
-                  {(() => {
-                    const historyOpen =
-                      historyOpenByExerciseId[exercise.id] === true;
-                    const historyStrip = (
-                      <ExerciseHistoryStrip
-                        exerciseName={
-                          (form.watch(`exercises.${exerciseIndex}.name`) ??
-                            "") ||
-                          undefined
-                        }
-                        isOpen={historyOpenByExerciseId[exercise.id] === true}
-                        onOpenChange={(open) =>
-                          setHistoryOpenByExerciseId((prev) => ({
-                            ...prev,
-                            [exercise.id]: open,
-                          }))
-                        }
-                      />
-                    );
-
-                    // Unit button and manual unit change UI is intentionally disabled for now.
-                    // The unit type is derived from the exercise definition itself.
-
-                    return (
-                      <div className="flex flex-nowrap items-center justify-between gap-2 min-w-0">
-                        <div
-                          className={
-                            historyOpen
-                              ? "min-w-0 flex-1 overflow-hidden"
-                              : "w-fit min-w-0 shrink-0"
-                          }
-                        >
-                          {historyStrip}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <ExerciseHistoryStripContent
+                    exerciseName={
+                      (form.watch(`exercises.${exerciseIndex}.name`) ?? "") ||
+                      undefined
+                    }
+                    isOpen={historyOpenByExerciseId[exercise.id] === true}
+                  />
                   <div className="flex flex-col gap-1.5">
                     {(form.watch(`exercises.${exerciseIndex}.sets`) ?? []).map(
                       (set, setIndex) => {
@@ -1370,36 +1362,36 @@ export const WorkoutForm = ({
                   {/* Show Save button only when there are changes in this exercise (new variant) */}
                   {exerciseIndex < exerciseFields.length - 1 &&
                     hasExerciseChanges(exerciseIndex) && (
-                    <Button
-                      type="button"
-                      variant="default"
-                      disabled={isPending}
-                      onClick={() =>
-                        (
-                          form.handleSubmit as unknown as (
-                            fn: (
-                              data: CreateWorkoutFormType
-                            ) => void | Promise<void>
-                          ) => (e?: React.BaseSyntheticEvent) => void
-                        )(onSubmitHandler)()
-                      }
-                      className="mt-2 w-full"
-                    >
-                      {isPending ? (
-                        <Loader />
-                      ) : isFirstSave ? (
-                        isTemplateMode ? (
-                          "Save Template"
+                      <Button
+                        type="button"
+                        variant="default"
+                        disabled={isPending}
+                        onClick={() =>
+                          (
+                            form.handleSubmit as unknown as (
+                              fn: (
+                                data: CreateWorkoutFormType
+                              ) => void | Promise<void>
+                            ) => (e?: React.BaseSyntheticEvent) => void
+                          )(onSubmitHandler)()
+                        }
+                        className="mt-2 w-full"
+                      >
+                        {isPending ? (
+                          <Loader />
+                        ) : isFirstSave ? (
+                          isTemplateMode ? (
+                            "Save Template"
+                          ) : (
+                            "Save Workout"
+                          )
+                        ) : isTemplateMode ? (
+                          "Update Template"
                         ) : (
-                          "Save Workout"
-                        )
-                      ) : isTemplateMode ? (
-                        "Update Template"
-                      ) : (
-                        "Update Workout"
-                      )}
-                    </Button>
-                  )}
+                          "Update Workout"
+                        )}
+                      </Button>
+                    )}
                   {/* OLD: Button always visible, disabled when no changes
                   {exerciseIndex < exerciseFields.length - 1 && (
                     <Button
