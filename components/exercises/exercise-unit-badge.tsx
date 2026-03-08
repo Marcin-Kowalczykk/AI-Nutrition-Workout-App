@@ -29,7 +29,7 @@ export const ExerciseUnitBadge = ({
 }: ExerciseUnitBadgeProps) => (
   <span
     className={cn(
-      "inline-flex shrink-0 items-center justify-center rounded-full border w-16 min-w-16 h-5 px-1 text-[8px] font-medium uppercase tracking-wide text-center leading-none pt-0.5",
+      "inline-flex shrink-0 items-center justify-center rounded-full border w-16 min-w-16 h-5 px-1 text-[8px] font-medium uppercase tracking-wide text-center leading-none",
       BADGE_CLASS[unitType],
       className
     )}

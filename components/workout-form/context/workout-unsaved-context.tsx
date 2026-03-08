@@ -11,7 +11,6 @@ import React, {
 type WorkoutUnsavedContextValue = {
   hasUnsavedChanges: boolean;
   setHasUnsavedChanges: (value: boolean) => void;
-  /** Ref so the form can register a callback to run when user chooses "Leave without saving" (e.g. clear draft cache). */
   discardRef: React.MutableRefObject<(() => void) | null>;
 };
 

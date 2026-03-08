@@ -1088,7 +1088,7 @@ export const WorkoutForm = ({
           )}
 
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <FormLabel>Exercises</FormLabel>
               <Button
                 type="button"
@@ -1101,7 +1101,7 @@ export const WorkoutForm = ({
                 <Plus className="h-4 w-4" />
                 Add Exercise
               </Button>
-            </div>
+            </div> */}
 
             {exerciseFields.map((exercise, exerciseIndex) => (
               <Card key={exercise.id} className="overflow-hidden">
@@ -1163,7 +1163,7 @@ export const WorkoutForm = ({
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex min-w-0 flex-col gap-3 p-2 pt-0">
+                <CardContent className="flex min-w-0 flex-col gap-0.5 px-2 py-0">
                   <ExerciseHistoryStripContent
                     exerciseName={
                       (form.watch(`exercises.${exerciseIndex}.name`) ?? "") ||
@@ -1329,7 +1329,7 @@ export const WorkoutForm = ({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <Button
                       type="button"
                       variant="outline"
