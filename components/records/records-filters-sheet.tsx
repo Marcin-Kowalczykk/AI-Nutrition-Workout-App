@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/sheet";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EXERCISE_UNIT_TYPE } from "@/app/api/exercises/types";
 
 interface RecordsFiltersSheetProps {
   open: boolean;
@@ -60,33 +59,30 @@ export const RecordsFiltersSheet = ({
               value={selectedExercise ?? ""}
               onChange={onExerciseChange}
               portalContainer={portalContainer}
-              onExerciseSelectedMeta={(meta) => {
-                const isNonWeighted =
-                  meta.unitType === EXERCISE_UNIT_TYPE.REPS_ONLY ||
-                  meta.unitType === EXERCISE_UNIT_TYPE.TIME_BASED;
-                if (isNonWeighted) onOpenChange(false);
-              }}
             />
           </div>
 
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Reps
+              {isTimeBasedExercise ? "Weight" : "Reps"}
             </div>
 
-            {(isRepsOnlyExercise || isTimeBasedExercise) && trimmedExerciseName ? (
+            {isRepsOnlyExercise && trimmedExerciseName ? (
               <p className="text-sm text-muted-foreground">
                 For this exercise records are based on a single best result. Reps
                 filters are not available.
               </p>
             ) : !trimmedExerciseName ? (
               <p className="text-sm text-muted-foreground">
-                Select an exercise to see all reps you have ever performed for
-                it.
+                {isTimeBasedExercise
+                  ? "Select an exercise to see all weights you have ever used for it."
+                  : "Select an exercise to see all reps you have ever performed for it."}
               </p>
             ) : isLoading && trimmedExerciseName ? (
               <p className="text-sm text-muted-foreground">
-                Loading reps history...
+                {isTimeBasedExercise
+                  ? "Loading weights history..."
+                  : "Loading reps history..."}
               </p>
             ) : !isLoading && trimmedExerciseName && allReps.length === 0 ? (
               <p className="text-sm text-muted-foreground">
@@ -107,7 +103,9 @@ export const RecordsFiltersSheet = ({
                             onToggleRep(reps, checked)
                           }
                         />
-                        <span>{reps} reps</span>
+                        <span>
+                          {reps} {isTimeBasedExercise ? "kg" : "reps"}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -125,7 +123,9 @@ export const RecordsFiltersSheet = ({
                               onToggleRep(reps, checked)
                             }
                           />
-                          <span>{reps} reps</span>
+                          <span>
+                            {reps} {isTimeBasedExercise ? "kg" : "reps"}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -141,7 +141,9 @@ export const RecordsFiltersSheet = ({
                               onToggleRep(reps, checked)
                             }
                           />
-                          <span>{reps} reps</span>
+                          <span>
+                            {reps} {isTimeBasedExercise ? "kg" : "reps"}
+                          </span>
                         </label>
                       ))}
                     </div>

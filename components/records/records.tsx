@@ -23,7 +23,9 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import {
   getAllRepsForExercise,
+  getAllWeightsForExercise,
   getBestRecordsByReps,
+  getBestDurationByWeight,
   getMaxDurationRecord,
   getMaxRepsRecord,
   getMostFrequentReps,
@@ -70,10 +72,12 @@ export const Records = () => {
     return (match?.unit_type as ExerciseUnitType | undefined) ?? null;
   })();
 
-  const isRepsOnlyExercise = exerciseUnitType === "reps-only";
+  // W nowym modelu mamy tylko "reps-based" i "time-based",
+  // więc reps-only już nie występuje – flaga zawsze false.
+  const isRepsOnlyExercise = false;
   const isTimeBasedExercise = exerciseUnitType === "time-based";
-  const isWeightedExercise =
-    exerciseUnitType === "weighted" || !exerciseUnitType;
+  const isRepsBasedExercise =
+    exerciseUnitType === "reps-based" || !exerciseUnitType;
 
   if (!hasInitializedExercise) {
     if (mostPopularExerciseName && !selectedExercise) {
@@ -87,23 +91,26 @@ export const Records = () => {
   const isInitializingDefaultExercise =
     !hasInitializedExercise && (isLoading || (!data && !error));
 
-  const allReps = isWeightedExercise
+  const allReps = isRepsBasedExercise
     ? getAllRepsForExercise(workouts, normalizedExerciseName)
+    : isTimeBasedExercise
+    ? getAllWeightsForExercise(workouts, normalizedExerciseName)
     : [];
-  const defaultSelectedReps = isWeightedExercise
+
+  const defaultSelectedReps = isRepsBasedExercise
     ? getMostFrequentReps(workouts, normalizedExerciseName, 5).filter((reps) =>
         allReps.includes(reps)
       )
+    : isTimeBasedExercise
+    ? allReps
     : [];
 
   const effectiveSelectedReps =
-    isWeightedExercise && selectedReps.length > 0
-      ? selectedReps
-      : defaultSelectedReps;
+    selectedReps.length > 0 ? selectedReps : defaultSelectedReps;
 
   const bestWeightedRecords = useMemo(
     () =>
-      isWeightedExercise
+      isRepsBasedExercise
         ? getBestRecordsByReps(
             workouts,
             normalizedExerciseName,
@@ -111,7 +118,7 @@ export const Records = () => {
           )
         : [],
     [
-      isWeightedExercise,
+      isRepsBasedExercise,
       workouts,
       normalizedExerciseName,
       effectiveSelectedReps,
@@ -119,19 +126,19 @@ export const Records = () => {
   );
 
   const maxWeight = useMemo(() => {
-    if (!isWeightedExercise || !bestWeightedRecords.length) return null;
+    if (!isRepsBasedExercise || !bestWeightedRecords.length) return null;
     return bestWeightedRecords.reduce(
       (max, record) => (record.weight > max ? record.weight : max),
       bestWeightedRecords[0]?.weight ?? 0
     );
-  }, [isWeightedExercise, bestWeightedRecords]);
+  }, [isRepsBasedExercise, bestWeightedRecords]);
 
   const maxRepsRecord = useMemo(
     () =>
-      isRepsOnlyExercise
+      isRepsBasedExercise
         ? getMaxRepsRecord(workouts, normalizedExerciseName)
         : null,
-    [isRepsOnlyExercise, workouts, normalizedExerciseName]
+    [isRepsBasedExercise, workouts, normalizedExerciseName]
   );
 
   const maxDurationRecord = useMemo(
@@ -141,6 +148,19 @@ export const Records = () => {
         : null,
     [isTimeBasedExercise, workouts, normalizedExerciseName]
   );
+
+  const bestDurationByWeight = useMemo(() => {
+    if (!isTimeBasedExercise) return [];
+    const all = getBestDurationByWeight(workouts, normalizedExerciseName);
+    if (!effectiveSelectedReps.length) return all;
+    const selectedSet = new Set(effectiveSelectedReps);
+    return all.filter((record) => selectedSet.has(record.weight));
+  }, [
+    isTimeBasedExercise,
+    workouts,
+    normalizedExerciseName,
+    effectiveSelectedReps,
+  ]);
 
   const handleToggleRep = (reps: number, checked: boolean | string) => {
     const isChecked = checked === true;
@@ -189,58 +209,79 @@ export const Records = () => {
         </p>
       );
     }
-    if (isRepsOnlyExercise) {
-      return maxRepsRecord ? (
-        <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Best result
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
-              {maxRepsRecord.reps} reps
-              <Trophy className="h-4 w-4 text-yellow-400" />
-            </span>
-            {maxRepsRecord.date && (
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {format(new Date(maxRepsRecord.date), "d MMMM yyyy", {
-                  locale: pl,
-                })}
-              </span>
-            )}
-          </div>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No record yet 😢</p>
-      );
-    }
     if (isTimeBasedExercise) {
-      return maxDurationRecord ? (
-        <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Best result
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
-              {maxDurationRecord.duration} s
-              <Trophy className="h-4 w-4 text-yellow-400" />
-            </span>
-            {maxDurationRecord.date && (
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {format(
-                  new Date(maxDurationRecord.date),
-                  "d MMMM yyyy",
-                  { locale: pl }
-                )}
-              </span>
-            )}
-          </div>
+      if (!maxDurationRecord && bestDurationByWeight.length === 0) {
+        return (
+          <p className="text-sm text-muted-foreground">No record yet 😢</p>
+        );
+      }
+
+      return (
+        <div className="space-y-3">
+          {maxDurationRecord && (
+            <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Best time:
+                </span>
+                <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
+                  {maxDurationRecord.duration} s
+                  {maxDurationRecord.weight !== null &&
+                    maxDurationRecord.weight > 0 && (
+                      <span className="text-xs font-normal text-muted-foreground ml-1">
+                        ({maxDurationRecord.weight} kg)
+                      </span>
+                    )}
+                  <Trophy className="h-4 w-4 text-yellow-400" />
+                </span>
+              </div>
+              {maxDurationRecord.date && (
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {format(new Date(maxDurationRecord.date), "d MMMM yyyy", {
+                    locale: pl,
+                  })}
+                </span>
+              )}
+            </div>
+          )}
+
+          {bestDurationByWeight.length > 0 && (
+            <Table className="[&_th]:h-9 [&_th]:px-3 [&_td]:px-3 [&_td]:py-2 text-sm">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[20%] whitespace-nowrap">
+                    Weight
+                  </TableHead>
+                  <TableHead className="w-[40%] text-center whitespace-nowrap">
+                    Duration
+                  </TableHead>
+                  <TableHead className="w-[40%] text-right whitespace-nowrap">
+                    Date
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bestDurationByWeight.map((record) => (
+                  <TableRow key={record.weight} className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap">
+                      {record.weight} kg
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
+                        {record.duration} s
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">
+                      {format(new Date(record.date), "d MMMM yyyy", {
+                        locale: pl,
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No record yet 😢</p>
       );
     }
     if (bestWeightedRecords.length === 0) {
@@ -251,67 +292,92 @@ export const Records = () => {
       );
     }
     return (
-      <Table className="[&_th]:h-9 [&_th]:px-3 [&_td]:px-3 [&_td]:py-2 text-sm">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[20%] whitespace-nowrap">Reps</TableHead>
-            <TableHead className="w-[40%] text-center whitespace-nowrap">
-              Weight
-            </TableHead>
-            <TableHead className="w-[40%] text-right whitespace-nowrap">
-              Date
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {effectiveSelectedReps.map((reps) => {
-            const record = bestWeightedRecords.find(
-              (item) => item.reps === reps
-            );
+      <div className="space-y-3">
+        {maxRepsRecord && (
+          <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Max reps:
+              </span>
+              <span className="inline-flex items-center gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap">
+                {maxRepsRecord.reps} reps
+                {maxRepsRecord.weight !== null && maxRepsRecord.weight > 0 && (
+                  <span className="text-xs font-normal text-muted-foreground ml-1">
+                    ({maxRepsRecord.weight} kg)
+                  </span>
+                )}
+                <Trophy className="h-4 w-4 text-yellow-400" />
+              </span>
+            </div>
+            {maxRepsRecord.date && (
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {format(new Date(maxRepsRecord.date), "d MMMM yyyy", {
+                  locale: pl,
+                })}
+              </span>
+            )}
+          </div>
+        )}
 
-            if (!record || !record.weight) {
+        <Table className="[&_th]:h-9 [&_th]:px-3 [&_td]:px-3 [&_td]:py-2 text-sm">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[20%] whitespace-nowrap">Reps</TableHead>
+              <TableHead className="w-[40%] text-center whitespace-nowrap">
+                Weight
+              </TableHead>
+              <TableHead className="w-[40%] text-right whitespace-nowrap">
+                Date
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {effectiveSelectedReps.map((reps) => {
+              const record = bestWeightedRecords.find(
+                (item) => item.reps === reps
+              );
+
+              if (!record || !record.weight) {
+                return (
+                  <TableRow key={reps} className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap">
+                      {reps} rep{reps !== 1 ? "s" : ""}
+                    </TableCell>
+                    <TableCell className="text-center text-muted-foreground whitespace-nowrap">
+                      No record yet 😢
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">
+                      No record yet 😢
+                    </TableCell>
+                  </TableRow>
+                );
+              }
+
+              const date = format(new Date(record.date), "d MMMM yyyy", {
+                locale: pl,
+              });
+              const isBest = maxWeight !== null && record.weight === maxWeight;
+
               return (
                 <TableRow key={reps} className="whitespace-nowrap">
                   <TableCell className="whitespace-nowrap">
-                    {reps} rep{reps !== 1 ? "s" : ""}
+                    {record.reps} rep{record.reps !== 1 ? "s" : ""}
                   </TableCell>
-                  <TableCell className="text-center text-muted-foreground whitespace-nowrap">
-                    No record yet 😢
+                  <TableCell className="text-center">
+                    <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
+                      {record.weight} kg
+                      {isBest && <Trophy className="h-4 w-4 text-yellow-400" />}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground whitespace-nowrap">
-                    No record yet 😢
+                    {date}
                   </TableCell>
                 </TableRow>
               );
-            }
-
-            const date = format(new Date(record.date), "d MMMM yyyy", {
-              locale: pl,
-            });
-            const isBest =
-              maxWeight !== null && record.weight === maxWeight;
-
-            return (
-              <TableRow key={reps} className="whitespace-nowrap">
-                <TableCell className="whitespace-nowrap">
-                  {record.reps} rep{record.reps !== 1 ? "s" : ""}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
-                    {record.weight} kg
-                    {isBest && (
-                      <Trophy className="h-4 w-4 text-yellow-400" />
-                    )}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right text-muted-foreground whitespace-nowrap">
-                  {date}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            })}
+          </TableBody>
+        </Table>
+      </div>
     );
   };
 

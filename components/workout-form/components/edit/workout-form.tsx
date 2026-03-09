@@ -9,6 +9,7 @@ import { format, startOfDay, subDays } from "date-fns";
 // hooks
 import { useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useCreateWorkout } from "../../api/use-create-workout";
 import { useUpdateWorkout } from "../../api/use-update-workout";
 import { useGetWorkout } from "../../api/use-get-workout";
@@ -43,6 +44,7 @@ import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
 import {
   CreateWorkoutFormType,
   createWorkoutFormSchema,
+  templateWorkoutFormSchema,
   WORKOUT_UNIT_TYPE,
   type WorkoutUnitType,
 } from "../../types";
@@ -81,6 +83,7 @@ export const WorkoutForm = ({
   templateId: initialTemplateId,
   prefillFromTemplateId,
 }: WorkoutFormProps) => {
+  const router = useRouter();
   const entityId = isTemplateMode ? initialTemplateId : initialWorkoutId;
   const [workoutId, setWorkoutId] = useState<string | null>(
     initialWorkoutId || null
@@ -177,6 +180,9 @@ export const WorkoutForm = ({
       setIsFirstSave(false);
       clearCache();
       toast.success("Workout created successfully");
+      // Po pierwszym zapisie nowego workoutu przechodzimy na stronę edycji,
+      // żeby odświeżenie strony nie otwierało pustego formularza create.
+      router.replace(`/workout/edit?id=${data.id}`);
     },
     onError: (error) => {
       toast.error(error || "Failed to create workout. Please try again.");
@@ -263,7 +269,7 @@ export const WorkoutForm = ({
 
   const form = useForm<CreateWorkoutFormType>({
     resolver: zodResolver(
-      createWorkoutFormSchema
+      isTemplateMode ? templateWorkoutFormSchema : createWorkoutFormSchema
     ) as Resolver<CreateWorkoutFormType>,
     mode: "onTouched",
     defaultValues: {
@@ -310,6 +316,13 @@ export const WorkoutForm = ({
     if (lastPrefilledTemplateIdRef.current === prefillFromTemplateId) return;
 
     lastPrefilledTemplateIdRef.current = prefillFromTemplateId;
+    const formatNumericField = (value: unknown): string => {
+      if (value === null || value === undefined) return "";
+      const num =
+        typeof value === "number" ? value : Number(String(value).trim());
+      if (Number.isNaN(num) || num === 0) return "";
+      return String(num);
+    };
     const formData: CreateWorkoutFormType = {
       name: prefillTemplateData.name || "",
       description: prefillTemplateData.description || "",
@@ -320,9 +333,9 @@ export const WorkoutForm = ({
             (set: IWorkoutTemplateSetItem) => ({
               id: set.id,
               set_number: set.set_number || 0,
-              reps: set.reps != null ? String(set.reps) : "",
-              weight: set.weight != null ? String(set.weight) : "",
-              duration: set.duration != null ? String(set.duration) : "",
+              reps: formatNumericField(set.reps),
+              weight: formatNumericField(set.weight),
+              duration: formatNumericField(set.duration),
               isChecked: false,
             })
           );
@@ -358,6 +371,13 @@ export const WorkoutForm = ({
     if (hasLoadedWorkoutDataRef.current) return;
 
     hasLoadedWorkoutDataRef.current = true;
+    const formatNumericField = (value: unknown): string => {
+      if (value === null || value === undefined) return "";
+      const num =
+        typeof value === "number" ? value : Number(String(value).trim());
+      if (Number.isNaN(num) || num === 0) return "";
+      return String(num);
+    };
     setWorkoutId(workoutData.id);
     setIsFirstSave(false);
 
@@ -371,9 +391,9 @@ export const WorkoutForm = ({
         const sets = (exercise.sets || []).map((set) => ({
           id: set.id,
           set_number: set.set_number || 0,
-          reps: set.reps != null ? String(set.reps) : "",
-          weight: set.weight != null ? String(set.weight) : "",
-          duration: set.duration != null ? String(set.duration) : "",
+          reps: formatNumericField(set.reps),
+          weight: formatNumericField(set.weight),
+          duration: formatNumericField(set.duration),
           isChecked: set.isChecked || false,
         }));
         return {
@@ -422,6 +442,13 @@ export const WorkoutForm = ({
     if (hasLoadedTemplateDataRef.current) return;
 
     hasLoadedTemplateDataRef.current = true;
+    const formatNumericField = (value: unknown): string => {
+      if (value === null || value === undefined) return "";
+      const num =
+        typeof value === "number" ? value : Number(String(value).trim());
+      if (Number.isNaN(num) || num === 0) return "";
+      return String(num);
+    };
     setTemplateId(templateData.id);
     setIsFirstSave(false);
 
@@ -434,9 +461,9 @@ export const WorkoutForm = ({
             (set: IWorkoutTemplateSetItem) => ({
               id: set.id,
               set_number: set.set_number || 0,
-              reps: set.reps != null ? String(set.reps) : "",
-              weight: set.weight != null ? String(set.weight) : "",
-              duration: set.duration != null ? String(set.duration) : "",
+              reps: formatNumericField(set.reps),
+              weight: formatNumericField(set.weight),
+              duration: formatNumericField(set.duration),
               isChecked: false,
             })
           );
@@ -698,8 +725,8 @@ export const WorkoutForm = ({
     unitType: ExerciseUnitType | undefined
   ): WorkoutUnitType => {
     if (unitType === "time-based") return WORKOUT_UNIT_TYPE.DURATION;
-    if (unitType === "reps-only") return WORKOUT_UNIT_TYPE.REPS_ONLY;
-    return WORKOUT_UNIT_TYPE.WEIGHT;
+    // All non-time-based exercises are reps-based (reps + optional weight)
+    return WORKOUT_UNIT_TYPE.REPS_BASED;
   };
 
   // const handleUnitTypeChange = (
@@ -748,7 +775,7 @@ export const WorkoutForm = ({
     appendExercise({
       id: crypto.randomUUID(),
       name: "",
-      unitType: WORKOUT_UNIT_TYPE.WEIGHT,
+      unitType: WORKOUT_UNIT_TYPE.REPS_BASED,
       sets: [],
     });
   };
@@ -1219,38 +1246,63 @@ export const WorkoutForm = ({
                                   (form.watch(
                                     `exercises.${exerciseIndex}.unitType`
                                   ) as WorkoutUnitType | undefined) ??
-                                  WORKOUT_UNIT_TYPE.WEIGHT;
+                                  WORKOUT_UNIT_TYPE.REPS_BASED;
 
-                                // TIME-BASED: tylko Duration, bez Reps.
+                                // TIME-BASED: Duration + Weight, bez Reps (Reps zapisuje się jako 0).
                                 if (unitType === WORKOUT_UNIT_TYPE.DURATION) {
                                   return (
-                                    <FormField
-                                      control={form.control}
-                                      name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
-                                      render={({ field }) => (
-                                        <FormItem className="flex-1 min-w-0">
-                                          <FormLabel>Duration [s]</FormLabel>
-                                          <FormControl>
-                                            <Input
-                                              type="number"
-                                              step="any"
-                                              min={0}
-                                              autoComplete="off"
-                                              disabled={isPending}
-                                              {...field}
-                                              value={field.value ?? ""}
-                                              onChange={(e) =>
-                                                field.onChange(e.target.value)
-                                              }
-                                            />
-                                          </FormControl>
-                                        </FormItem>
-                                      )}
-                                    />
+                                    <>
+                                      <FormField
+                                        control={form.control}
+                                        name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
+                                        render={({ field }) => (
+                                          <FormItem className="flex-1 min-w-0">
+                                            <FormLabel>Duration [s]</FormLabel>
+                                            <FormControl>
+                                              <Input
+                                                type="number"
+                                                step={1}
+                                                min={0}
+                                                autoComplete="off"
+                                                disabled={isPending}
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={(e) =>
+                                                  field.onChange(e.target.value)
+                                                }
+                                              />
+                                            </FormControl>
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={form.control}
+                                        name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                        render={({ field }) => (
+                                          <FormItem className="flex-1 min-w-0">
+                                            <FormLabel>Weight [kg]</FormLabel>
+                                            <FormControl>
+                                              <Input
+                                                type="number"
+                                                step={0.1}
+                                                min={0}
+                                                autoComplete="off"
+                                                disabled={isPending}
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={(e) =>
+                                                  field.onChange(e.target.value)
+                                                }
+                                              />
+                                            </FormControl>
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </>
                                   );
                                 }
 
-                                // WEIGHTED / REPS-ONLY: zawsze Reps, opcjonalnie Weight.
+                                // REPS-BASED: zawsze Reps, opcjonalnie Weight.
                                 return (
                                   <>
                                     <FormField
@@ -1262,7 +1314,7 @@ export const WorkoutForm = ({
                                           <FormControl>
                                             <Input
                                               type="number"
-                                              step="any"
+                                              step={1}
                                               min={0}
                                               autoComplete="off"
                                               disabled={isPending}
@@ -1276,7 +1328,8 @@ export const WorkoutForm = ({
                                         </FormItem>
                                       )}
                                     />
-                                    {unitType === WORKOUT_UNIT_TYPE.WEIGHT && (
+                                    {unitType ===
+                                      WORKOUT_UNIT_TYPE.REPS_BASED && (
                                       <FormField
                                         control={form.control}
                                         name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
@@ -1286,7 +1339,7 @@ export const WorkoutForm = ({
                                             <FormControl>
                                               <Input
                                                 type="number"
-                                                step="any"
+                                                step={0.1}
                                                 min={0}
                                                 autoComplete="off"
                                                 disabled={isPending}

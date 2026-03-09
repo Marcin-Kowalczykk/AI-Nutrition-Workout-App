@@ -8,8 +8,8 @@ export type PreparedSet = {
   id: string;
   set_number: number;
   reps: number;
-  weight: number | undefined;
-  duration: number | undefined;
+  weight: number;
+  duration: number;
   isChecked: boolean;
 };
 
@@ -49,8 +49,8 @@ export const prepareExercisesForSubmission = (
           id: set.id,
           set_number: set.set_number ?? 0,
           reps: toNum(set.reps),
-          weight: toNumOptional(set.weight),
-          duration: toNumOptional(set.duration),
+          weight: toNum(set.weight),
+          duration: toNum(set.duration),
           isChecked: set.isChecked ?? false,
         }));
 

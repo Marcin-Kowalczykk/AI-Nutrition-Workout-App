@@ -6,8 +6,7 @@ export interface IExerciseCategory {
 }
 
 export const EXERCISE_UNIT_TYPE = {
-  WEIGHTED: "weighted",
-  REPS_ONLY: "reps-only",
+  REPS_BASED: "reps-based",
   TIME_BASED: "time-based",
 } as const;
 

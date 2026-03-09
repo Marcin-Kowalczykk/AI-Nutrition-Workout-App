@@ -7,6 +7,7 @@ import type {
 
 export interface MaxRepsRecord {
   reps: number;
+  weight: number | null;
   date: string;
 }
 
@@ -40,9 +41,21 @@ export const getMaxRepsRecord = (
           continue;
         }
 
-        if (!best || set.reps > best.reps) {
+        const weight =
+          typeof set.weight === "number" && !Number.isNaN(set.weight)
+            ? set.weight
+            : null;
+
+        if (
+          !best ||
+          set.reps > best.reps ||
+          (set.reps === best.reps &&
+            weight !== null &&
+            (best.weight === null || weight > best.weight))
+        ) {
           best = {
             reps: set.reps,
+            weight,
             date: workout.created_at,
           };
         }

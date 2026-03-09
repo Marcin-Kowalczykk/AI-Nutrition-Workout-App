@@ -8,10 +8,6 @@ export type HistoryUnitColumn =
 export const getUnitColumn = (
   exercises: IWorkoutExerciseItem[]
 ): HistoryUnitColumn => {
-  const hasWeight = exercises.some((ex) =>
-    (ex.sets ?? []).some((s) => s.weight !== undefined && s.weight !== null)
-  );
-
   const hasDuration = exercises.some((ex) =>
     (ex.sets ?? []).some(
       (s) =>
@@ -21,8 +17,16 @@ export const getUnitColumn = (
     )
   );
 
-  if (hasWeight) return WORKOUT_UNIT_TYPE.WEIGHT;
+  const hasWeight = exercises.some((ex) =>
+    (ex.sets ?? []).some(
+      (s) => s.weight !== undefined && s.weight !== null && s.weight > 0
+    )
+  );
+
+  // Jeżeli mamy jakiekolwiek Duration > 0, traktujemy historię jako time-based.
   if (hasDuration) return WORKOUT_UNIT_TYPE.DURATION;
+  // W przeciwnym razie, jeśli jest ciężar, traktujemy jako reps-based (weight).
+  if (hasWeight) return WORKOUT_UNIT_TYPE.REPS_BASED;
   return null;
 };
 

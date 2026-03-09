@@ -142,7 +142,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         category_id: categoryId,
         name: normalizeForComparison(name),
-        unit_type: body.unitType ?? "weighted",
+        unit_type: body.unitType ?? "reps-based",
       })
       .select()
       .single();

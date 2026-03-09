@@ -17,7 +17,7 @@ export interface IWorkoutTemplateExerciseItem {
 export interface IWorkoutTemplateSetItem {
   id: string;
   set_number: number;
-  reps?: number;
-  weight?: number;
-  duration?: number;
+  reps: number;
+  weight: number;
+  duration: number;
 }

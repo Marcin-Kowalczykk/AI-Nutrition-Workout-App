@@ -111,14 +111,25 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
           workoutData.exercises.map((exercise) => {
             const sets = exercise.sets ?? [];
             const hasWeight = sets.some(
-              (set) => set.weight !== undefined && set.weight !== null
+              (set) =>
+                typeof set.weight === "number" &&
+                !Number.isNaN(set.weight) &&
+                set.weight > 0
             );
             const hasDuration = sets.some(
               (set) =>
-                set.duration !== undefined &&
-                set.duration !== null &&
+                typeof set.duration === "number" &&
+                !Number.isNaN(set.duration) &&
                 set.duration > 0
             );
+            const hasPositiveReps = sets.some(
+              (set) =>
+                typeof set.reps === "number" &&
+                !Number.isNaN(set.reps) &&
+                set.reps > 0
+            );
+
+            const isTimeBasedExercise = hasDuration && !hasPositiveReps;
 
             return (
               <Card key={exercise.id}>
@@ -140,18 +151,28 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                           <TableHead className="w-[60px] text-center">
                             Set
                           </TableHead>
-                          <TableHead className="w-[80px] text-center">
-                            Reps
-                          </TableHead>
-                          {hasWeight && (
-                            <TableHead className="w-[90px] text-center">
-                              Weight
-                            </TableHead>
-                          )}
-                          {hasDuration && (
-                            <TableHead className="w-[110px] text-center">
-                              Duration
-                            </TableHead>
+                          {isTimeBasedExercise ? (
+                            <>
+                              <TableHead className="w-[110px] text-center">
+                                Duration
+                              </TableHead>
+                              {hasWeight && (
+                                <TableHead className="w-[90px] text-center">
+                                  Weight
+                                </TableHead>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <TableHead className="w-[80px] text-center">
+                                Reps
+                              </TableHead>
+                              {hasWeight && (
+                                <TableHead className="w-[90px] text-center">
+                                  Weight
+                                </TableHead>
+                              )}
+                            </>
                           )}
                         </TableRow>
                       </TableHeader>
@@ -174,24 +195,41 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                             <TableCell className="text-center">
                               {set.set_number ?? "-"}
                             </TableCell>
-                            <TableCell className="text-center">
-                              {set.reps !== undefined ? set.reps : "-"}
-                            </TableCell>
-                            {hasWeight && (
-                              <TableCell className="text-center">
-                                {set.weight !== undefined && set.weight !== null
-                                  ? `${set.weight} kg`
-                                  : "-"}
-                              </TableCell>
-                            )}
-                            {hasDuration && (
-                              <TableCell className="text-center">
-                                {set.duration !== undefined &&
-                                set.duration !== null &&
-                                set.duration > 0
-                                  ? `${set.duration} s`
-                                  : "-"}
-                              </TableCell>
+                            {isTimeBasedExercise ? (
+                              <>
+                                <TableCell className="text-center">
+                                  {typeof set.duration === "number" &&
+                                  set.duration > 0
+                                    ? `${set.duration} s`
+                                    : "-"}
+                                </TableCell>
+                                {hasWeight && (
+                                  <TableCell className="text-center">
+                                    {typeof set.weight === "number" &&
+                                    set.weight > 0
+                                      ? `${set.weight} kg`
+                                      : "-"}
+                                  </TableCell>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <TableCell className="text-center">
+                                  {set.reps !== undefined &&
+                                  set.reps !== null &&
+                                  !Number.isNaN(set.reps)
+                                    ? set.reps
+                                    : "-"}
+                                </TableCell>
+                                {hasWeight && (
+                                  <TableCell className="text-center">
+                                    {typeof set.weight === "number" &&
+                                    set.weight > 0
+                                      ? `${set.weight} kg`
+                                      : "-"}
+                                  </TableCell>
+                                )}
+                              </>
                             )}
                           </TableRow>
                         ))}

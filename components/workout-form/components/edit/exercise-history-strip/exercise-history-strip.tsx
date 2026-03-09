@@ -70,17 +70,20 @@ export const ExerciseHistoryStripContent = ({
     [nameNorm, data, maxWorkouts]
   );
 
-  const updateArrows = useCallback((el: HTMLDivElement | null) => {
-    if (!el) {
-      setCanPrev(false);
-      setCanNext(false);
-      return;
-    }
-    const { scrollLeft, clientWidth, scrollWidth } = el;
-    const tolerance = 2;
-    setCanPrev(scrollLeft > tolerance);
-    setCanNext(scrollLeft + clientWidth < scrollWidth - tolerance);
-  }, []);
+  const updateArrows = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (!el) {
+        setCanPrev(false);
+        setCanNext(false);
+        return;
+      }
+      const { scrollLeft, clientWidth, scrollWidth } = el;
+      const tolerance = 2;
+      setCanPrev(scrollLeft > tolerance);
+      setCanNext(scrollLeft + clientWidth < scrollWidth - tolerance);
+    },
+    [setCanPrev, setCanNext]
+  );
 
   const scrollByPage = useCallback((direction: 1 | -1) => {
     const el = scrollRef.current;
@@ -183,11 +186,13 @@ export const ExerciseHistoryStripContent = ({
                             : "w-[60%] text-[9px] text-center pr-0"
                         }
                       >
-                        Reps
+                        {unitColumn === WORKOUT_UNIT_TYPE.DURATION
+                          ? "Duration"
+                          : "Reps"}
                       </TableHead>
                       {unitColumn !== null && (
-                        <TableHead className="w-[45%] text-[9px] text-center first-letter:uppercase pr-0">
-                          {unitColumn}
+                        <TableHead className="w-[45%] text-[9px] text-center pr-0">
+                          Weight
                         </TableHead>
                       )}
                     </TableRow>
@@ -225,17 +230,17 @@ export const ExerciseHistoryStripContent = ({
                               </span>
                             </TableCell>
                             <TableCell className="text-center">
-                              {set.reps}
+                              {unitColumn === WORKOUT_UNIT_TYPE.DURATION
+                                ? typeof set.duration === "number"
+                                  ? `${set.duration} s`
+                                  : "-"
+                                : set.reps}
                             </TableCell>
                             {unitColumn !== null && (
                               <TableCell className="text-center pr-0">
-                                {unitColumn === WORKOUT_UNIT_TYPE.WEIGHT
-                                  ? (set.weight ?? "") !== ""
-                                    ? `${set.weight} kg`
-                                    : "-"
-                                  : (set.duration ?? "") !== "" &&
-                                    Number(set.duration) > 0
-                                  ? `${set.duration} s`
+                                {typeof set.weight === "number" &&
+                                set.weight > 0
+                                  ? `${set.weight} kg`
                                   : "-"}
                               </TableCell>
                             )}
@@ -485,17 +490,17 @@ export const ExerciseHistoryStrip = ({
                                 </span>
                               </TableCell>
                               <TableCell className="text-center">
-                                {set.reps}
+                                {unitColumn === WORKOUT_UNIT_TYPE.DURATION
+                                  ? typeof set.duration === "number"
+                                    ? `${set.duration} s`
+                                    : "-"
+                                  : set.reps}
                               </TableCell>
                               {unitColumn !== null && (
                                 <TableCell className="text-center pr-0">
-                                  {unitColumn === WORKOUT_UNIT_TYPE.WEIGHT
-                                    ? (set.weight ?? "") !== ""
-                                      ? `${set.weight} kg`
-                                      : "-"
-                                    : (set.duration ?? "") !== "" &&
-                                      Number(set.duration) > 0
-                                    ? `${set.duration} s`
+                                  {typeof set.weight === "number" &&
+                                  set.weight > 0
+                                    ? `${set.weight} kg`
                                     : "-"}
                                 </TableCell>
                               )}

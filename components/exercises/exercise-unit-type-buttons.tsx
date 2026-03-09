@@ -8,8 +8,7 @@ import {
 import { ExerciseUnitBadge } from "./exercise-unit-badge";
 
 const UNIT_TYPES: ExerciseUnitType[] = [
-  EXERCISE_UNIT_TYPE.WEIGHTED,
-  EXERCISE_UNIT_TYPE.REPS_ONLY,
+  EXERCISE_UNIT_TYPE.REPS_BASED,
   EXERCISE_UNIT_TYPE.TIME_BASED,
 ];
 

@@ -1,5 +1,13 @@
 import type { CreateWorkoutFormType } from "../../../types";
 
+const formatNumericField = (value: unknown): string => {
+  if (value === null || value === undefined) return "";
+  const num =
+    typeof value === "number" ? value : Number(String(value).trim());
+  if (Number.isNaN(num) || num === 0) return "";
+  return String(num);
+};
+
 export const normalizeCachedFormData = (
   parsed: unknown,
   defaultWorkoutDate: string,
@@ -19,9 +27,9 @@ export const normalizeCachedFormData = (
         const sets = Array.isArray(e.sets)
           ? (e.sets as Record<string, unknown>[]).map((s) => ({
               ...s,
-              reps: s.reps != null ? String(s.reps) : "",
-              weight: s.weight != null ? String(s.weight) : "",
-              duration: s.duration != null ? String(s.duration) : "",
+              reps: formatNumericField(s.reps),
+              weight: formatNumericField(s.weight),
+              duration: formatNumericField(s.duration),
             }))
           : [];
         return { ...e, sets };

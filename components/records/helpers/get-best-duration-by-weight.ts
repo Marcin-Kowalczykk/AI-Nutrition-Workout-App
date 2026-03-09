@@ -5,21 +5,22 @@ import type {
   IWorkoutSetItem,
 } from "@/app/api/workouts/types";
 
-export interface MaxDurationRecord {
+export interface BestDurationByWeightRecord {
+  weight: number;
   duration: number;
-  weight: number | null;
   date: string;
+  workoutName: string;
 }
 
-export const getMaxDurationRecord = (
+export const getBestDurationByWeight = (
   workouts: IWorkoutItem[] | null | undefined,
   normalizedExerciseName: string
-): MaxDurationRecord | null => {
+): BestDurationByWeightRecord[] => {
   if (!normalizedExerciseName || !workouts?.length) {
-    return null;
+    return [];
   }
 
-  let best: MaxDurationRecord | null = null;
+  const bestByWeight = new Map<number, BestDurationByWeightRecord>();
 
   for (const workout of workouts) {
     const exercises = (workout.exercises ?? []) as IWorkoutExerciseItem[];
@@ -36,33 +37,27 @@ export const getMaxDurationRecord = (
           !set.isChecked ||
           typeof set.duration !== "number" ||
           Number.isNaN(set.duration) ||
-          set.duration <= 0
+          set.duration <= 0 ||
+          typeof set.weight !== "number" ||
+          Number.isNaN(set.weight) ||
+          set.weight <= 0
         ) {
           continue;
         }
 
-        const weight =
-          typeof set.weight === "number" && !Number.isNaN(set.weight)
-            ? set.weight
-            : null;
-
-        if (
-          !best ||
-          set.duration > best.duration ||
-          (set.duration === best.duration &&
-            weight !== null &&
-            (best.weight === null || weight > best.weight))
-        ) {
-          best = {
+        const existing = bestByWeight.get(set.weight);
+        if (!existing || set.duration > existing.duration) {
+          bestByWeight.set(set.weight, {
+            weight: set.weight,
             duration: set.duration,
-            weight,
             date: workout.created_at,
-          };
+            workoutName: workout.name,
+          });
         }
       }
     }
   }
 
-  return best;
+  return Array.from(bestByWeight.values()).sort((a, b) => a.weight - b.weight);
 };
 

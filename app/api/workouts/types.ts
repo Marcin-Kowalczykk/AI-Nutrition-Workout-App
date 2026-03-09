@@ -20,7 +20,7 @@ export interface IWorkoutSetItem {
   id: string;
   set_number: number;
   reps: number;
-  weight?: number;
-  duration?: number;
+  weight: number;
+  duration: number;
   isChecked?: boolean;
 }

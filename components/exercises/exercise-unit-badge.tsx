@@ -7,14 +7,12 @@ import {
 } from "@/app/api/exercises/types";
 
 const LABELS: Record<ExerciseUnitType, string> = {
-  [EXERCISE_UNIT_TYPE.WEIGHTED]: "Weighted",
-  [EXERCISE_UNIT_TYPE.REPS_ONLY]: "Reps only",
+  [EXERCISE_UNIT_TYPE.REPS_BASED]: "Reps based",
   [EXERCISE_UNIT_TYPE.TIME_BASED]: "Time based",
 };
 
 const BADGE_CLASS: Record<ExerciseUnitType, string> = {
-  [EXERCISE_UNIT_TYPE.WEIGHTED]: "exercise-badge-weighted",
-  [EXERCISE_UNIT_TYPE.REPS_ONLY]: "exercise-badge-reps-only",
+  [EXERCISE_UNIT_TYPE.REPS_BASED]: "exercise-badge-reps-based",
   [EXERCISE_UNIT_TYPE.TIME_BASED]: "exercise-badge-time-based",
 };
 
@@ -29,7 +27,7 @@ export const ExerciseUnitBadge = ({
 }: ExerciseUnitBadgeProps) => (
   <span
     className={cn(
-      "inline-flex shrink-0 items-center justify-center rounded-full border w-16 min-w-16 h-5 px-1 text-[8px] font-medium uppercase tracking-wide text-center leading-none",
+      "inline-flex shrink-0 items-center justify-center rounded-full border w-18 min-w-16 h-5 px-1 text-[8px] font-medium uppercase tracking-wide text-center leading-none",
       BADGE_CLASS[unitType],
       className
     )}
