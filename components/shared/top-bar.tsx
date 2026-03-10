@@ -41,6 +41,10 @@ const getTitleForPath = (pathname: string): string | null => {
     return NavMainTitles.Records;
   }
 
+  if (pathname === EnableRoutes.Comparisons) {
+    return NavMainTitles.Comparisons;
+  }
+
   if (pathname === EnableRoutes.DietHistory) {
     return NavMainTitles.DietHistory;
   }

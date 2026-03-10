@@ -86,7 +86,6 @@ export function NavMain() {
       title: NavMainTitles.Comparisons,
       url: EnableRoutes.Comparisons,
       icon: BarChartIcon,
-      comingSoon: true,
     },
     {
       title: NavMainTitles.DietHistory,

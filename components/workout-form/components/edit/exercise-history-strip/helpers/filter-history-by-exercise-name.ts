@@ -7,7 +7,7 @@ import type {
 export const filterHistoryByExerciseName = (
   workouts: IWorkoutItem[] | null | undefined,
   normalizedExerciseName: string,
-  maxWorkouts: number
+  maxWorkouts?: number
 ): IWorkoutItem[] => {
   if (!normalizedExerciseName || !workouts?.length) return [];
 
@@ -17,6 +17,10 @@ export const filterHistoryByExerciseName = (
         normalizeForComparison(exercise.name ?? "") === normalizedExerciseName
     )
   );
+
+  if (!maxWorkouts || maxWorkouts <= 0) {
+    return withExercise;
+  }
 
   return withExercise.slice(0, maxWorkouts);
 };
