@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { endOfDay, format, startOfDay, subMonths } from "date-fns";
 import { pl } from "date-fns/locale";
 
@@ -35,6 +35,32 @@ export type HistoryPoint = {
   dateLabel: string;
   value: number; // max na słupku
   sets: HistoryPointSetInfo[]; // wszystkie serie, które się liczą do wykresu
+};
+
+const useIsMobileLandscape = () => {
+  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      if (typeof window === "undefined") return;
+      const { innerWidth, innerHeight } = window;
+      const isLandscape = innerWidth > innerHeight;
+      const isMobile = innerWidth < 1024;
+      setIsMobileLandscape(isLandscape && isMobile);
+    };
+
+    update();
+
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, []);
+
+  return isMobileLandscape;
 };
 
 const toNumber = (value: unknown): number | null => {
@@ -184,6 +210,7 @@ export const Comparisions = () => {
   >(undefined);
   const [chartConfigOpen, setChartConfigOpen] = useState(false);
   const [chartConfig, setChartConfig] = useState<ChartConfigState | null>(null);
+  const isMobileLandscape = useIsMobileLandscape();
 
   const trimmedName = exerciseName?.trim() || "";
   const normalizedExerciseName = trimmedName
@@ -226,8 +253,20 @@ export const Comparisions = () => {
     [filteredWorkouts, normalizedExerciseName, selectedUnitType, chartConfig]
   );
 
+  const showFullscreenChart =
+    isMobileLandscape &&
+    normalizedExerciseName &&
+    chartPoints.length > 0 &&
+    !!yLabel;
+
   return (
-    <div className="w-full flex flex-col gap-1.5">
+    <>
+      {showFullscreenChart && (
+        <div className="fixed inset-0 z-50 bg-background px-2 pt-4 pb-2">
+          <ExerciseHistoryBarChart data={chartPoints} yLabel={yLabel} />
+        </div>
+      )}
+      <div className="w-full flex flex-col gap-1.5">
       <Card>
         <CardContent className="flex flex-col gap-1 mt-2">
           <div className="flex flex-col gap-1">
@@ -352,13 +391,14 @@ export const Comparisions = () => {
           )}
       </div>
 
-      <ChartConfigModal
-        open={chartConfigOpen && !!normalizedExerciseName}
-        onOpenChange={setChartConfigOpen}
-        unitType={selectedUnitType}
-        value={chartConfig}
-        onSave={(next) => setChartConfig(next)}
-      />
-    </div>
+        <ChartConfigModal
+          open={chartConfigOpen && !!normalizedExerciseName}
+          onOpenChange={setChartConfigOpen}
+          unitType={selectedUnitType}
+          value={chartConfig}
+          onSave={(next) => setChartConfig(next)}
+        />
+      </div>
+    </>
   );
 };
