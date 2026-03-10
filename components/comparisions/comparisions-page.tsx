@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { startOfDay, endOfDay } from "date-fns";
+import { endOfDay, format, startOfDay, subMonths } from "date-fns";
+import { pl } from "date-fns/locale";
 
 import { Card, CardContent } from "../ui/card";
 import { ExercisesSelect } from "../shared/exercises-select";
@@ -11,11 +12,178 @@ import { normalizeForComparison } from "@/lib/normalize-string";
 import { filterHistoryByExerciseName } from "@/components/workout-form/components/edit/exercise-history-strip/helpers";
 import { ExerciseHistoryWorkoutCard } from "@/components/workout-history/exercise-history-workout-card";
 import { Loader } from "@/components/shared/loader";
+import { ExerciseHistoryBarChart } from "@/components/comparisions/exercise-history-bar-chart";
+import {
+  ChartConfigModal,
+  type ChartConfigState,
+} from "@/components/comparisions/chart-config-modal";
+import { ExerciseUnitType } from "@/app/api/exercises/types";
+import type {
+  IWorkoutItem,
+  IWorkoutExerciseItem,
+  IWorkoutSetItem,
+} from "@/app/api/workouts/types";
+import { Button } from "@/components/ui/button";
+
+export type HistoryPointSetInfo = {
+  reps: number;
+  weight: number;
+  duration: number;
+};
+
+export type HistoryPoint = {
+  dateLabel: string;
+  value: number; // max na słupku
+  sets: HistoryPointSetInfo[]; // wszystkie serie, które się liczą do wykresu
+};
+
+const toNumber = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null;
+  const num = typeof value === "number" ? value : Number(String(value));
+  if (Number.isNaN(num)) return null;
+  return num;
+};
+
+const buildChartData = (
+  workouts: IWorkoutItem[],
+  normalizedExerciseName: string,
+  unitType: ExerciseUnitType | undefined,
+  config: ChartConfigState | null
+): { points: HistoryPoint[]; yLabel: string | null } => {
+  if (!normalizedExerciseName || !config) {
+    return { points: [], yLabel: null };
+  }
+
+  const isTimeBased = unitType === "time-based";
+  const points: { date: Date; value: number; sets: HistoryPointSetInfo[] }[] =
+    [];
+
+  for (const workout of workouts) {
+    if (!workout.created_at) continue;
+
+    const exercises =
+      (workout.exercises ?? []).filter(
+        (ex: IWorkoutExerciseItem) =>
+          normalizeForComparison(ex.name ?? "") === normalizedExerciseName
+      ) ?? [];
+
+    if (!exercises.length) continue;
+
+    let valueForWorkout: number | null = null;
+    const matchingSets: HistoryPointSetInfo[] = [];
+
+    if (isTimeBased) {
+      // time-based: duration vs time, opcjonalnie filtrowane po weight
+      const bodyweight = config.bodyweightOnly;
+      const targetWeight = bodyweight ? null : toNumber(config.weightTarget);
+
+      for (const ex of exercises) {
+        for (const set of ex.sets ?? []) {
+          const weight = toNumber((set as IWorkoutSetItem).weight) ?? 0;
+          const duration = toNumber((set as IWorkoutSetItem).duration);
+          const reps = toNumber((set as IWorkoutSetItem).reps) ?? 0;
+          if (duration === null || duration <= 0) continue;
+          if (bodyweight) {
+            if (weight !== 0) continue;
+          } else if (targetWeight !== null && weight !== targetWeight) {
+            continue;
+          }
+
+          matchingSets.push({ reps, weight, duration });
+
+          valueForWorkout =
+            valueForWorkout === null
+              ? duration
+              : Math.max(valueForWorkout, duration);
+        }
+      }
+    } else {
+      // reps-based
+      if (config.mode === "reps_only") {
+        // wykres reps w czasie dla bodyweight (weight = 0)
+        for (const ex of exercises) {
+          for (const set of ex.sets ?? []) {
+            const weight = toNumber((set as IWorkoutSetItem).weight) ?? 0;
+            const reps = toNumber((set as IWorkoutSetItem).reps);
+            const duration = toNumber((set as IWorkoutSetItem).duration) ?? 0;
+            if (reps === null || reps <= 0) continue;
+            if (weight !== 0) continue;
+
+            matchingSets.push({ reps, weight, duration });
+
+            valueForWorkout =
+              valueForWorkout === null ? reps : Math.max(valueForWorkout, reps);
+          }
+        }
+      } else {
+        // wykres weight w czasie dla konkretnych reps:
+        // bierzemy wszystkie serie z daną liczbą powtórzeń i dodatnim ciężarem
+        const repsTarget = toNumber(config.repsTarget);
+        if (repsTarget === null || repsTarget <= 0) {
+          continue;
+        }
+
+        for (const ex of exercises) {
+          for (const set of ex.sets ?? []) {
+            const reps = toNumber((set as IWorkoutSetItem).reps);
+            const weight = toNumber((set as IWorkoutSetItem).weight) ?? 0;
+            const duration = toNumber((set as IWorkoutSetItem).duration) ?? 0;
+            if (reps !== repsTarget) continue;
+            if (weight <= 0) continue;
+
+            matchingSets.push({
+              reps: reps ?? 0,
+              weight,
+              duration,
+            });
+
+            valueForWorkout =
+              valueForWorkout === null
+                ? weight
+                : Math.max(valueForWorkout, weight);
+          }
+        }
+      }
+    }
+
+    if (valueForWorkout !== null && matchingSets.length > 0) {
+      const date = new Date(workout.created_at);
+      points.push({ date, value: valueForWorkout, sets: matchingSets });
+    }
+  }
+
+  // sortowanie po dacie rosnąco
+  points.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  const historyPoints: HistoryPoint[] = points.map(({ date, value, sets }) => ({
+    dateLabel: format(date, "d MMM yyyy", { locale: pl }),
+    value,
+    sets,
+  }));
+
+  let yLabel: string | null = null;
+  if (isTimeBased) {
+    yLabel = "Duration [s]";
+  } else if (config.mode === "reps_only") {
+    yLabel = "Reps";
+  } else {
+    yLabel = "Weight [kg]";
+  }
+
+  return { points: historyPoints, yLabel };
+};
 
 export const Comparisions = () => {
   const [exerciseName, setExerciseName] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(() =>
+    subMonths(new Date(), 6)
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(() => new Date());
+  const [selectedUnitType, setSelectedUnitType] = useState<
+    ExerciseUnitType | undefined
+  >(undefined);
+  const [chartConfigOpen, setChartConfigOpen] = useState(false);
+  const [chartConfig, setChartConfig] = useState<ChartConfigState | null>(null);
 
   const trimmedName = exerciseName?.trim() || "";
   const normalizedExerciseName = trimmedName
@@ -38,11 +206,24 @@ export const Comparisions = () => {
     enabled: !!normalizedExerciseName,
   });
 
-  const workouts = data?.workouts ?? [];
-
   const filteredWorkouts = useMemo(
-    () => filterHistoryByExerciseName(workouts, normalizedExerciseName),
-    [workouts, normalizedExerciseName]
+    () =>
+      filterHistoryByExerciseName(
+        data?.workouts ?? null,
+        normalizedExerciseName
+      ),
+    [data?.workouts, normalizedExerciseName]
+  );
+
+  const { points: chartPoints, yLabel } = useMemo(
+    () =>
+      buildChartData(
+        (filteredWorkouts as IWorkoutItem[]) ?? [],
+        normalizedExerciseName,
+        selectedUnitType,
+        chartConfig
+      ),
+    [filteredWorkouts, normalizedExerciseName, selectedUnitType, chartConfig]
   );
 
   return (
@@ -54,6 +235,10 @@ export const Comparisions = () => {
             <ExercisesSelect
               value={exerciseName ?? ""}
               onChange={(value) => setExerciseName(value)}
+              onExerciseSelectedMeta={(meta) => {
+                setSelectedUnitType(meta.unitType);
+                setChartConfig(null);
+              }}
             />
           </div>
 
@@ -83,8 +268,28 @@ export const Comparisions = () => {
               </div>
             </div>
           </div>
+
+          {normalizedExerciseName && (
+            <Button
+              type="button"
+              size="sm"
+              variant="default"
+              className="mt-1"
+              onClick={() => setChartConfigOpen(true)}
+            >
+              Configure chart
+            </Button>
+          )}
         </CardContent>
       </Card>
+
+      {normalizedExerciseName && chartPoints.length > 0 && yLabel && (
+        <Card>
+          <CardContent className="pt-3">
+            <ExerciseHistoryBarChart data={chartPoints} yLabel={yLabel} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex-1 flex flex-col gap-1">
         {!normalizedExerciseName && (
@@ -146,6 +351,14 @@ export const Comparisions = () => {
             </div>
           )}
       </div>
+
+      <ChartConfigModal
+        open={chartConfigOpen && !!normalizedExerciseName}
+        onOpenChange={setChartConfigOpen}
+        unitType={selectedUnitType}
+        value={chartConfig}
+        onSave={(next) => setChartConfig(next)}
+      />
     </div>
   );
 };

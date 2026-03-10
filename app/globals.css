@@ -110,6 +110,12 @@ body,
   --exercise-badge-time-based-bg: #141c22;
   --exercise-badge-reps-based: #5a725a;
   --exercise-badge-reps-based-bg: #141a14;
+  /* Chart colors (dark) */
+  --chart-1: #24b559; /* emerald */
+  --chart-2: #a855f7; /* violet */
+  --chart-3: #38bdf8; /* sky */
+  --chart-4: #f97316; /* orange */
+  --chart-5: #ec4899; /* pink */
 }
 
 .light {
@@ -144,6 +150,12 @@ body,
   --exercise-badge-time-based-bg: #d7e3f0;
   --exercise-badge-reps-based: #16a34a;
   --exercise-badge-reps-based-bg: #dcfce7;
+  /* Chart colors (light) */
+  --chart-1: #16a34a; /* green-600 */
+  --chart-2: #7c3aed; /* violet-600 */
+  --chart-3: #0284c7; /* sky-600 */
+  --chart-4: #ea580c; /* orange-600 */
+  --chart-5: #db2777; /* pink-600 */
 }
 
 /* .exercise-badge-weighted {
