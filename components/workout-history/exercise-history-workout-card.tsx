@@ -44,17 +44,22 @@ export const ExerciseHistoryWorkoutCard = ({
   const outerClasses =
     variant === "compact"
       ? "shrink-0 w-[calc(50%-0.25rem)] min-w-[140px] max-w-[220px] rounded-md border border-border bg-muted/30 px-1 py-1 text-[11px] leading-snug overflow-hidden"
-      : "w-full rounded-md border border-border bg-muted/30 px-2 py-1 text-[12px] leading-snug";
+      : "w-full rounded-md border border-border bg-muted/30 px-2 py-1.5 text-[12px] leading-snug";
+
+  const headerWrapperClass =
+    variant === "compact"
+      ? "mb-1 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0"
+      : "mb-1.5 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0";
 
   const dateTextClass =
     variant === "compact"
       ? "text-[9px] text-muted-foreground whitespace-nowrap shrink-0"
-      : "text-xs text-muted-foreground whitespace-nowrap shrink-0";
+      : "inline-block text-xs font-semibold whitespace-nowrap shrink-0 border-b-2 border-primary-element pb-0.5";
 
   const titleTextClass =
     variant === "compact"
       ? "text-[10px] font-medium text-right truncate min-w-0"
-      : "text-sm font-semibold text-right truncate min-w-0";
+      : "text-xs text-muted-foreground text-right truncate min-w-0";
 
   const tableClass =
     variant === "compact"
@@ -63,7 +68,7 @@ export const ExerciseHistoryWorkoutCard = ({
 
   return (
     <div className={outerClasses}>
-      <div className="mb-1 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0">
+      <div className={headerWrapperClass}>
         <span className={dateTextClass}>
           {formatWorkoutDate(workout.created_at)}
         </span>

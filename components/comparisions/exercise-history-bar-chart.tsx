@@ -118,12 +118,12 @@ export const ExerciseHistoryBarChart = ({
 }: ExerciseHistoryBarChartProps) => {
   if (!data.length) return null;
 
-  const MAX_VISIBLE_BARS = 15;
+  const isFullscreen = variant === "fullscreen";
+  const MAX_VISIBLE_BARS = isFullscreen ? 25 : 15;
   const barCount = data.length;
   const needsScroll = barCount > MAX_VISIBLE_BARS;
   const widthFactor = needsScroll ? barCount / MAX_VISIBLE_BARS : 1;
   const maxValue = Math.max(...data.map((p) => p.value));
-  const isFullscreen = variant === "fullscreen";
 
   return (
     <div className="w-full">

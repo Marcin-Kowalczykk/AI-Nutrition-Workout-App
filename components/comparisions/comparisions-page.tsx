@@ -26,6 +26,9 @@ import type {
 import { Button } from "@/components/ui/button";
 import { useIsMobileLandscape } from "@/components/comparisions/hooks/use-is-mobile-landscape";
 import { FullscreenExerciseHistoryChart } from "@/components/comparisions/fullscreen-exercise-history-chart";
+import { getMostPopularExerciseName } from "@/lib/get-most-popular-exercise-name";
+import { useListExercises } from "@/components/exercises/api/use-list-exercises";
+import { toast } from "sonner";
 
 export type HistoryPointSetInfo = {
   reps: number;
@@ -175,17 +178,31 @@ export const Comparisions = () => {
     subMonths(new Date(), 6)
   );
   const [endDate, setEndDate] = useState<Date | undefined>(() => new Date());
-  const [selectedUnitType, setSelectedUnitType] = useState<
-    ExerciseUnitType | undefined
-  >(undefined);
   const [chartConfigOpen, setChartConfigOpen] = useState(false);
   const [chartConfig, setChartConfig] = useState<ChartConfigState | null>(null);
   const isMobileLandscape = useIsMobileLandscape();
+  const [hasInitializedExercise, setHasInitializedExercise] = useState(false);
+  const { data: exercisesData } = useListExercises();
 
   const trimmedName = exerciseName?.trim() || "";
   const normalizedExerciseName = trimmedName
     ? normalizeForComparison(trimmedName)
     : "";
+
+  const selectedUnitType: ExerciseUnitType | undefined = useMemo(() => {
+    const exercises = exercisesData?.exercises ?? [];
+    if (!trimmedName) return undefined;
+    const normName = normalizeForComparison(trimmedName);
+    const match =
+      exercises.find(
+        (exercise: { name: string; unit_type?: ExerciseUnitType }) => {
+          const exerciseName = exercise.name ?? "";
+          return normalizeForComparison(exerciseName) === normName;
+        }
+      ) ?? null;
+
+    return (match?.unit_type as ExerciseUnitType | undefined) ?? undefined;
+  }, [exercisesData?.exercises, trimmedName]);
 
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
@@ -197,19 +214,43 @@ export const Comparisions = () => {
     return endOfDay(endDate).toISOString();
   }, [endDate]);
 
-  const { data, isLoading, isError, error } = useGetWorkoutHistory({
+  const {
+    data: filteredHistoryData,
+    isLoading,
+    isError,
+    error,
+  } = useGetWorkoutHistory({
     startDate: startDateString,
     endDate: endDateString,
     enabled: !!normalizedExerciseName,
   });
 
+  const { data: allHistoryData, isLoading: isAllHistoryLoading } =
+    useGetWorkoutHistory();
+
+  const allWorkouts = allHistoryData?.workouts ?? null;
+
+  const mostPopularExerciseName = useMemo(
+    () => getMostPopularExerciseName(allWorkouts),
+    [allWorkouts]
+  );
+
+  if (!hasInitializedExercise) {
+    if (mostPopularExerciseName && !exerciseName) {
+      setExerciseName(mostPopularExerciseName);
+      setHasInitializedExercise(true);
+    } else if (!isAllHistoryLoading && !allWorkouts?.length) {
+      setHasInitializedExercise(true);
+    }
+  }
+
   const filteredWorkouts = useMemo(
     () =>
       filterHistoryByExerciseName(
-        data?.workouts ?? null,
+        filteredHistoryData?.workouts ?? null,
         normalizedExerciseName
       ),
-    [data?.workouts, normalizedExerciseName]
+    [filteredHistoryData?.workouts, normalizedExerciseName]
   );
 
   const { points: chartPoints, yLabel } = useMemo(
@@ -243,8 +284,7 @@ export const Comparisions = () => {
               <ExercisesSelect
                 value={exerciseName ?? ""}
                 onChange={(value) => setExerciseName(value)}
-                onExerciseSelectedMeta={(meta) => {
-                  setSelectedUnitType(meta.unitType);
+                onExerciseSelectedMeta={() => {
                   setChartConfig(null);
                 }}
               />
@@ -361,11 +401,27 @@ export const Comparisions = () => {
         </div>
 
         <ChartConfigModal
+          key={`${normalizedExerciseName || "none"}-${
+            selectedUnitType ?? "unknown"
+          }`}
           open={chartConfigOpen && !!normalizedExerciseName}
           onOpenChange={setChartConfigOpen}
           unitType={selectedUnitType}
           value={chartConfig}
-          onSave={(next) => setChartConfig(next)}
+          onSave={(next) => {
+            const { points } = buildChartData(
+              (filteredWorkouts as IWorkoutItem[]) ?? [],
+              normalizedExerciseName,
+              selectedUnitType,
+              next
+            );
+
+            if (filteredWorkouts.length > 0 && points.length === 0) {
+              toast.warning("There are no results for your choices.");
+            }
+
+            setChartConfig(next);
+          }}
         />
       </div>
     </>

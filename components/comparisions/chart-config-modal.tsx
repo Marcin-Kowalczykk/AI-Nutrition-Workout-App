@@ -75,7 +75,7 @@ export const ChartConfigModal = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-5">
           {!isTimeBased && (
             <div className="flex flex-col gap-1.5">
               <span className="text-xs font-medium text-muted-foreground">
@@ -122,13 +122,12 @@ export const ChartConfigModal = ({
                       repsTarget: e.target.value,
                     }))
                   }
-                  placeholder="-"
                 />
               </div>
 
               <p className="text-xs text-muted-foreground">
-                The chart will show how your max weight [kg] for this number of
-                reps changes over time.
+                The chart will show how your max weight for this number of reps
+                changes over time.
               </p>
             </>
           )}
@@ -136,8 +135,7 @@ export const ChartConfigModal = ({
           {!isTimeBased && draft.mode === "reps_only" && (
             <div className="flex flex-col gap-1.5">
               <p className="text-xs text-muted-foreground">
-                The chart will show how your max reps (with weight = 0) change
-                over time.
+                The chart will show how your max reps change over time.
               </p>
             </div>
           )}
@@ -179,16 +177,6 @@ export const ChartConfigModal = ({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <p className="text-[10px] text-muted-foreground">
-                  The chart will show how your duration changes over time.
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  You can focus on bodyweight sets or add a specific additional
-                  weight.
-                </p>
-              </div>
-
               {!draft.bodyweightOnly && (
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
@@ -205,15 +193,24 @@ export const ChartConfigModal = ({
                         weightTarget: e.target.value,
                       }))
                     }
-                    placeholder="-"
                   />
                 </div>
               )}
+
+              <div className="flex flex-col gap-1.5">
+                <p className="text-[10.5px] text-muted-foreground">
+                  The chart will show how your duration changes over time.
+                </p>
+                <p className="text-[10.5px] text-muted-foreground">
+                  You can focus on bodyweight sets or add a specific additional
+                  weight.
+                </p>
+              </div>
             </>
           )}
         </div>
 
-        <DialogFooter className="mt-4">
+        <DialogFooter className="mt-2">
           <Button
             type="button"
             variant="outline"
