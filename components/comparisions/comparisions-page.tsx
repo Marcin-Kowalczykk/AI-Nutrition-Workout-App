@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { endOfDay, format, startOfDay, subMonths } from "date-fns";
 import { pl } from "date-fns/locale";
 
@@ -24,6 +24,8 @@ import type {
   IWorkoutSetItem,
 } from "@/app/api/workouts/types";
 import { Button } from "@/components/ui/button";
+import { useIsMobileLandscape } from "@/components/comparisions/hooks/use-is-mobile-landscape";
+import { FullscreenExerciseHistoryChart } from "@/components/comparisions/fullscreen-exercise-history-chart";
 
 export type HistoryPointSetInfo = {
   reps: number;
@@ -35,32 +37,6 @@ export type HistoryPoint = {
   dateLabel: string;
   value: number; // max na słupku
   sets: HistoryPointSetInfo[]; // wszystkie serie, które się liczą do wykresu
-};
-
-const useIsMobileLandscape = () => {
-  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
-
-  useEffect(() => {
-    const update = () => {
-      if (typeof window === "undefined") return;
-      const { innerWidth, innerHeight } = window;
-      const isLandscape = innerWidth > innerHeight;
-      const isMobile = innerWidth < 1024;
-      setIsMobileLandscape(isLandscape && isMobile);
-    };
-
-    update();
-
-    window.addEventListener("resize", update);
-    window.addEventListener("orientationchange", update);
-
-    return () => {
-      window.removeEventListener("resize", update);
-      window.removeEventListener("orientationchange", update);
-    };
-  }, []);
-
-  return isMobileLandscape;
 };
 
 const toNumber = (value: unknown): number | null => {
@@ -255,141 +231,140 @@ export const Comparisions = () => {
 
   const showFullscreenChart =
     isMobileLandscape &&
-    normalizedExerciseName &&
+    !!normalizedExerciseName &&
     chartPoints.length > 0 &&
     !!yLabel;
-
   return (
     <>
-      {showFullscreenChart && (
-        <div className="fixed inset-0 z-50 bg-background px-2 pt-4 pb-2">
-          <ExerciseHistoryBarChart data={chartPoints} yLabel={yLabel} />
-        </div>
-      )}
+      <FullscreenExerciseHistoryChart
+        open={showFullscreenChart}
+        data={chartPoints}
+        yLabel={yLabel ?? ""}
+      />
       <div className="w-full flex flex-col gap-1.5">
-      <Card>
-        <CardContent className="flex flex-col gap-1 mt-2">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Exercise</span>
-            <ExercisesSelect
-              value={exerciseName ?? ""}
-              onChange={(value) => setExerciseName(value)}
-              onExerciseSelectedMeta={(meta) => {
-                setSelectedUnitType(meta.unitType);
-                setChartConfig(null);
-              }}
-            />
-          </div>
+        <Card>
+          <CardContent className="flex flex-col gap-1 mt-2">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">Exercise</span>
+              <ExercisesSelect
+                value={exerciseName ?? ""}
+                onChange={(value) => setExerciseName(value)}
+                onExerciseSelectedMeta={(meta) => {
+                  setSelectedUnitType(meta.unitType);
+                  setChartConfig(null);
+                }}
+              />
+            </div>
 
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Filter by date</span>
-            <div className="flex flex-row gap-2 flex-wrap">
-              <div className="flex-1 min-w-[140px]">
-                <DatePicker
-                  value={startDate}
-                  onChange={(date) => setStartDate(date || undefined)}
-                  placeholder="select start date"
-                />
-              </div>
-              <div className="flex-1 min-w-[140px]">
-                <DatePicker
-                  value={endDate}
-                  onChange={(date) => setEndDate(date || undefined)}
-                  placeholder="select end date"
-                  disabled={(date) => {
-                    const d = startOfDay(date);
-                    const today = startOfDay(new Date());
-                    if (d > today) return true;
-                    if (startDate) return d < startOfDay(startDate);
-                    return false;
-                  }}
-                />
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">Filter by date</span>
+              <div className="flex flex-row gap-2 flex-wrap">
+                <div className="flex-1 min-w-[140px]">
+                  <DatePicker
+                    value={startDate}
+                    onChange={(date) => setStartDate(date || undefined)}
+                    placeholder="select start date"
+                  />
+                </div>
+                <div className="flex-1 min-w-[140px]">
+                  <DatePicker
+                    value={endDate}
+                    onChange={(date) => setEndDate(date || undefined)}
+                    placeholder="select end date"
+                    disabled={(date) => {
+                      const d = startOfDay(date);
+                      const today = startOfDay(new Date());
+                      if (d > today) return true;
+                      if (startDate) return d < startOfDay(startDate);
+                      return false;
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {normalizedExerciseName && (
-            <Button
-              type="button"
-              size="sm"
-              variant="default"
-              className="mt-1"
-              onClick={() => setChartConfigOpen(true)}
-            >
-              Configure chart
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {normalizedExerciseName && chartPoints.length > 0 && yLabel && (
-        <Card>
-          <CardContent className="pt-3">
-            <ExerciseHistoryBarChart data={chartPoints} yLabel={yLabel} />
+            {normalizedExerciseName && (
+              <Button
+                type="button"
+                size="sm"
+                variant="default"
+                className="mt-1"
+                onClick={() => setChartConfigOpen(true)}
+              >
+                Configure chart
+              </Button>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      <div className="flex-1 flex flex-col gap-1">
-        {!normalizedExerciseName && (
+        {normalizedExerciseName && chartPoints.length > 0 && yLabel && (
           <Card>
-            <CardContent className="py-3">
-              <p className="text-sm text-muted-foreground">
-                Select an exercise to see all historical workouts that include
-                it.
-              </p>
+            <CardContent className="pt-3">
+              <ExerciseHistoryBarChart data={chartPoints} yLabel={yLabel} />
             </CardContent>
           </Card>
         )}
 
-        {normalizedExerciseName && isLoading && (
-          <Card>
-            <CardContent className="py-6 flex items-center justify-center">
-              <Loader />
-            </CardContent>
-          </Card>
-        )}
-
-        {normalizedExerciseName && isError && (
-          <Card>
-            <CardContent className="py-3">
-              <p className="text-sm text-primary-element">
-                {error?.message || "Failed to load history"}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {normalizedExerciseName &&
-          !isLoading &&
-          !isError &&
-          filteredWorkouts.length === 0 && (
+        <div className="flex-1 flex flex-col gap-1">
+          {!normalizedExerciseName && (
             <Card>
               <CardContent className="py-3">
                 <p className="text-sm text-muted-foreground">
-                  No workouts found for this exercise in the selected date
-                  range.
+                  Select an exercise to see all historical workouts that include
+                  it.
                 </p>
               </CardContent>
             </Card>
           )}
 
-        {normalizedExerciseName &&
-          !isLoading &&
-          !isError &&
-          filteredWorkouts.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              {filteredWorkouts.map((workout) => (
-                <ExerciseHistoryWorkoutCard
-                  key={workout.id}
-                  workout={workout}
-                  normalizedExerciseName={normalizedExerciseName}
-                  variant="full"
-                />
-              ))}
-            </div>
+          {normalizedExerciseName && isLoading && (
+            <Card>
+              <CardContent className="py-6 flex items-center justify-center">
+                <Loader />
+              </CardContent>
+            </Card>
           )}
-      </div>
+
+          {normalizedExerciseName && isError && (
+            <Card>
+              <CardContent className="py-3">
+                <p className="text-sm text-primary-element">
+                  {error?.message || "Failed to load history"}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {normalizedExerciseName &&
+            !isLoading &&
+            !isError &&
+            filteredWorkouts.length === 0 && (
+              <Card>
+                <CardContent className="py-3">
+                  <p className="text-sm text-muted-foreground">
+                    No workouts found for this exercise in the selected date
+                    range.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+          {normalizedExerciseName &&
+            !isLoading &&
+            !isError &&
+            filteredWorkouts.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                {filteredWorkouts.map((workout) => (
+                  <ExerciseHistoryWorkoutCard
+                    key={workout.id}
+                    workout={workout}
+                    normalizedExerciseName={normalizedExerciseName}
+                    variant="full"
+                  />
+                ))}
+              </div>
+            )}
+        </div>
 
         <ChartConfigModal
           open={chartConfigOpen && !!normalizedExerciseName}
