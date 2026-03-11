@@ -21,12 +21,13 @@ import type { HistoryPoint } from "./comparisions-page";
 interface ExerciseHistoryBarChartProps {
   data: HistoryPoint[];
   yLabel: string;
+  variant?: "default" | "fullscreen";
 }
 
 const chartConfig: ChartConfig = {
   value: {
     label: "Value",
-    color: "var(--chart-2)",
+    color: "var(--chart-6)",
   },
 };
 
@@ -113,6 +114,7 @@ const ExerciseHistoryTooltip = ({
 export const ExerciseHistoryBarChart = ({
   data,
   yLabel,
+  variant = "default",
 }: ExerciseHistoryBarChartProps) => {
   if (!data.length) return null;
 
@@ -121,18 +123,28 @@ export const ExerciseHistoryBarChart = ({
   const needsScroll = barCount > MAX_VISIBLE_BARS;
   const widthFactor = needsScroll ? barCount / MAX_VISIBLE_BARS : 1;
   const maxValue = Math.max(...data.map((p) => p.value));
+  const isFullscreen = variant === "fullscreen";
 
   return (
     <div className="w-full">
-      <div className="mb-1 flex justify-end">
+      <div className={cn("flex justify-end", isFullscreen ? "mb-2" : "mb-1")}>
         <p className="text-xs text-muted-foreground">{yLabel}</p>
       </div>
       <div className="w-full overflow-x-auto">
         <div
-          className="min-h-[220px]"
+          className={cn(
+            "w-full",
+            isFullscreen ? "min-h-[260px]" : "min-h-[220px]"
+          )}
           style={{ width: `${widthFactor * 100}%` }}
         >
-          <ChartContainer config={chartConfig} className="h-[220px] w-full">
+          <ChartContainer
+            config={chartConfig}
+            className={cn(
+              "w-full",
+              isFullscreen ? "h-[70vh] max-h-[420px]" : "h-[220px]"
+            )}
+          >
             <BarChart data={data} accessibilityLayer>
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -177,7 +189,12 @@ export const ExerciseHistoryBarChart = ({
         </div>
       </div>
       {data.length > 0 && (
-        <div className="-mt-5 flex justify-between text-[11px] text-muted-foreground">
+        <div
+          className={cn(
+            "flex justify-between text-[11px] text-muted-foreground",
+            isFullscreen ? "mt-1" : "-mt-5"
+          )}
+        >
           <span>{data[0].dateLabel}</span>
           <span>{data[data.length - 1].dateLabel}</span>
         </div>

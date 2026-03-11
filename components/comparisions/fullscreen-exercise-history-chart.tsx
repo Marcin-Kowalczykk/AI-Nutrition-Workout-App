@@ -26,7 +26,11 @@ export const FullscreenExerciseHistoryChart = ({
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
       }}
     >
-      <ExerciseHistoryBarChart data={data} yLabel={yLabel} />
+      <ExerciseHistoryBarChart
+        data={data}
+        yLabel={yLabel}
+        variant="fullscreen"
+      />
     </div>
   );
 };

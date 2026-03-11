@@ -115,7 +115,8 @@ body,
   --chart-2: #a855f7; /* violet */
   --chart-3: #38bdf8; /* sky */
   --chart-4: #f97316; /* orange */
-  --chart-5: #ec4899; /* pink */
+  --chart-5: #f999c9d2; /* pink */
+  --chart-6: #fae156d4; /* yellow */
 }
 
 .light {
@@ -156,6 +157,7 @@ body,
   --chart-3: #0284c7; /* sky-600 */
   --chart-4: #ea580c; /* orange-600 */
   --chart-5: #db2777; /* pink-600 */
+  --chart-6: #fae156d4; /* yellow */
 }
 
 /* .exercise-badge-weighted {

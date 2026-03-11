@@ -35,8 +35,8 @@ export type HistoryPointSetInfo = {
 
 export type HistoryPoint = {
   dateLabel: string;
-  value: number; // max na słupku
-  sets: HistoryPointSetInfo[]; // wszystkie serie, które się liczą do wykresu
+  value: number;
+  sets: HistoryPointSetInfo[];
 };
 
 const toNumber = (value: unknown): number | null => {
@@ -75,7 +75,6 @@ const buildChartData = (
     const matchingSets: HistoryPointSetInfo[] = [];
 
     if (isTimeBased) {
-      // time-based: duration vs time, opcjonalnie filtrowane po weight
       const bodyweight = config.bodyweightOnly;
       const targetWeight = bodyweight ? null : toNumber(config.weightTarget);
 
@@ -100,9 +99,7 @@ const buildChartData = (
         }
       }
     } else {
-      // reps-based
       if (config.mode === "reps_only") {
-        // wykres reps w czasie dla bodyweight (weight = 0)
         for (const ex of exercises) {
           for (const set of ex.sets ?? []) {
             const weight = toNumber((set as IWorkoutSetItem).weight) ?? 0;
@@ -118,8 +115,6 @@ const buildChartData = (
           }
         }
       } else {
-        // wykres weight w czasie dla konkretnych reps:
-        // bierzemy wszystkie serie z daną liczbą powtórzeń i dodatnim ciężarem
         const repsTarget = toNumber(config.repsTarget);
         if (repsTarget === null || repsTarget <= 0) {
           continue;
@@ -154,7 +149,6 @@ const buildChartData = (
     }
   }
 
-  // sortowanie po dacie rosnąco
   points.sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const historyPoints: HistoryPoint[] = points.map(({ date, value, sets }) => ({
