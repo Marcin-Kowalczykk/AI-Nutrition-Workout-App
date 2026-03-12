@@ -12,17 +12,19 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { toast } from "sonner";
+import { PaginatedSection } from "../shared/pagination/paginated-section";
+import { WorkoutHistorySearchInput } from "./workout-history-search";
 
 // hooks
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetWorkoutHistory } from "./api/use-get-workout-history";
 import { useDeleteWorkout } from "@/components/workout-form/api/use-delete-workout";
+import { useWorkoutHistorySearch } from "./hooks/use-workout-history-search";
 
 // types
 import { IWorkoutItem } from "@/app/api/workouts/types";
 import CenterWrapper from "../shared/center-wrapper";
-import { PaginatedSection } from "../shared/pagination/paginated-section";
 
 const WorkoutHistory = () => {
   const router = useRouter();
@@ -64,39 +66,7 @@ const WorkoutHistory = () => {
     },
   });
 
-  if (isLoading) {
-    return (
-      <CenterWrapper className="w-full xl:w-1/2">
-        <Loader />
-      </CenterWrapper>
-    );
-  }
-
-  if (isError) {
-    return (
-      <CenterWrapper>
-        <div className="text-primary-element">
-          Error: {error?.message || "Failed to load workout history"}
-        </div>
-      </CenterWrapper>
-    );
-  }
-
-  const workouts = data?.workouts || [];
-
-  if (workouts.length === 0) {
-    return (
-      <Card>
-        <CardContent>
-          <ul className="text-sm text-muted-foreground py-2">
-            <li>No workouts found.</li>
-            <li>You can start creating your first workout now.</li>
-            <li>You can also create a template to reuse it later.</li>
-          </ul>
-        </CardContent>
-      </Card>
-    );
-  }
+  const workouts = useMemo(() => data?.workouts || [], [data?.workouts]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -120,9 +90,35 @@ const WorkoutHistory = () => {
     }
   };
 
+  const {
+    search,
+    setSearch,
+    filteredWorkouts,
+    hasAnyWorkouts,
+  } = useWorkoutHistorySearch(workouts);
+
+  if (isLoading) {
+    return (
+      <CenterWrapper className="w-full xl:w-1/2">
+        <Loader />
+      </CenterWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <CenterWrapper>
+        <div className="text-primary-element">
+          Error: {error?.message || "Failed to load workout history"}
+        </div>
+      </CenterWrapper>
+    );
+  }
+
   return (
     <div className="justify-start">
-      <div className="flex flex-col mb-2 xl:w-1/2 w-full">
+      <div className="flex flex-col mb-2 xl:w-1/2 w-full gap-2">
+        <WorkoutHistorySearchInput value={search} onChange={setSearch} />
         <div className="flex flex-row gap-1">
           <div className="flex-1">
             <DatePicker
@@ -149,7 +145,7 @@ const WorkoutHistory = () => {
       </div>
 
       <PaginatedSection
-        items={workouts}
+        items={filteredWorkouts}
         initialPageSize={8}
         pageSizeOptions={[8, 15, 20, 30, 50]}
         className="xl:w-1/2 w-full flex flex-col gap-2"
@@ -210,6 +206,29 @@ const WorkoutHistory = () => {
           </ul>
         )}
       </PaginatedSection>
+
+      {!hasAnyWorkouts && (
+        <Card className="mt-2 xl:w-1/2 w-full">
+          <CardContent>
+            <ul className="text-sm text-muted-foreground py-2">
+              <li>No workouts in the selected date range.</li>
+              <li>Try adjusting the date filters or create a new workout.</li>
+              <li>You can also create a template to reuse it later.</li>
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {hasAnyWorkouts && filteredWorkouts.length === 0 && (
+        <Card className="mt-2 xl:w-1/2 w-full">
+          <CardContent>
+            <ul className="text-sm text-muted-foreground py-2">
+              <li>No workouts match your search.</li>
+              <li>Try changing the search phrase or date filters.</li>
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <ConfirmModal
         open={workoutIdToDelete !== null}

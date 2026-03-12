@@ -14,12 +14,14 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
   - List of past workouts with date, name and description
   - Date range filters
+  - Text search
   - Quick actions: **view**, **edit**, **delete** past workouts
 
 - **Records**
 
-  - Personal bests and key metrics extracted from workouts
+  - Personal bests reps / duarion / weights extracted from workouts
   - Quick view of progress for important movements and lifts over time
+  - filters by reps / duration / weight in a side sheet
 
 - **Comparisons**
 
