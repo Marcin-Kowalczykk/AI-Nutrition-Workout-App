@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { useMemo, useState } from "react";
+import { format, startOfDay, endOfDay, subMonths } from "date-fns";
 import { pl } from "date-fns/locale";
 
 // components
@@ -22,14 +22,18 @@ import { useDeleteWorkout } from "@/components/workout-form/api/use-delete-worko
 // types
 import { IWorkoutItem } from "@/app/api/workouts/types";
 import CenterWrapper from "../shared/center-wrapper";
+import { PaginatedSection } from "../shared/pagination/paginated-section";
 
 const WorkoutHistory = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
+  const [startDate, setStartDate] = useState<Date | undefined>(() =>
+    subMonths(new Date(), 6)
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(() => new Date());
   const [workoutIdToDelete, setWorkoutIdToDelete] = useState<string | null>(
     null
   );
@@ -144,56 +148,68 @@ const WorkoutHistory = () => {
         </div>
       </div>
 
-      <ul className="flex flex-col gap-2 xl:w-1/2 w-full">
-        {workouts.map((workout: IWorkoutItem) => (
-          <li key={workout.id}>
-            <Card className="w-full">
-              <CardContent className="p-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1 flex-1 min-w-0">
-                    <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
-                      {formatDate(workout.created_at)}
-                    </div>
-                    <div className="font-semibold text-lg">{workout.name}</div>
-                    {workout.description && (
-                      <div className="text-sm text-muted-foreground">
-                        {workout.description}
+      <PaginatedSection
+        items={workouts}
+        initialPageSize={8}
+        pageSizeOptions={[8, 15, 20, 30, 50]}
+        className="xl:w-1/2 w-full flex flex-col gap-2"
+        controlsWrapperClassName="mb-2"
+      >
+        {(paginatedWorkouts) => (
+          <ul className="flex flex-col gap-2">
+            {paginatedWorkouts.map((workout: IWorkoutItem) => (
+              <li key={workout.id}>
+                <Card className="w-full">
+                  <CardContent className="p-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
+                          {formatDate(workout.created_at)}
+                        </div>
+                        <div className="font-semibold text-lg">
+                          {workout.name}
+                        </div>
+                        {workout.description && (
+                          <div className="text-sm text-muted-foreground">
+                            {workout.description}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEdit(workout.id)}
-                      className="h-9 w-9 text-foreground"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleView(workout.id)}
-                      className="h-9 w-9 text-foreground"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setWorkoutIdToDelete(workout.id)}
-                      className="h-9 w-9 text-destructive hover:text-destructive"
-                      aria-label="Delete workout"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </li>
-        ))}
-      </ul>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleEdit(workout.id)}
+                          className="h-9 w-9 text-foreground"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleView(workout.id)}
+                          className="h-9 w-9 text-foreground"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setWorkoutIdToDelete(workout.id)}
+                          className="h-9 w-9 text-destructive hover:text-destructive"
+                          aria-label="Delete workout"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </PaginatedSection>
 
       <ConfirmModal
         open={workoutIdToDelete !== null}

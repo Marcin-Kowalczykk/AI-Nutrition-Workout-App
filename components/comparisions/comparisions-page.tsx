@@ -29,6 +29,7 @@ import { FullscreenExerciseHistoryChart } from "@/components/comparisions/fullsc
 import { getMostPopularExerciseName } from "@/lib/get-most-popular-exercise-name";
 import { useListExercises } from "@/components/exercises/api/use-list-exercises";
 import { toast } from "sonner";
+import { PaginatedSection } from "../shared/pagination/paginated-section";
 
 export type HistoryPointSetInfo = {
   reps: number;
@@ -277,59 +278,57 @@ export const Comparisions = () => {
         yLabel={yLabel ?? ""}
       />
       <div className="w-full flex flex-col gap-1.5">
-        <Card>
-          <CardContent className="flex flex-col gap-1 mt-2">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Exercise</span>
-              <ExercisesSelect
-                value={exerciseName ?? ""}
-                onChange={(value) => setExerciseName(value)}
-                onExerciseSelectedMeta={() => {
-                  setChartConfig(null);
-                }}
-              />
-            </div>
+        <div className="flex flex-col gap-1 px-0.5 py-0.5 sm:px-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium">Exercise</span>
+            <ExercisesSelect
+              value={exerciseName ?? ""}
+              onChange={(value) => setExerciseName(value)}
+              onExerciseSelectedMeta={() => {
+                setChartConfig(null);
+              }}
+            />
+          </div>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Filter by date</span>
-              <div className="flex flex-row gap-2 flex-wrap">
-                <div className="flex-1 min-w-[140px]">
-                  <DatePicker
-                    value={startDate}
-                    onChange={(date) => setStartDate(date || undefined)}
-                    placeholder="select start date"
-                  />
-                </div>
-                <div className="flex-1 min-w-[140px]">
-                  <DatePicker
-                    value={endDate}
-                    onChange={(date) => setEndDate(date || undefined)}
-                    placeholder="select end date"
-                    disabled={(date) => {
-                      const d = startOfDay(date);
-                      const today = startOfDay(new Date());
-                      if (d > today) return true;
-                      if (startDate) return d < startOfDay(startDate);
-                      return false;
-                    }}
-                  />
-                </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium">Filter by date</span>
+            <div className="flex flex-row gap-1.5 flex-wrap">
+              <div className="flex-1 min-w-[140px]">
+                <DatePicker
+                  value={startDate}
+                  onChange={(date) => setStartDate(date || undefined)}
+                  placeholder="select start date"
+                />
+              </div>
+              <div className="flex-1 min-w-[140px]">
+                <DatePicker
+                  value={endDate}
+                  onChange={(date) => setEndDate(date || undefined)}
+                  placeholder="select end date"
+                  disabled={(date) => {
+                    const d = startOfDay(date);
+                    const today = startOfDay(new Date());
+                    if (d > today) return true;
+                    if (startDate) return d < startOfDay(startDate);
+                    return false;
+                  }}
+                />
               </div>
             </div>
+          </div>
 
-            {normalizedExerciseName && (
-              <Button
-                type="button"
-                size="sm"
-                variant="default"
-                className="mt-1"
-                onClick={() => setChartConfigOpen(true)}
-              >
-                Configure chart
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+          {normalizedExerciseName && (
+            <Button
+              type="button"
+              size="sm"
+              variant="default"
+              className="mt-1"
+              onClick={() => setChartConfigOpen(true)}
+            >
+              Configure chart
+            </Button>
+          )}
+        </div>
 
         {normalizedExerciseName && chartPoints.length > 0 && yLabel && (
           <Card>
@@ -387,16 +386,26 @@ export const Comparisions = () => {
             !isLoading &&
             !isError &&
             filteredWorkouts.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                {filteredWorkouts.map((workout) => (
-                  <ExerciseHistoryWorkoutCard
-                    key={workout.id}
-                    workout={workout}
-                    normalizedExerciseName={normalizedExerciseName}
-                    variant="full"
-                  />
-                ))}
-              </div>
+              <PaginatedSection
+                items={filteredWorkouts}
+                initialPageSize={8}
+                pageSizeOptions={[8, 15, 20, 30, 50]}
+                className="flex flex-col gap-1.5"
+                controlsWrapperClassName="mb-1"
+              >
+                {(paginated) => (
+                  <div className="flex flex-col gap-1.5">
+                    {paginated.map((workout) => (
+                      <ExerciseHistoryWorkoutCard
+                        key={workout.id}
+                        workout={workout}
+                        normalizedExerciseName={normalizedExerciseName}
+                        variant="full"
+                      />
+                    ))}
+                  </div>
+                )}
+              </PaginatedSection>
             )}
         </div>
 

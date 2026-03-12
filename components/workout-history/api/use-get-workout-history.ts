@@ -13,15 +13,18 @@ type UseGetWorkoutHistoryOptions = {
   startDate?: string;
   endDate?: string;
   enabled?: boolean;
+  limit?: number; // legacy, prefer page + pageSize
+  page?: number;
+  pageSize?: number;
 };
 
 export const useGetWorkoutHistory = (
   options?: UseGetWorkoutHistoryOptions
 ): UseQueryResult<IGetWorkoutsHistoryResponse, Error> => {
-  const { startDate, endDate, enabled } = options || {};
+  const { startDate, endDate, enabled, limit, page, pageSize } = options || {};
 
   const query = useQuery({
-    queryKey: ["get-workout-history", startDate, endDate],
+    queryKey: ["get-workout-history", startDate, endDate, limit, page, pageSize],
     queryFn: async () => {
       const accessToken = await getAccessToken();
 
@@ -30,6 +33,12 @@ export const useGetWorkoutHistory = (
       const params = new URLSearchParams();
       if (startDate) params.append("start_date", startDate);
       if (endDate) params.append("end_date", endDate);
+      if (typeof page === "number" && typeof pageSize === "number") {
+        params.append("page", String(page));
+        params.append("page_size", String(pageSize));
+      } else if (typeof limit === "number") {
+        params.append("limit", String(limit));
+      }
 
       const url = `/api/workouts/get-workouts-history${
         params.toString() ? `?${params.toString()}` : ""

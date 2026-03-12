@@ -27,6 +27,9 @@ interface DatePickerProps {
   toYear?: number;
 }
 
+const LONG_FORMAT = "d MMMM yyyy";
+const SHORT_FORMAT = "d MMM yyyy";
+
 // eslint-disable-next-line
 export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   (
@@ -48,6 +51,9 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     const [popoverWidth, setPopoverWidth] = React.useState<number | undefined>(
       undefined
     );
+    const [month, setMonth] = React.useState<Date | undefined>(undefined);
+    const [useShortFormat, setUseShortFormat] = React.useState(false);
+    const longTextRef = React.useRef<HTMLSpanElement>(null);
 
     React.useEffect(() => {
       if (triggerRef.current && isPopoverOpen) {
@@ -55,8 +61,42 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       }
     }, [isPopoverOpen]);
 
+    React.useEffect(() => {
+      const updateFormat = () => {
+        if (!triggerRef.current || !longTextRef.current || !value) {
+          setUseShortFormat(false);
+          return;
+        }
+
+        const buttonWidth = triggerRef.current.offsetWidth;
+        const longWidth = longTextRef.current.scrollWidth;
+
+        // If przycisk jest wąski, od razu użyj krótszego formatu
+        if (buttonWidth < 210) {
+          setUseShortFormat(true);
+          return;
+        }
+
+        // W przeciwnym wypadku sprawdź, czy pełna wersja mieści się z zapasem
+        const availableWidth = buttonWidth - 60;
+
+        setUseShortFormat(longWidth > availableWidth);
+      };
+
+      updateFormat();
+      window.addEventListener("resize", updateFormat);
+      return () => window.removeEventListener("resize", updateFormat);
+    }, [value]);
+
+    React.useEffect(() => {
+      if (isPopoverOpen) {
+        setMonth(value ?? new Date());
+      }
+    }, [isPopoverOpen, value]);
+
     const handleOnSelect = (date: Date) => {
       onChange(date);
+      setMonth(date);
       setIsPopoverOpen(false);
     };
 
@@ -101,10 +141,18 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
                 {value ? (
-                  format(value, "PPP", { locale: pl })
+                  format(value, useShortFormat ? SHORT_FORMAT : LONG_FORMAT, {
+                    locale: pl,
+                  })
                 ) : (
                   <span>{placeholder}</span>
                 )}
+              </span>
+              <span
+                ref={longTextRef}
+                className="pointer-events-none absolute inset-y-0 left-0 invisible whitespace-nowrap px-2 text-sm"
+              >
+                {value ? format(value, LONG_FORMAT, { locale: pl }) : ""}
               </span>
               {value && !isPopoverOpen && showClear && (
                 <span
@@ -137,8 +185,10 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           <Calendar
             mode="single"
             selected={value}
+            month={month}
             captionLayout="dropdown"
             onSelect={(date) => handleOnSelect(date as Date)}
+            onMonthChange={setMonth}
             disabled={disabled ? disabled : undefined}
             fromYear={fromYear}
             toYear={toYear}
