@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Search, X } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Loader } from "@/components/shared/loader";
 import { normalizeForComparison } from "@/lib/normalize-string";
@@ -9,60 +9,13 @@ import { useListCategories } from "@/components/exercises/api/use-list-categorie
 import { useListExercises } from "@/components/exercises/api/use-list-exercises";
 import { ExerciseUnitType } from "@/app/api/exercises/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
-interface ExercisesSearchInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  readOnly?: boolean;
-  onActivate?: () => void;
-}
-
-const ExercisesSearchInput = ({
-  value,
-  onChange,
-  readOnly = false,
-  onActivate,
-}: ExercisesSearchInputProps) => {
-  return (
-    <div
-      className="relative cursor-text"
-      onClick={() => readOnly && onActivate?.()}
-    >
-      <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        placeholder="Search exercises..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-8 pl-8 pr-7"
-        onKeyDown={(e) => e.stopPropagation()}
-        readOnly={readOnly}
-        inputMode={readOnly ? "none" : "text"}
-        onFocus={readOnly ? onActivate : undefined}
-        onClick={readOnly ? onActivate : undefined}
-      />
-      {value && value.length > 0 && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onChange("");
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          aria-label="Clear exercise search"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
-    </div>
-  );
-};
+import { SearchInput } from "@/components/shared/search-input";
 
 interface ExercisesSelectProps {
   value?: string | null;
@@ -73,7 +26,6 @@ interface ExercisesSelectProps {
     name: string;
     unitType?: ExerciseUnitType;
   }) => void;
-  /** Portal dropdown into this element so scroll works inside Sheet/Dialog (e.g. Records filters). */
   portalContainer?: HTMLElement | null;
 }
 
@@ -86,7 +38,6 @@ export const ExercisesSelect = ({
 }: ExercisesSelectProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchActivated, setSearchActivated] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(
     new Set()
   );
@@ -95,7 +46,6 @@ export const ExercisesSelect = ({
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setSearchQuery("");
-      setSearchActivated(false);
     }
     setOpen(nextOpen);
   };
@@ -269,11 +219,12 @@ export const ExercisesSelect = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="border-b border-border p-2 shrink-0">
-          <ExercisesSearchInput
+          <SearchInput
+            placeholder="Search exercises..."
             value={searchQuery}
-            onChange={setSearchQuery}
-            readOnly={!searchActivated}
-            onActivate={() => setSearchActivated(true)}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8"
+            onKeyDown={(e) => e.stopPropagation()}
           />
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto max-h-[min(60vh,20rem)]">
