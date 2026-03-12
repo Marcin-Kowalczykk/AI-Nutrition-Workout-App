@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, X } from "lucide-react";
 
 import { Loader } from "@/components/shared/loader";
 import { normalizeForComparison } from "@/lib/normalize-string";
@@ -40,13 +40,26 @@ const ExercisesSearchInput = ({
         placeholder="Search exercises..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-8 pl-8"
+        className="h-8 pl-8 pr-7"
         onKeyDown={(e) => e.stopPropagation()}
         readOnly={readOnly}
         inputMode={readOnly ? "none" : "text"}
         onFocus={readOnly ? onActivate : undefined}
         onClick={readOnly ? onActivate : undefined}
       />
+      {value && value.length > 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onChange("");
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          aria-label="Clear exercise search"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
     </div>
   );
 };

@@ -115,6 +115,7 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
   - The workout form uses **autosave to `localStorage`** to protect against accidental data loss when navigating away or switching tabs.
   - When you try to leave a screen with **unsaved changes**, the app can show a **confirm modal** to prevent accidental loss of edits (e.g. when switching tabs or closing a panel).
   - Primary action buttons in forms (save/update) become **enabled only when there are actual changes**, and are hidden/disabled or visually de‑emphasised when the current state matches the persisted data.
+  - Single global scroll helper button visible after first scroll, allowing quick jump to the top or bottom of the page.
 
 ## 🧠 How it works (architecture)
 

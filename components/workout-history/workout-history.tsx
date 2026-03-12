@@ -90,12 +90,8 @@ const WorkoutHistory = () => {
     }
   };
 
-  const {
-    search,
-    setSearch,
-    filteredWorkouts,
-    hasAnyWorkouts,
-  } = useWorkoutHistorySearch(workouts);
+  const { search, setSearch, filteredWorkouts, hasAnyWorkouts } =
+    useWorkoutHistorySearch(workouts);
 
   if (isLoading) {
     return (
