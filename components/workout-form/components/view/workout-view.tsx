@@ -7,7 +7,7 @@ import { useGetWorkout } from "../../api/use-get-workout";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
-import { CheckCircle2, Circle, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -34,6 +34,12 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
     enabled: !!workoutId,
   });
 
+  const shouldShowLastUpdated =
+    !!workoutData?.end_date &&
+    (!workoutData.start_date ||
+      new Date(workoutData.start_date as string).toDateString() !==
+        new Date(workoutData.end_date as string).toDateString());
+
   if (isLoading) {
     return (
       <CenterWrapper>
@@ -45,7 +51,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
   if (isError || !workoutData) {
     return (
       <CenterWrapper>
-        <div className="text-center text-primary-element">
+        <div className="text-center text-destructive">
           {error?.message || "Failed to load workout data"}
         </div>
       </CenterWrapper>
@@ -66,7 +72,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
             {workoutData.start_date && (
               <div className="flex flex-col gap-1 items-end">
                 <label className="text-[11px] font-medium text-muted-foreground">
-                  Start Date
+                  Created at
                 </label>
                 <p className="text-[11px]">
                   {format(new Date(workoutData.start_date), "d MMMM yyyy", {
@@ -75,13 +81,13 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                 </p>
               </div>
             )}
-            {workoutData.end_date && (
+            {shouldShowLastUpdated && workoutData.end_date && (
               <div className="flex flex-col gap-1 items-end">
                 <label className="text-[11px] font-medium text-muted-foreground">
                   Last Updated
                 </label>
                 <p className="text-[11px]">
-                  {format(new Date(workoutData.end_date), "d MMMM yyyy", {
+                  {format(new Date(workoutData.end_date as string), "d MMMM yyyy", {
                     locale: enUS,
                   })}
                 </p>
@@ -187,7 +193,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                                 />
                               ) : (
                                 <XCircle
-                                  className="h-5 w-5 text-primary-element"
+                                  className="h-5 w-5 text-destructive"
                                   strokeWidth={2}
                                 />
                               )}

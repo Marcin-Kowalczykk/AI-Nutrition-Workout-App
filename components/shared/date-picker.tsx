@@ -37,7 +37,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       value,
       onChange,
       className,
-      placeholder = "wybierz datę",
+      placeholder = "choose date",
       label,
       disabled,
       showClear = true,

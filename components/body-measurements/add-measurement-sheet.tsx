@@ -98,14 +98,13 @@ export const AddMeasurementSheet = ({
                 name="weight_kg"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Waga [kg] *</FormLabel>
+                    <FormLabel>Weight (kg) *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.1"
                         min={0}
                         max={999.9}
-                        placeholder="e.g. 75.5"
                         {...field}
                       />
                     </FormControl>
@@ -119,14 +118,13 @@ export const AddMeasurementSheet = ({
                 name="height_cm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Wzrost [cm]</FormLabel>
+                    <FormLabel>Height (cm)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.1"
                         min={0}
                         max={999.9}
-                        placeholder="e.g. 180"
                         {...field}
                         value={field.value ?? ""}
                       />
@@ -136,18 +134,17 @@ export const AddMeasurementSheet = ({
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="measured_at"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data pomiaru</FormLabel>
+                      <FormLabel>Measurement date</FormLabel>
                       <FormControl>
                         <DatePicker
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder="wybierz datę"
                           disabled={(date) => date > new Date()}
                           showClear={false}
                           fromYear={new Date().getFullYear() - 10}
@@ -163,7 +160,7 @@ export const AddMeasurementSheet = ({
                   name="measured_at_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Godzina pomiaru</FormLabel>
+                      <FormLabel>Measurement time</FormLabel>
                       <FormControl>
                         <Input
                           type="time"
@@ -178,7 +175,7 @@ export const AddMeasurementSheet = ({
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-3">Obwody [cm]</p>
+                <p className="text-sm font-medium mb-3">Circumferences (cm)</p>
                 <div className="grid grid-cols-2 gap-4">
                   {CIRCUMFERENCE_KEYS.map((key) => (
                     <FormField
@@ -194,7 +191,6 @@ export const AddMeasurementSheet = ({
                               step="0.1"
                               min={0}
                               max={999.9}
-                              placeholder="—"
                               {...field}
                               value={field.value ?? ""}
                             />

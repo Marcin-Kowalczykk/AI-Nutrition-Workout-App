@@ -1093,7 +1093,7 @@ export const WorkoutForm = ({
                               date ? format(date, "yyyy-MM-dd") : undefined
                             )
                           }
-                          placeholder="Wybierz datę"
+                          placeholder="choose date"
                           showClear={false}
                           fromYear={new Date().getFullYear() - 1}
                           toYear={new Date().getFullYear()}
@@ -1372,7 +1372,7 @@ export const WorkoutForm = ({
                               </Button>
                             </div>
                             {setErrorMsg && (
-                              <p className="text-primary-element text-sm mt-1 text-center">
+                              <p className="text-destructive text-sm mt-1 text-center">
                                 {setErrorMsg}
                               </p>
                             )}

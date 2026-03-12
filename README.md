@@ -53,7 +53,10 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
   - **Diet history** page for logging diet‑related entries
   - **Kcal calculator** for estimating daily calorie needs
-  - **Body measurements** section (structure in place, easy to extend with more metrics)
+  - **Body measurements**
+    - Quick logging of **weight**, optional **height** and **circumferences** (arm, chest, waist, hips, thigh, calf)
+    - History list with **6‑month default date range filters**, **client‑side pagination** and inline edit/delete actions
+    - Mobile‑first add/edit sheets with validation and smart defaults (e.g. pre‑filling from the last measurement)
 
 - **Authentication & profile**
   - Email/password sign up & login via Supabase

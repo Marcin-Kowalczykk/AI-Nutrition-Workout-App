@@ -66,7 +66,7 @@ export function TemplateList() {
   if (isError) {
     return (
       <CenterWrapper>
-        <div className="text-primary-element">
+        <div className="text-destructive">
           Error: {error?.message || "Failed to load templates"}
         </div>
       </CenterWrapper>

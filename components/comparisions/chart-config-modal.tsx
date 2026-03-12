@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ExerciseUnitType } from "@/app/api/exercises/types";
 
 type ChartMode = "reps_weight" | "reps_only" | "duration_weight";
@@ -70,9 +71,7 @@ export const ChartConfigModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:mx-2 max-w-sm rounded-lg">
         <DialogHeader>
-          <DialogTitle className="text-base">
-            Configure chart for this exercise
-          </DialogTitle>
+          <DialogTitle className="text-base"></DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
@@ -81,28 +80,25 @@ export const ChartConfigModal = ({
               <span className="text-xs font-medium text-muted-foreground">
                 Mode
               </span>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={draft.mode === "reps_weight" ? "default" : "outline"}
-                  onClick={() =>
-                    setDraft((prev) => ({ ...prev, mode: "reps_weight" }))
-                  }
-                >
-                  Weight over time
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={draft.mode === "reps_only" ? "default" : "outline"}
-                  onClick={() =>
-                    setDraft((prev) => ({ ...prev, mode: "reps_only" }))
-                  }
-                >
-                  Reps over time
-                </Button>
-              </div>
+              <RadioGroup
+                value={draft.mode}
+                onValueChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    mode: value as ChartMode,
+                  }))
+                }
+                className="flex flex-row flex-wrap gap-4"
+              >
+                <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+                  <RadioGroupItem value="reps_weight" />
+                  <span>Weight over time</span>
+                </label>
+                <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+                  <RadioGroupItem value="reps_only" />
+                  <span>Reps over time</span>
+                </label>
+              </RadioGroup>
             </div>
           )}
 
@@ -146,35 +142,27 @@ export const ChartConfigModal = ({
                 <span className="text-xs font-medium text-muted-foreground">
                   Mode
                 </span>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={draft.bodyweightOnly ? "default" : "outline"}
-                    onClick={() =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        bodyweightOnly: true,
-                        weightTarget: "",
-                      }))
-                    }
-                  >
-                    Bodyweight only
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={!draft.bodyweightOnly ? "default" : "outline"}
-                    onClick={() =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        bodyweightOnly: false,
-                      }))
-                    }
-                  >
-                    With additional weight
-                  </Button>
-                </div>
+                <RadioGroup
+                  value={draft.bodyweightOnly ? "bodyweight" : "weighted"}
+                  onValueChange={(value) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      bodyweightOnly: value === "bodyweight",
+                      weightTarget:
+                        value === "bodyweight" ? "" : prev.weightTarget,
+                    }))
+                  }
+                  className="flex flex-row flex-wrap gap-4"
+                >
+                  <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+                    <RadioGroupItem value="bodyweight" />
+                    <span>Bodyweight only</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+                    <RadioGroupItem value="weighted" />
+                    <span>With additional weight</span>
+                  </label>
+                </RadioGroup>
               </div>
 
               {!draft.bodyweightOnly && (

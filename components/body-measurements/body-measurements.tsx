@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, subMonths } from "date-fns";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 // components
@@ -22,6 +22,7 @@ import { EditMeasurementSheet } from "./edit-measurement-sheet";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import CenterWrapper from "@/components/shared/center-wrapper";
 import { ErrorComponent } from "../shared/error-component";
+import { PaginatedSection } from "../shared/pagination/paginated-section";
 
 // hooks
 import { useGetBodyMeasurementsHistory } from "./api/use-get-body-measurements-history";
@@ -38,8 +39,10 @@ import {
 import { toast } from "sonner";
 
 export const BodyMeasurements = () => {
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(() =>
+    subMonths(new Date(), 6)
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(() => new Date());
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const [measurementToEdit, setMeasurementToEdit] =
     useState<IBodyMeasurementItem | null>(null);
@@ -133,18 +136,20 @@ export const BodyMeasurements = () => {
             <DatePicker
               value={startDate}
               onChange={(date) => setStartDate(date ?? undefined)}
-              placeholder="start date"
+              placeholder="select start date"
             />
           </div>
           <div className="flex-1">
             <DatePicker
               value={endDate}
               onChange={(date) => setEndDate(date ?? undefined)}
-              placeholder="end date"
+              placeholder="select end date"
               disabled={(date) => {
                 const d = startOfDay(date);
                 const today = startOfDay(new Date());
+                const sixMonthsAgo = subMonths(today, 6);
                 if (d > today) return true;
+                if (d < sixMonthsAgo) return true;
                 if (startDate) return d < startOfDay(startDate);
                 return false;
               }}
@@ -171,93 +176,94 @@ export const BodyMeasurements = () => {
           </CardContent>
         </Card>
       ) : (
-        <ul className="flex flex-col gap-2 xl:w-1/2 w-full">
-          {(() => {
-            // const lastKnownHeight =
-            //   measurements.find((x) => x.height_cm != null)?.height_cm ?? null;
-            return measurements.map((m: IBodyMeasurementItem) => (
-              <li key={m.id}>
-                <Card className="w-full">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
-                          {formatMeasurementDate(m.measured_at)}
-                        </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-base">
-                          <span>
-                            <strong>Waga:</strong> {m.weight_kg} kg
-                          </span>
-                          {m.height_cm != null && (
-                            <span className="text-sm text-muted-foreground">
-                              <strong>Wzrost:</strong> {m.height_cm} cm
+        <PaginatedSection
+          items={measurements}
+          initialPageSize={8}
+          pageSizeOptions={[8, 15, 20, 30, 50]}
+          className="xl:w-1/2 w-full flex flex-col gap-2"
+          controlsWrapperClassName="mb-2"
+        >
+          {(paginatedMeasurements) => (
+            <ul className="flex flex-col gap-2">
+              {paginatedMeasurements.map((m: IBodyMeasurementItem) => (
+                <li key={m.id}>
+                  <Card className="w-full">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
+                            {formatMeasurementDate(m.measured_at)}
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-base">
+                            <span>
+                              <strong>Weight:</strong> {m.weight_kg} kg
                             </span>
-                          )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setMeasurementToEdit(m)}
+                            className="h-9 w-9 text-foreground"
+                            aria-label="Edit measurement"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setMeasurementToDelete(m.id)}
+                            className="h-9 w-9 text-destructive hover:text-destructive"
+                            aria-label="Delete measurement"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setMeasurementToEdit(m)}
-                          className="h-9 w-9 text-foreground"
-                          aria-label="Edit measurement"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setMeasurementToDelete(m.id)}
-                          className="h-9 w-9 text-destructive hover:text-destructive"
-                          aria-label="Delete measurement"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    {hasCircumference(m) && (
-                      <Table className="w-full">
-                        <TableHeader>
-                          <TableRow>
-                            {CIRCUMFERENCE_KEYS.map((key) => (
-                              <TableHead
-                                key={key}
-                                className="text-center text-muted-foreground font-medium"
-                              >
-                                {CIRCUMFERENCE_LABELS[key]}
-                              </TableHead>
-                            ))}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            {CIRCUMFERENCE_KEYS.map((key) => {
-                              const val = m[key];
-                              const display =
-                                val != null && !Number.isNaN(Number(val))
-                                  ? `${val} cm`
-                                  : "—";
-                              return (
-                                <TableCell
+                      {hasCircumference(m) && (
+                        <Table className="w-full text-xs">
+                          <TableHeader>
+                            <TableRow>
+                              {CIRCUMFERENCE_KEYS.map((key) => (
+                                <TableHead
                                   key={key}
-                                  className="text-center"
+                                  className="px-1 py-1 text-center text-muted-foreground font-medium text-xs"
                                 >
-                                  {display}
-                                </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    )}
-                  </CardContent>
-                </Card>
-              </li>
-            ));
-          })()}
-        </ul>
+                                  {CIRCUMFERENCE_LABELS[key]}
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow>
+                              {CIRCUMFERENCE_KEYS.map((key) => {
+                                const val = m[key];
+                                const display =
+                                  val != null && !Number.isNaN(Number(val))
+                                    ? `${val} cm`
+                                    : "—";
+                                return (
+                                  <TableCell
+                                    key={key}
+                                    className="px-1 py-1 text-center text-xs"
+                                  >
+                                    {display}
+                                  </TableCell>
+                                );
+                              })}
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      )}
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </PaginatedSection>
       )}
 
       <AddMeasurementSheet
