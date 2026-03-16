@@ -1,5 +1,5 @@
 // libs
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 
 // components
@@ -17,6 +17,8 @@ const defaultProps = {
 }
 
 describe('ConfirmModal', () => {
+  beforeEach(() => vi.clearAllMocks())
+
   it('renders title and description when open', () => {
     render(<ConfirmModal {...defaultProps} />)
     expect(screen.getByText('Usuń trening')).toBeInTheDocument()

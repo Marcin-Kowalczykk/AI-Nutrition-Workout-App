@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../tests/msw-server'
@@ -12,6 +12,8 @@ vi.mock('@/lib/supabase/get-access-token', () => ({
 }))
 
 describe('useGetWorkoutHistory', () => {
+  afterEach(() => server.resetHandlers())
+
   it('returns workouts from API', async () => {
     server.use(
       http.get('/api/workouts/get-workouts-history', () =>
