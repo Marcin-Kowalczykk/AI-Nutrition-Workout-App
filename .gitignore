@@ -55,3 +55,7 @@ supabase/storage
 supabase/functions
 
 guides/
+
+# local dev notes
+CLAUDE.md
+docs/
