@@ -10,29 +10,31 @@ test.describe('Edit workout from history', () => {
   })
 
   test('opens an existing workout in edit mode with form pre-populated', async ({ page }) => {
-    await page.goto('/workout-history')
+    await page.goto('/main-page')
 
-    const firstWorkout = page.getByRole('link', { name: /edytuj/i }).first()
-    await firstWorkout.click()
+    const firstEditButton = page.getByRole('button', { name: /edit workout/i }).first()
+    await firstEditButton.click()
 
-    const nameInput = page.getByLabel(/nazwa treningu/i)
+    const nameInput = page.getByLabel(/workout name/i)
     await expect(nameInput).not.toBeEmpty()
   })
 
   test('saves edited workout and reflects changes in history', async ({ page }) => {
-    await page.goto('/workout-history')
+    await page.goto('/main-page')
 
-    const firstWorkout = page.getByRole('link', { name: /edytuj/i }).first()
-    await firstWorkout.click()
+    const firstEditButton = page.getByRole('button', { name: /edit workout/i }).first()
+    await firstEditButton.click()
 
-    const nameInput = page.getByLabel(/nazwa treningu/i)
-    const updatedName = `Edytowany trening ${Date.now()}`
+    const nameInput = page.getByLabel(/workout name/i)
+    const updatedName = `Edited workout ${Date.now()}`
     await nameInput.fill(updatedName)
 
-    await page.getByRole('button', { name: /zapisz/i }).click()
-    await expect(page).not.toHaveURL(/\/edit/)
-
-    await page.goto('/workout-history')
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/api/workouts') && resp.status() === 200),
+      page.getByRole('button', { name: /update workout/i }).click(),
+    ])
+    // Edit form stays on /workout/edit after update; navigate to history to verify
+    await page.goto('/main-page')
     await expect(page.getByText(updatedName)).toBeVisible()
   })
 })

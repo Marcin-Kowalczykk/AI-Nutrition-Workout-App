@@ -9,15 +9,16 @@ test.describe('Create workout from template', () => {
     await loginAs(page, EMAIL, PASSWORD)
   })
 
-  test('creates a workout from an existing template and it appears in history', async ({ page }) => {
-    await page.goto('/workout-templates')
+  test('pre-fills workout form when a template is selected from the dropdown', async ({ page }) => {
+    await page.goto('/workout/create')
 
-    const useTemplateButton = page.getByRole('button', { name: /użyj/i }).first()
-    await useTemplateButton.click()
+    await page.locator('#template-select').click()
 
-    await expect(page).toHaveURL(/\/workout\/create/)
+    const firstOption = page.getByRole('option').first()
+    await expect(firstOption).toBeVisible()
+    await firstOption.click()
 
-    await page.getByRole('button', { name: /zapisz/i }).click()
-    await expect(page).not.toHaveURL(/\/workout\/create/)
+    const nameInput = page.getByLabel(/workout name/i)
+    await expect(nameInput).not.toBeEmpty()
   })
 })

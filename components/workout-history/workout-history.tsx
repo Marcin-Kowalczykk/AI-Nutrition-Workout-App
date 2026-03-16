@@ -173,6 +173,7 @@ const WorkoutHistory = () => {
                           size="icon"
                           onClick={() => handleEdit(workout.id)}
                           className="h-9 w-9 text-foreground"
+                          aria-label="Edit workout"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>

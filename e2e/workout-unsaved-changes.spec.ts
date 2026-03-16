@@ -11,14 +11,14 @@ test.describe('Unsaved changes guard', () => {
 
   test('shows confirm modal when navigating away with unsaved changes', async ({ page }) => {
     await page.goto('/workout/create')
-    await page.getByLabel(/nazwa treningu/i).fill('Nowy trening')
-    await page.getByRole('link', { name: /historia/i }).click()
+    await page.getByLabel(/workout name/i).fill('New workout')
+    await page.getByRole('link', { name: /workout history/i }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
   })
 
   test('does not show modal when navigating away without changes', async ({ page }) => {
     await page.goto('/workout/create')
-    await page.getByRole('link', { name: /historia/i }).click()
+    await page.getByRole('link', { name: /workout history/i }).click()
     await expect(page.getByRole('dialog')).not.toBeVisible()
   })
 })

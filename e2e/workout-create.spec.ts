@@ -13,12 +13,12 @@ test.describe('Create workout', () => {
     await page.goto('/workout/create')
 
     const workoutName = `Test workout ${Date.now()}`
-    await page.getByLabel(/nazwa treningu/i).fill(workoutName)
+    await page.getByLabel(/workout name/i).fill(workoutName)
 
-    await page.getByRole('button', { name: /zapisz/i }).click()
+    await page.getByRole('button', { name: /save workout/i }).click()
     await expect(page).not.toHaveURL('/workout/create')
 
-    await page.goto('/workout-history')
+    await page.goto('/main-page')
     await expect(page.getByText(workoutName)).toBeVisible()
   })
 })
