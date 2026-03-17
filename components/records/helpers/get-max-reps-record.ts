@@ -42,7 +42,7 @@ export const getMaxRepsRecord = (
         }
 
         const weight =
-          typeof set.weight === "number" && !Number.isNaN(set.weight)
+          typeof set.weight === "number" && !Number.isNaN(set.weight) && set.weight > 0
             ? set.weight
             : null;
 
