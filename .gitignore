@@ -62,3 +62,9 @@ guides/
 # local dev notes
 CLAUDE.md
 docs/
+
+# cursor
+.cursor
+
+# vscode
+.vscode

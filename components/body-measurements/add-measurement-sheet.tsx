@@ -52,7 +52,11 @@ export const AddMeasurementSheet = ({
   onOpenChange,
   lastMeasurement = null,
 }: AddMeasurementSheetProps) => {
-  const form = useForm<AddMeasurementFormType>({
+  const form = useForm<
+    AddMeasurementFormType,
+    undefined,
+    AddMeasurementFormType
+  >({
     resolver: zodResolver(addMeasurementFormSchema),
     defaultValues: getDefaultValuesFromLast(lastMeasurement),
     mode: "onChange",
@@ -73,7 +77,8 @@ export const AddMeasurementSheet = ({
     if (open) {
       form.reset(getDefaultValuesFromLast(lastMeasurement));
     }
-  }, [open, lastMeasurement, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const onSubmit = (values: AddMeasurementFormType) => {
     createMeasurement(buildMeasurementPayload(values));

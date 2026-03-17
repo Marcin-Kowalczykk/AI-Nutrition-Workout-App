@@ -19,7 +19,10 @@ test.describe('Body measurements', () => {
     // (the sheet triggers a second query; until it resolves, form.reset() can overwrite user input)
     await page.waitForLoadState('networkidle')
     const weightInput = page.locator('input[name="weight_kg"]')
-    await weightInput.fill('75')
+    // Read the current default (from lastMeasurement) and use a different value to ensure isDirty=true
+    const currentWeight = await weightInput.inputValue()
+    const newWeight = String((parseFloat(currentWeight) || 0) + 1)
+    await weightInput.fill(newWeight)
     await page.getByRole('button', { name: /^save$/i }).click()
 
     await expect(page.getByRole('dialog')).not.toBeVisible()
