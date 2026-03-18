@@ -39,8 +39,9 @@ test.describe('Create Workout A from template', () => {
       page.getByRole('button', { name: /save workout/i }).nth(1).click(),
     ])
 
-    // Verify in history
+    // Verify in history — wait for history API to load before asserting
     await page.goto('/main-page')
+    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
     await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
   })
 })

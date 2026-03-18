@@ -11,8 +11,9 @@
     "test:coverage": "vitest run --passWithNoTests --coverage",
     "test:watch": "vitest",
     "test:e2e": "playwright test --workers=1",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:seq": "playwright test e2e/0*.spec.ts --workers=1"
+    "test:e2e:ui": "playwright test --workers=1 --ui",
+    "test:e2e:ui-sequence": "playwright test e2e/0*.spec.ts --workers=1 --ui",
+    "test:e2e:sequence": "playwright test e2e/0*.spec.ts --workers=1"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

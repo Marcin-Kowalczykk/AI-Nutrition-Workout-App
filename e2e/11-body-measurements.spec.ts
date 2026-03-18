@@ -5,8 +5,17 @@ const EMAIL = process.env.E2E_EMAIL!
 const PASSWORD = process.env.E2E_PASSWORD!
 
 test.describe('Body measurements', () => {
+  let createdMeasurementId: string | null = null
+
   test.beforeEach(async ({ page }) => {
     await loginAs(page, EMAIL, PASSWORD)
+  })
+
+  test.afterEach(async ({ page }) => {
+    if (createdMeasurementId) {
+      await page.request.delete(`/api/body-measurements/delete?id=${createdMeasurementId}`)
+      createdMeasurementId = null
+    }
   })
 
   test('adds a new body measurement', async ({ page }) => {
@@ -23,7 +32,13 @@ test.describe('Body measurements', () => {
     const currentWeight = await weightInput.inputValue()
     const newWeight = String((parseFloat(currentWeight) || 0) + 1)
     await weightInput.fill(newWeight)
-    await page.getByRole('button', { name: /^save$/i }).click()
+
+    const [response] = await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/body-measurements/create') && r.status() === 201),
+      page.getByRole('button', { name: /^save$/i }).click(),
+    ])
+    const data = await response.json()
+    createdMeasurementId = data.id
 
     await expect(page.getByRole('dialog')).not.toBeVisible()
   })
