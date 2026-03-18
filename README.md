@@ -1,7 +1,71 @@
 # Training Diet App
 
-A focused fitness app for managing **workouts, templates, exercises, diet history, calories and body measurements**.  
+A focused fitness app for managing **workouts, templates, exercises, diet history, calories and body measurements**.
 Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tailwind).
+
+---
+
+## 📋 Table of contents
+
+- [Training Diet App](#training-diet-app)
+  - [📋 Table of contents](#-table-of-contents)
+  - [🚀 Getting started](#-getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Local development](#local-development)
+    - [Available commands](#available-commands)
+  - [🔍 Overview](#-overview)
+  - [🧭 Main user flows](#-main-user-flows)
+  - [📐 Specification (behaviour details)](#-specification-behaviour-details)
+  - [🧠 Architecture](#-architecture)
+  - [🧪 Testing](#-testing)
+    - [Unit tests — Vitest + React Testing Library](#unit-tests--vitest--react-testing-library)
+    - [E2E tests — Playwright](#e2e-tests--playwright)
+  - [⚙️ CI/CD](#️-cicd)
+  - [🧩 Tech stack](#-tech-stack)
+
+---
+
+## 🚀 Getting started
+
+### Prerequisites
+
+- Node.js ≥ 20.9.0
+- A Supabase project (database + auth configured)
+
+### Local development
+
+```bash
+# Install dependencies
+npm install
+
+# Copy the environment template and fill in your Supabase credentials
+cp .env.example .env.local   # add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Start the dev server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Available commands
+
+```bash
+npm run dev             # Start development server
+npm run build           # Production build
+npm run lint            # Run ESLint
+
+# Unit tests
+npm run test            # Run all unit tests (Vitest)
+npm run test:coverage   # Run unit tests + generate coverage report
+npm run test:watch      # Run unit tests in watch mode
+
+# E2E tests (requires a running dev server or uses webServer from Playwright config)
+npm run test:e2e        # Run all e2e tests (Playwright, --workers=1)
+npm run test:e2e:seq    # Run sequential suite only (e2e/0*.spec.ts)
+npm run test:e2e:ui     # Open Playwright UI Mode for sequential suite
+```
+
+---
 
 ## 🔍 Overview
 
@@ -19,9 +83,9 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 - **Records**
 
-  - Personal bests reps / duarion / weights extracted from workouts
+  - Personal bests reps / duration / weights extracted from workouts
   - Quick view of progress for important movements and lifts over time
-  - filters by reps / duration / weight in a side sheet
+  - Filters by reps / duration / weight in a side sheet
 
 - **Comparisons**
 
@@ -33,7 +97,7 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
   - Step‑by‑step workout form with autosave (draft cached in `localStorage`)
   - Create from scratch or reuse structure via **templates**
   - Rich editing: exercise list, sets, reps, weights, notes
-  - Protecting from lose data due to changing tab during create/editing workout
+  - Protection against losing data when changing tabs during create/editing
 
 - **Templates**
 
@@ -64,28 +128,34 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
   - Profile screen to update name, password and **theme (dark/light)**
   - All main routes are protected; anonymous users are redirected to auth
 
+---
+
 ## 🧭 Main user flows
 
 - **New user**
 
   - Registers with email and password
   - Sets basic profile data and preferred theme
-  - Define exercises
-  - Create templates (optional)
-  - Create first workout
+  - Defines exercises
+  - Creates templates (optional)
+  - Creates first workout
 
 - **Typical training day**
 
   - Opens **Workout history** to see last sessions
   - Creates a new workout (optionally from a template)
   - Uses **Exercises** to keep names consistent
-  - Edit past workout (optional)
+  - Edits a past workout (optional)
   - Logs diet history and checks **Kcal calculator** if needed
 
 - **Progress tracking**
 
   - Filters **Workout history** by date range
+  - Reviews **Records**
+  - track your exercies by **Comparisions** with charts
   - Reviews **diet history** and updates **body measurements**
+
+---
 
 ## 📐 Specification (behaviour details)
 
@@ -110,49 +180,137 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
   - Workout history and comparisons use a **shared, generic pagination component** based on shadcn/ui `Pagination` and `Field`, with a compact, mobile‑friendly layout (rows‑per‑page select + page numbers + arrow icons).
   - Pagination is currently **handled on the client**: the backend returns all results for the selected date range, and the `PaginatedSection` component slices the list into pages and controls which slice is visible.
   - By default only **neighboring page numbers plus the first and last page** are shown (pattern like `1 … 3 4 5 … N`), while simpler cases (≤ 5 pages) render all page numbers without ellipses.
-  - On small screens the pagination bar is very compact: **icon‑only arrows (no “Previous/Next” labels), small page chips**, all wrapped in a bordered container aligned to the **right edge** of the list.
+  - On small screens the pagination bar is very compact: **icon‑only arrows (no "Previous/Next" labels), small page chips**, all wrapped in a bordered container aligned to the **right edge** of the list.
 
 - **Safety & UX**
 
   - Destructive actions (like deleting workouts, templates or exercises) always require **explicit confirmation in a modal**.
   - The workout form uses **autosave to `localStorage`** to protect against accidental data loss when navigating away or switching tabs.
-  - When you try to leave a screen with **unsaved changes**, the app can show a **confirm modal** to prevent accidental loss of edits (e.g. when switching tabs or closing a panel).
+  - When you try to leave a screen with **unsaved changes**, the app shows a **confirm modal** to prevent accidental loss of edits.
   - Primary action buttons in forms (save/update) become **enabled only when there are actual changes**, and are hidden/disabled or visually de‑emphasised when the current state matches the persisted data.
   - Single global scroll helper button visible after first scroll, allowing quick jump to the top or bottom of the page.
 
-## 🧠 How it works (architecture)
+---
+
+## 🧠 Architecture
 
 - **Frontend**
 
-  - **Next.js 16 App Router** with protected routes in `app/(protected)/…`
+  - **Next.js 16 App Router** with two route groups:
+    - `app/(auth)/` — public auth pages (login, register, password reset)
+    - `app/(protected)/` — all main pages, guarded by Supabase session check
   - Client components where needed (forms, sheets, search, react-query hooks)
   - **TanStack Query** for all server data: caching, refetching, optimistic UX
+
+- **API layer**
+
+  - Lives in `app/api/` as Next.js Route Handlers (not Server Actions)
+  - Every handler: creates a Supabase server client → verifies user via `getUser()` → queries with RLS
 
 - **Backend / data**
 
   - **Supabase** PostgreSQL as data store
-  - Supabase Auth for sessions; Row Level Security to keep each user’s data isolated
-  - Next Api
-  - All CRUD operations for workouts, templates, exercises, diet entries and measurements go through typed API handlers/hooks
+  - Supabase Auth for sessions; Row Level Security keeps each user's data isolated
+  - All CRUD operations go through typed API route handlers and TanStack Query hooks
 
-- **CI/CD**
-  - Main branch → production
-  - Repo is connected to Vercel
-  - Every push to `main` automatically triggers a **production deployment**.
-  - You don’t run any extra commands
+- **Component structure**
+
+  - `components/<feature>/` contains UI components, `hooks/` for local state, `api/` for TanStack Query hooks
+  - Shared primitives (date picker, pagination, confirm modal, search input, scroll button) in `components/shared/`
+  - shadcn/ui primitives in `components/ui/`
+
+- **Form autosave**
+  - Workout create/edit uses IndexedDB (with localStorage fallback) via `lib/form-cache.ts`
+
+---
+
+## 🧪 Testing
+
+### Unit tests — Vitest + React Testing Library
+
+**300+ tests, ~90% coverage** across helpers, hooks, and components.
+
+```bash
+npm run test            # run once
+npm run test:watch      # watch mode
+npm run test:coverage   # coverage report (terminal table + HTML in coverage/)
+```
+
+**What is covered:**
+- Pure helper functions (`lib/crypto.ts`, records/body-measurements helpers)
+- Search/filter hooks (`useWorkoutHistorySearch`, `useTemplateSearch`, etc.)
+- TanStack Query hooks with MSW mocks (body-measurements, exercises, workout-template, workout-form APIs)
+- Components with logic (`PaginatedSection`, `AddMeasurementSheet`, `Exercises`)
+- Auth hooks (login, register, forgot/reset password, logout)
+- CRUD hooks for exercises, workout templates, workouts
+- Profile hook (`useUpdateProfile`)
+
+**Key patterns:**
+- Test files live next to source: `lib/foo.test.ts`, `components/bar/bar.test.tsx`
+- TanStack Query hooks: `renderHook` + `createQueryWrapper()` from `tests/test-utils.tsx`, MSW via `tests/msw-server.ts`
+- Component tests mock hooks via `vi.mock()` (not MSW)
+
+### E2E tests — Playwright
+
+End-to-end tests run against a real Supabase environment. Credentials come from `.env.local` (`E2E_EMAIL`, `E2E_PASSWORD`).
+
+```bash
+npm run test:e2e        # all tests, sequential (--workers=1)
+npm run test:e2e:seq    # sequential suite only (e2e/0*.spec.ts)
+npm run test:e2e:ui     # Playwright UI Mode for sequential suite
+```
+
+**Two test groups:**
+
+| Group | Files | Description |
+|-------|-------|-------------|
+| Sequential suite | `e2e/0*.spec.ts` (01–08) | Tests depend on each other; share a fixed `RUN_ID`; must run in order |
+| Independent tests | `e2e/1*.spec.ts` (10–15) | Each test is fully self-contained; cleans up its own data |
+
+**Sequential suite flow (01 → 08):**
+1. `01` — create exercise category + exercises
+2. `02` — create workout template
+3. `03` — create Workout A from template
+4. `04` — edit Workout A sets
+5. `05` — create Workout B
+6. `06` — verify records page
+7. `07` — verify comparisons page
+8. `08` — cleanup all test data via API
+
+**Independent tests (10–15):**
+- `10` — auth (login/logout)
+- `11` — body measurements (create + cleanup)
+- `12` — workout create (create + cleanup)
+- `13` — create workout from template (read-only)
+- `14` — workout edit (create dedicated workout → edit → cleanup)
+- `15` — unsaved changes guard (no data created)
+
+---
+
+## ⚙️ CI/CD
+
+- **Platform:** [Vercel](https://vercel.com)
+- **Trigger:** every push to `main` → automatic production deployment
+- No manual deployment steps needed
+- Environment variables (Supabase credentials) are configured in the Vercel project settings
+
+**Tests during deployment:**
+- ✅ **Unit tests** (`npm run test`) run automatically as part of the Vercel build — a failing test blocks the deployment
+- ❌ **E2E tests** are not run during deployment (they require a running server and real Supabase credentials); run them locally before pushing
+
+---
 
 ## 🧩 Tech stack
 
-- **[Next.js 16](https://nextjs.org/)** - React framework with App Router for server-side rendering and routing
-- **[React 19](https://react.dev/)** - UI library for building user interfaces
-- **[TypeScript](https://www.typescriptlang.org/)** - Typed superset of JavaScript for better developer experience
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework for styling
-- **[TanStack Query (React Query)](https://tanstack.com/query/latest)** - Powerful data synchronization library for React that provides server state management, caching, background updates, and data fetching with minimal boilerplate
-- **[shadcn/ui](https://ui.shadcn.com/)** - Re-usable components built with Radix UI and Tailwind CSS, providing accessible and customizable UI components
-- **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme provider for Next.js that enables seamless dark/light mode switching with system preference detection
-- **[Supabase](https://supabase.com/)** - Backend-as-a-Service providing:
-  - PostgreSQL database
-  - Authentication (email/password, password reset)
-  - Row Level Security (RLS) for data protection
-  - Real-time subscriptions
-- **[Recharts](https://ui.shadcn.com/charts/area)** - Charting library for rendering responsive, customizable charts (used for exercise history and records)
+| Category | Technology |
+|----------|------------|
+| Framework | [Next.js 16](https://nextjs.org/) — App Router, RSC, Route Handlers |
+| UI | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
+| Data fetching | [TanStack Query v5](https://tanstack.com/query/latest) |
+| Backend | [Supabase](https://supabase.com/) — PostgreSQL, Auth, RLS |
+| Charts | [Recharts](https://recharts.org/) |
+| Themes | [next-themes](https://github.com/pacocoursey/next-themes) |
+| Unit tests | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) + [MSW](https://mswjs.io/) |
+| E2E tests | [Playwright](https://playwright.dev/) |
+| Deployment | [Vercel](https://vercel.com) |

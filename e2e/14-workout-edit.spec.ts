@@ -41,6 +41,8 @@ test.describe('Edit workout from history', () => {
 
     const updatedName = `Edited workout ${Date.now()}`
     await nameInput.fill(updatedName)
+    // Verify fill persisted — guards against form.reset() overwriting our input
+    await expect(nameInput).toHaveValue(updatedName)
 
     // Only one "Update Workout" button exists when exercises: [] — no per-exercise buttons
     await Promise.all([
