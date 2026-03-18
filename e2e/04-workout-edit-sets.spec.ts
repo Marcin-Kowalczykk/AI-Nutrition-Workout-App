@@ -12,6 +12,11 @@ test.describe('Edit Workout A sets', () => {
 
   test('changes reps of first set from 10 to 12 and saves', async ({ page }) => {
     await page.goto('/main-page')
+    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
+
+    // Search to bypass client-side pagination before locating the card
+    await page.getByPlaceholder('Search workouts...').fill(TEST_NAMES.workoutA)
+    await page.waitForTimeout(300)
 
     // Find Workout A card and click Edit
     const workoutCard = page.locator('li').filter({ hasText: TEST_NAMES.workoutA }).first()
@@ -36,8 +41,11 @@ test.describe('Edit Workout A sets', () => {
       page.getByRole('button', { name: /update workout/i }).nth(1).click(),
     ])
 
-    // Verify workout still appears in history
+    // Verify workout still appears in history — search to bypass pagination
     await page.goto('/main-page')
+    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
+    await page.getByPlaceholder('Search workouts...').fill(TEST_NAMES.workoutA)
+    await page.waitForTimeout(300)
     await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
   })
 })

@@ -19,10 +19,16 @@ test.describe('Edit workout from history', () => {
   })
 
   test.afterEach(async ({ page }) => {
-    if (workoutId) {
-      await page.request.delete(`/api/workouts/delete-workout?id=${workoutId}`)
-      workoutId = null
+    const res = await page.request.get('/api/workouts/get-workouts-history?page_size=500')
+    if (res.ok()) {
+      const { workouts } = await res.json()
+      for (const w of workouts) {
+        if (w.name === TEST_WORKOUT_NAME || /^Edited workout \d+$/.test(w.name)) {
+          await page.request.delete(`/api/workouts/delete-workout?id=${w.id}`)
+        }
+      }
     }
+    workoutId = null
   })
 
   test('opens an existing workout in edit mode with form pre-populated', async ({ page }) => {
@@ -52,6 +58,8 @@ test.describe('Edit workout from history', () => {
     // Edit form stays on /workout/edit after update; navigate to history to verify
     await page.goto('/main-page')
     await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
-    await expect(page.getByText(updatedName)).toBeVisible()
+    await page.getByPlaceholder('Search workouts...').fill(updatedName)
+    await page.waitForTimeout(300)
+    await expect(page.getByText(updatedName).first()).toBeVisible()
   })
 })

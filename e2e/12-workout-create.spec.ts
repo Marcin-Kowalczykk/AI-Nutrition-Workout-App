@@ -36,6 +36,8 @@ test.describe('Create workout', () => {
 
     await page.goto('/main-page')
     await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
-    await expect(page.getByText(workoutName)).toBeVisible()
+    await page.getByPlaceholder('Search workouts...').fill(workoutName)
+    await page.waitForTimeout(300)
+    await expect(page.getByText(workoutName).first()).toBeVisible()
   })
 })
