@@ -21,12 +21,14 @@ test.describe('Edit Workout A sets', () => {
     const nameInput = page.getByLabel(/workout name/i)
     await expect(nameInput).toHaveValue(TEST_NAMES.workoutA)
 
-    // Wait for set 1 reps to be populated
+    // Wait for set 1 reps to be populated (value may vary on repeated runs)
     const firstRepsInput = page.getByLabel(/^reps$/i).first()
-    await expect(firstRepsInput).toHaveValue('10')
+    await expect(firstRepsInput).not.toHaveValue('')
 
-    // Update reps 10 → 12
-    await firstRepsInput.fill('12')
+    // Ensure form is dirty: pick a target value different from what is already stored
+    const currentReps = await firstRepsInput.inputValue()
+    const targetReps = currentReps === '12' ? '11' : '12'
+    await firstRepsInput.fill(targetReps)
 
     // Save and wait for API response
     await Promise.all([
