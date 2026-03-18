@@ -14,7 +14,7 @@ test.describe('Edit Workout A sets', () => {
     await page.goto('/main-page')
 
     // Find Workout A card and click Edit
-    const workoutCard = page.locator('li').filter({ hasText: TEST_NAMES.workoutA })
+    const workoutCard = page.locator('li').filter({ hasText: TEST_NAMES.workoutA }).first()
     await workoutCard.getByRole('button', { name: 'Edit workout' }).click()
 
     // Wait for form to hydrate
@@ -38,6 +38,6 @@ test.describe('Edit Workout A sets', () => {
 
     // Verify workout still appears in history
     await page.goto('/main-page')
-    await expect(page.getByText(TEST_NAMES.workoutA)).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
   })
 })

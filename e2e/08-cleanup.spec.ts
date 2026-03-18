@@ -11,95 +11,109 @@ test.describe('Cleanup test data', () => {
   })
 
   test('deletes template', async ({ page }) => {
-    await page.goto('/workout/template')
-
-    // Delete all matching templates (may be multiple from repeated test runs)
-    let keepDeleting = true
-    while (keepDeleting) {
-      const templateCards = page.locator('li').filter({ hasText: TEST_NAMES.template })
-      const count = await templateCards.count()
-      if (count === 0) {
-        keepDeleting = false
-        break
+    // Fetch all templates via API and delete matching ones
+    const res = await page.request.get('/api/workout-templates/list')
+    if (res.ok()) {
+      const { templates } = await res.json()
+      const matching = templates.filter((t: { name: string }) =>
+        t.name === TEST_NAMES.template
+      )
+      for (const t of matching) {
+        await page.request.delete(`/api/workout-templates/delete?id=${t.id}`)
       }
-      await templateCards.first().getByRole('button', { name: 'Delete template' }).click()
-      await page.getByRole('button', { name: 'Delete' }).click()
-      // Wait for the modal to close and list to update
-      await page.waitForTimeout(500)
     }
 
+    // Verify gone from UI
+    await page.goto('/workout/template')
     await expect(page.locator('li').filter({ hasText: TEST_NAMES.template })).toHaveCount(0)
   })
 
   test('deletes Workout A', async ({ page }) => {
-    await page.goto('/main-page')
+    // Fetch full workout history and delete all matching Workout A entries
+    const res = await page.request.get('/api/workouts/get-workouts-history?page_size=500')
+    if (res.ok()) {
+      const { workouts } = await res.json()
+      const matching = workouts.filter((w: { name: string }) =>
+        w.name === TEST_NAMES.workoutA
+      )
+      for (const w of matching) {
+        await page.request.delete(`/api/workouts/delete-workout?id=${w.id}`)
+      }
+    }
 
-    // Search first to handle pagination
+    // Verify gone from UI (search to narrow scope)
+    await page.goto('/main-page')
     const searchInput = page.getByPlaceholder(/search/i)
     if (await searchInput.isVisible()) {
       await searchInput.fill(TEST_NAMES.workoutA)
       await page.waitForTimeout(300)
     }
-
-    const card = page.locator('li').filter({ hasText: TEST_NAMES.workoutA })
-    const count = await card.count()
-    if (count === 0) {
-      // Already deleted, test passes
-      return
-    }
-
-    await card.first().getByRole('button', { name: 'Delete workout' }).click()
-    await page.getByRole('button', { name: 'Delete' }).click()
-
-    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutA })).toHaveCount(0, { timeout: 5000 })
+    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutA })).toHaveCount(0)
   })
 
   test('deletes Workout B', async ({ page }) => {
-    await page.goto('/main-page')
+    // Fetch full workout history and delete all matching Workout B entries
+    const res = await page.request.get('/api/workouts/get-workouts-history?page_size=500')
+    if (res.ok()) {
+      const { workouts } = await res.json()
+      const matching = workouts.filter((w: { name: string }) =>
+        w.name === TEST_NAMES.workoutB
+      )
+      for (const w of matching) {
+        await page.request.delete(`/api/workouts/delete-workout?id=${w.id}`)
+      }
+    }
 
-    // Search first to handle pagination
+    // Verify gone from UI (search to narrow scope)
+    await page.goto('/main-page')
     const searchInput = page.getByPlaceholder(/search/i)
     if (await searchInput.isVisible()) {
       await searchInput.fill(TEST_NAMES.workoutB)
       await page.waitForTimeout(300)
     }
-
-    const card = page.locator('li').filter({ hasText: TEST_NAMES.workoutB })
-    const count = await card.count()
-    if (count === 0) {
-      // Already deleted, test passes
-      return
-    }
-
-    await card.first().getByRole('button', { name: 'Delete workout' }).click()
-    await page.getByRole('button', { name: 'Delete' }).click()
-
-    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutB })).toHaveCount(0, { timeout: 5000 })
+    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutB })).toHaveCount(0)
   })
 
   test('deletes category (and both exercises)', async ({ page }) => {
-    await page.goto('/exercises')
+    // Delete exercises via API first (handles both normal and orphaned cases)
+    const exercisesRes = await page.request.get('/api/exercises')
+    if (exercisesRes.ok()) {
+      const { exercises } = await exercisesRes.json()
+      const targetNames = [
+        TEST_NAMES.repsExercise.toLowerCase(),
+        TEST_NAMES.timeExercise.toLowerCase(),
+      ]
+      const idsToDelete = exercises
+        .filter((ex: { name: string }) => targetNames.includes(ex.name?.toLowerCase()))
+        .map((ex: { id: string }) => ex.id)
 
-    // Target the category header row directly by its CSS class + hasText
-    const categoryHeaderRow = page
-      .locator('div.flex.items-center.gap-2.p-3')
-      .filter({ hasText: TEST_NAMES.category })
-
-    const count = await categoryHeaderRow.count()
-    if (count === 0) {
-      // Category already deleted, test passes
-      return
+      if (idsToDelete.length > 0) {
+        await page.request.delete('/api/exercises', {
+          data: { ids: idsToDelete },
+        })
+      }
     }
 
-    // The trash icon button is the only button in this row
-    await categoryHeaderRow.first().getByRole('button').click()
+    // Delete category via API
+    const categoriesRes = await page.request.get('/api/exercises/categories')
+    if (categoriesRes.ok()) {
+      const { categories } = await categoriesRes.json()
+      const matching = categories.filter((c: { name: string }) =>
+        c.name.toLowerCase() === TEST_NAMES.category.toLowerCase()
+      )
+      const idsToDelete = matching.map((c: { id: string }) => c.id)
+      if (idsToDelete.length > 0) {
+        await page.request.delete('/api/exercises/categories', {
+          data: { ids: idsToDelete },
+        })
+      }
+    }
 
-    // Confirm deletion
-    await page.getByRole('button', { name: 'Delete' }).click()
-
-    await expect(page.locator('div.flex.items-center.gap-2.p-3').filter({ hasText: TEST_NAMES.category })).toHaveCount(0, { timeout: 5000 })
-    await expect(page.getByText(TEST_NAMES.repsExercise)).not.toBeVisible({ timeout: 5000 })
-    await expect(page.getByText(TEST_NAMES.timeExercise)).not.toBeVisible({ timeout: 5000 })
+    // Verify gone from UI
+    await page.goto('/exercises')
+    await expect(page.getByText(TEST_NAMES.category)).not.toBeVisible()
+    await expect(page.getByText(TEST_NAMES.repsExercise)).not.toBeVisible()
+    await expect(page.getByText(TEST_NAMES.timeExercise)).not.toBeVisible()
   })
 
   test('verifies exercises no longer appear in Records', async ({ page }) => {

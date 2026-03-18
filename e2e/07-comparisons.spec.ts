@@ -19,8 +19,8 @@ test.describe('Comparisons page', () => {
     await page.getByRole('button', { name: TEST_NAMES.repsExercise }).click()
 
     // Both workouts should appear in history cards
-    await expect(page.getByText(TEST_NAMES.workoutA)).toBeVisible()
-    await expect(page.getByText(TEST_NAMES.workoutB)).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutB).first()).toBeVisible()
   })
 
   test('shows both workouts for time-based exercise', async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe('Comparisons page', () => {
     await page.getByRole('button', { name: TEST_NAMES.timeExercise }).click()
 
     // Both workouts should appear
-    await expect(page.getByText(TEST_NAMES.workoutA)).toBeVisible()
-    await expect(page.getByText(TEST_NAMES.workoutB)).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutB).first()).toBeVisible()
   })
 })

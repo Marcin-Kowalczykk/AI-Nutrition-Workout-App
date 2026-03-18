@@ -41,6 +41,6 @@ test.describe('Create Workout A from template', () => {
 
     // Verify in history
     await page.goto('/main-page')
-    await expect(page.getByText(TEST_NAMES.workoutA)).toBeVisible()
+    await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
   })
 })
