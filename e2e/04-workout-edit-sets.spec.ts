@@ -22,7 +22,7 @@ test.describe('Edit Workout A sets', () => {
     await expect(nameInput).toHaveValue(TEST_NAMES.workoutA)
 
     // Wait for set 1 reps to be populated
-    const firstRepsInput = page.getByLabel('Reps').first()
+    const firstRepsInput = page.getByLabel(/^reps$/i).first()
     await expect(firstRepsInput).toHaveValue('10')
 
     // Update reps 10 → 12
@@ -30,7 +30,7 @@ test.describe('Edit Workout A sets', () => {
 
     // Save and wait for API response
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/api/workouts') && r.status() === 200),
+      page.waitForResponse(r => r.url().includes('/api/workouts/update-workout') && (r.status() === 200 || r.status() === 204)),
       page.getByRole('button', { name: /update workout/i }).nth(1).click(),
     ])
 
