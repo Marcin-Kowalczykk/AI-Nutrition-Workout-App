@@ -99,6 +99,7 @@ test.describe('Cleanup test data', () => {
 
     await expect(page.locator('div.flex.items-center.gap-2.p-3').filter({ hasText: TEST_NAMES.category })).toHaveCount(0, { timeout: 5000 })
     await expect(page.getByText(TEST_NAMES.repsExercise)).not.toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(TEST_NAMES.timeExercise)).not.toBeVisible({ timeout: 5000 })
   })
 
   test('verifies exercises no longer appear in Records', async ({ page }) => {
@@ -109,6 +110,8 @@ test.describe('Cleanup test data', () => {
     await page.getByRole('combobox').click()
     await page.getByPlaceholder('Search exercises...').fill(TEST_NAMES.repsExercise)
     await expect(page.getByRole('button', { name: TEST_NAMES.repsExercise })).not.toBeVisible()
+    await page.getByPlaceholder('Search exercises...').fill(TEST_NAMES.timeExercise)
+    await expect(page.getByRole('button', { name: TEST_NAMES.timeExercise })).not.toBeVisible()
   })
 
   test('verifies exercises no longer appear in Comparisons', async ({ page }) => {
@@ -118,5 +121,7 @@ test.describe('Cleanup test data', () => {
     await page.getByRole('combobox').first().click()
     await page.getByPlaceholder('Search exercises...').fill(TEST_NAMES.repsExercise)
     await expect(page.getByRole('button', { name: TEST_NAMES.repsExercise })).not.toBeVisible()
+    await page.getByPlaceholder('Search exercises...').fill(TEST_NAMES.timeExercise)
+    await expect(page.getByRole('button', { name: TEST_NAMES.timeExercise })).not.toBeVisible()
   })
 })
