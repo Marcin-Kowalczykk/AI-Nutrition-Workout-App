@@ -19,7 +19,7 @@ test.describe('Edit Workout A sets', () => {
     await page.waitForTimeout(300)
 
     // Find Workout A card and click Edit
-    const workoutCard = page.locator('li').filter({ hasText: TEST_NAMES.workoutA }).first()
+    const workoutCard = page.getByTestId('workout-history-item').filter({ hasText: TEST_NAMES.workoutA }).first()
     await workoutCard.getByRole('button', { name: 'Edit workout' }).click()
 
     // Wait for form to hydrate

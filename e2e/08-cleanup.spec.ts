@@ -48,7 +48,7 @@ test.describe('Cleanup test data', () => {
       await searchInput.fill(TEST_NAMES.workoutA)
       await page.waitForTimeout(300)
     }
-    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutA })).toHaveCount(0)
+    await expect(page.getByTestId('workout-history-item').filter({ hasText: TEST_NAMES.workoutA })).toHaveCount(0)
   })
 
   test('deletes Workout B', async ({ page }) => {
@@ -71,7 +71,7 @@ test.describe('Cleanup test data', () => {
       await searchInput.fill(TEST_NAMES.workoutB)
       await page.waitForTimeout(300)
     }
-    await expect(page.locator('li').filter({ hasText: TEST_NAMES.workoutB })).toHaveCount(0)
+    await expect(page.getByTestId('workout-history-item').filter({ hasText: TEST_NAMES.workoutB })).toHaveCount(0)
   })
 
   test('deletes category (and both exercises)', async ({ page }) => {

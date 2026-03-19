@@ -150,7 +150,7 @@ const WorkoutHistory = () => {
         {(paginatedWorkouts) => (
           <ul className="flex flex-col gap-2">
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
-              <li key={workout.id}>
+              <li key={workout.id} data-testid="workout-history-item">
                 <Card className="w-full">
                   <CardContent className="p-2">
                     <div className="flex items-start justify-between gap-2">
