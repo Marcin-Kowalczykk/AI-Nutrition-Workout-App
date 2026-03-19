@@ -40,6 +40,7 @@ const workoutSetSchema = z.object({
   weight: optionalWeightString,
   duration: optionalIntegerString,
   isChecked: z.boolean().optional(),
+  rpe: z.number().int().min(1).max(10).nullable().optional(),
 });
 
 const unitTypeSchema = z.enum([

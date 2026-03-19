@@ -23,4 +23,5 @@ export interface IWorkoutSetItem {
   weight: number;
   duration: number;
   isChecked?: boolean;
+  rpe?: number | null;
 }
