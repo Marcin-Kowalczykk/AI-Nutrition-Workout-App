@@ -249,4 +249,14 @@ describe('getComparisonBaselineString', () => {
     expect(parsed.exercises[0].sets[0].reps).toBe(10)
     expect(parsed.exercises[0].sets[0].weight).toBe(80)
   })
+
+  it('detects rpe change as a difference in baseline', () => {
+    const setWithRpe = makeSet({ reps: '10', rpe: 7 })
+    const setWithoutRpe = makeSet({ reps: '10', rpe: null })
+    const form1 = makeForm({ exercises: [makeExercise('Bench', [setWithRpe])] })
+    const form2 = makeForm({ exercises: [makeExercise('Bench', [setWithoutRpe])] })
+    expect(getComparisonBaselineString(form1, false)).not.toBe(
+      getComparisonBaselineString(form2, false)
+    )
+  })
 })
