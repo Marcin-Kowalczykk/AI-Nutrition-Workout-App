@@ -166,10 +166,10 @@ body,
 
 /* RPE slider — sets CSS variables consumed by the Slider component */
 .rpe-slider {
-  --slider-track-color: var(--muted-foreground);
-  --slider-range-color: var(--rpe-slider-range);
-  --slider-thumb-color: var(--rpe-slider-thumb);
-  --slider-thumb-border-color: var(--rpe-slider-thumb-border);
+  --slider-track-color: #a3a3a37b;
+  --slider-range-color: #992bff8f;
+  --slider-thumb-color: var(--primary-element);
+  --slider-thumb-border-color:  #992bff8f;
 }
 
 /* .exercise-badge-weighted {
