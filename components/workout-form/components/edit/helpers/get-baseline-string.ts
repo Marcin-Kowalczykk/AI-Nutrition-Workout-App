@@ -24,7 +24,7 @@ export const getComparisonBaselineString = (
       weight: normalizeNum(set.weight),
       duration: normalizeNum(set.duration),
       isChecked: !!set.isChecked,
-      rpe: (set as unknown as { rpe?: number | null }).rpe ?? null,
+      rpe: set.rpe ?? null,
     })),
   }));
   const base: Record<string, unknown> = {

@@ -27,11 +27,6 @@ const toNum = (v: string | number | undefined): number =>
       ? v
       : Number(v) || 0;
 
-const toNumOptional = (v: string | number | undefined): number | undefined => {
-  if (v === undefined || v === null || v === "") return undefined;
-  const n = typeof v === "number" ? v : Number(v);
-  return Number.isNaN(n) ? undefined : n;
-};
 
 export const prepareExercisesForSubmission = (
   exercises: CreateWorkoutFormType["exercises"]
@@ -53,7 +48,7 @@ export const prepareExercisesForSubmission = (
           weight: toNum(set.weight),
           duration: toNum(set.duration),
           isChecked: set.isChecked ?? false,
-          rpe: (set as unknown as { rpe?: number | null }).rpe ?? null,
+          rpe: set.rpe ?? null,
         }));
 
       return {
