@@ -24,7 +24,7 @@ export const RpeSliderPanel = ({
 }: RpeSliderPanelProps) => (
   <div className="flex items-center gap-1 py-2">
     <span className="text-sm text-muted-foreground w-14 shrink-0">
-      RPE: {rpeValue != null ? rpeValue : "-"}
+      RPE: {rpeValue != null ? rpeValue : "—"}
     </span>
     <Slider
       value={[displayValue]}

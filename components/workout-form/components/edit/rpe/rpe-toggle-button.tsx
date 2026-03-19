@@ -1,8 +1,5 @@
 "use client";
 
-// hooks
-import { Control } from "react-hook-form";
-
 // components
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +9,7 @@ import {
 } from "@/components/ui/form";
 
 // types
+import type { Control } from "react-hook-form";
 import type { CreateWorkoutFormType } from "@/components/workout-form/types";
 
 interface RpeToggleButtonProps {
@@ -19,7 +17,6 @@ interface RpeToggleButtonProps {
   exerciseIndex: number;
   setIndex: number;
   rpeOpenBySet: Record<string, boolean>;
-  rpeSliderDisplayBySet: Record<string, number>;
   isPending: boolean;
   onToggle: (rpeKey: string, currentValue: number | null | undefined) => void;
 }
@@ -29,7 +26,6 @@ export const RpeToggleButton = ({
   exerciseIndex,
   setIndex,
   rpeOpenBySet,
-  rpeSliderDisplayBySet: _rpeSliderDisplayBySet,
   isPending,
   onToggle,
 }: RpeToggleButtonProps) => (

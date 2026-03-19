@@ -1374,7 +1374,6 @@ export const WorkoutForm = ({
                                   exerciseIndex={exerciseIndex}
                                   setIndex={setIndex}
                                   rpeOpenBySet={rpeOpenBySet}
-                                  rpeSliderDisplayBySet={rpeSliderDisplayBySet}
                                   isPending={isPending}
                                   onToggle={toggleRpePanel}
                                 />

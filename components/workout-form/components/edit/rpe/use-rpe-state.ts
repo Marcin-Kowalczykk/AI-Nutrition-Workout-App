@@ -9,12 +9,10 @@ export const useRpeState = () => {
 
   const openRpePanel = (rpeKey: string, currentValue: number | null | undefined) => {
     setRpeOpenBySet((prev) => ({ ...prev, [rpeKey]: true }));
-    if (rpeSliderDisplayBySet[rpeKey] === undefined) {
-      setRpeSliderDisplayBySet((prev) => ({
-        ...prev,
-        [rpeKey]: currentValue ?? 5,
-      }));
-    }
+    setRpeSliderDisplayBySet((prev) => {
+      if (prev[rpeKey] !== undefined) return prev;
+      return { ...prev, [rpeKey]: currentValue ?? 5 };
+    });
   };
 
   const closeRpePanel = (rpeKey: string) => {
