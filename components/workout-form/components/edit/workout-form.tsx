@@ -1436,7 +1436,7 @@ export const WorkoutForm = ({
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center justify-between gap-1 py-2 w-full">
                     <Button
                       type="button"
                       variant="outline"
@@ -1448,11 +1448,16 @@ export const WorkoutForm = ({
                           .toString()
                           .trim()
                       }
-                      className="gap-2 self-start"
+                      className={`gap-2 shrink-0 ${!isTemplateMode ? "w-[5.75rem]" : "w-[4.25rem]"}`}
                     >
                       <Plus className="h-4 w-4" />
                       Add Set
                     </Button>
+
+                    <div className="flex items-center gap-1">
+                      {!isTemplateMode && <div className="w-[3.5rem] shrink-0" />}
+                      <div className="size-4 shrink-0" />
+                    </div>
 
                     <Button
                       type="button"
@@ -1460,13 +1465,12 @@ export const WorkoutForm = ({
                       size="sm"
                       onClick={() => handleRemoveExerciseClick(exerciseIndex)}
                       disabled={isPending}
-                      className="gap-2 self-start hover:text-primary text-muted-foreground"
+                      className="gap-2 min-w-0 text-muted-foreground hover:text-primary w-[10rem]"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                       Remove Exercise
                     </Button>
                   </div>
-                  {/* Show Save button only when there are changes in this exercise (new variant) */}
                   {exerciseIndex < exerciseFields.length - 1 &&
                     hasExerciseChanges(exerciseIndex) && (
                       <Button
@@ -1499,39 +1503,6 @@ export const WorkoutForm = ({
                         )}
                       </Button>
                     )}
-                  {/* OLD: Button always visible, disabled when no changes
-                  {exerciseIndex < exerciseFields.length - 1 && (
-                    <Button
-                      type="button"
-                      variant="default"
-                      disabled={isPending || !hasExerciseChanges(exerciseIndex)}
-                      onClick={() =>
-                        (
-                          form.handleSubmit as unknown as (
-                            fn: (
-                              data: CreateWorkoutFormType
-                            ) => void | Promise<void>
-                          ) => (e?: React.BaseSyntheticEvent) => void
-                        )(onSubmitHandler)()
-                      }
-                      className="mt-2 w-full"
-                    >
-                      {isPending ? (
-                        <Loader />
-                      ) : isFirstSave ? (
-                        isTemplateMode ? (
-                          "Save Template"
-                        ) : (
-                          "Save Workout"
-                        )
-                      ) : isTemplateMode ? (
-                        "Update Template"
-                      ) : (
-                        "Update Workout"
-                      )}
-                    </Button>
-                  )}
-                  */}
                 </CardContent>
               </Card>
             ))}
