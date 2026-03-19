@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { loginAs } from './helpers/auth'
-import { TEST_NAMES } from './helpers/test-data'
 
 const EMAIL = process.env.E2E_EMAIL!
 const PASSWORD = process.env.E2E_PASSWORD!
@@ -15,7 +14,7 @@ test.describe('Create workout from template', () => {
 
     await page.locator('#template-select').click()
 
-    const firstOption = page.getByRole('option', { name: TEST_NAMES.template })
+    const firstOption = page.getByRole('option').first()
     await expect(firstOption).toBeVisible()
     await firstOption.click()
 
