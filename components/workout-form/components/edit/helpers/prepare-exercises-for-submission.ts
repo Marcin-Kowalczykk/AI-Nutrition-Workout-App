@@ -11,6 +11,7 @@ export type PreparedSet = {
   weight: number;
   duration: number;
   isChecked: boolean;
+  rpe: number | null;
 };
 
 export type PreparedExercise = {
@@ -52,6 +53,7 @@ export const prepareExercisesForSubmission = (
           weight: toNum(set.weight),
           duration: toNum(set.duration),
           isChecked: set.isChecked ?? false,
+          rpe: (set as unknown as { rpe?: number | null }).rpe ?? null,
         }));
 
       return {

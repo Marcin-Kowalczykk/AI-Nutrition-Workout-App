@@ -96,6 +96,24 @@ describe('prepareExercisesForSubmission', () => {
     const result = prepareExercisesForSubmission([makeExercise('Bench Press', sets)])
     expect(result[0].sets).toHaveLength(1)
   })
+
+  it('preserves rpe value when set', () => {
+    const sets = [makeSet({ reps: '10', rpe: 7 })]
+    const result = prepareExercisesForSubmission([makeExercise('Bench', sets)])
+    expect(result[0].sets[0].rpe).toBe(7)
+  })
+
+  it('converts rpe null to null, not 0', () => {
+    const sets = [makeSet({ reps: '10', rpe: null })]
+    const result = prepareExercisesForSubmission([makeExercise('Bench', sets)])
+    expect(result[0].sets[0].rpe).toBeNull()
+  })
+
+  it('converts rpe undefined to null', () => {
+    const sets = [makeSet({ reps: '10' })]
+    const result = prepareExercisesForSubmission([makeExercise('Bench', sets)])
+    expect(result[0].sets[0].rpe).toBeNull()
+  })
 })
 
 // ----------------------------------------------------------------
