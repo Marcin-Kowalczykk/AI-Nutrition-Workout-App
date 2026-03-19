@@ -35,9 +35,9 @@ test.describe('Records page', () => {
 
     // Ensure 8 reps checkbox is checked — only click if not already checked
     await page.getByRole('button', { name: /open records filters/i }).click()
-    const repsCheckbox = page.locator('label').filter({ hasText: '8 reps' }).locator('button[role="checkbox"]')
+    const repsCheckbox = page.getByRole('checkbox', { name: /8 reps/i })
     if (await repsCheckbox.getAttribute('data-state') !== 'checked') {
-      await page.locator('label').filter({ hasText: '8 reps' }).click()
+      await repsCheckbox.click()
     }
     await closeFiltersSheet(page)
 
@@ -63,9 +63,9 @@ test.describe('Records page', () => {
 
     // Ensure 12 kg checkbox is checked — only click if not already checked
     await page.getByRole('button', { name: /open records filters/i }).click()
-    const kgCheckbox = page.locator('label').filter({ hasText: '12 kg' }).locator('button[role="checkbox"]')
+    const kgCheckbox = page.getByRole('checkbox', { name: /12 kg/i })
     if (await kgCheckbox.getAttribute('data-state') !== 'checked') {
-      await page.locator('label').filter({ hasText: '12 kg' }).click()
+      await kgCheckbox.click()
     }
     await closeFiltersSheet(page)
 
