@@ -105,7 +105,7 @@ export function TemplateList() {
       ) : (
         <ul className="flex flex-col gap-2">
           {filteredTemplates.map((template: IWorkoutTemplateItem) => (
-            <li key={template.id}>
+            <li key={template.id} data-testid="workout-template-item">
               <Card className="w-full">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2">

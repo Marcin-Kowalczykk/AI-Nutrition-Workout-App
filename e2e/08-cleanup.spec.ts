@@ -25,7 +25,7 @@ test.describe('Cleanup test data', () => {
 
     // Verify gone from UI
     await page.goto('/workout/template')
-    await expect(page.locator('li').filter({ hasText: TEST_NAMES.template })).toHaveCount(0)
+    await expect(page.getByTestId('workout-template-item').filter({ hasText: TEST_NAMES.template })).toHaveCount(0)
   })
 
   test('deletes Workout A', async ({ page }) => {
