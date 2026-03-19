@@ -69,6 +69,10 @@ body,
   --sidebar-width-expanded: 16rem;
   --sidebar-width-collapsed: 4rem;
   --warning: #f59e0b;
+  --rpe-slider-track: #404040;
+  --rpe-slider-range: #ff2ba08c;
+  --rpe-slider-thumb: #ff2b99;
+  --rpe-slider-thumb-border: #d41f8c91;
   /* --exercise-badge-weighted: #7a5050;
   --exercise-badge-weighted-bg: #1f1212; */
   --exercise-badge-time-based: #3d5c7a;
@@ -158,6 +162,14 @@ body,
   --chart-4: #ea580c; /* orange-600 */
   --chart-5: #db2777; /* pink-600 */
   --chart-6: #fae156d4; /* yellow */
+}
+
+/* RPE slider — sets CSS variables consumed by the Slider component */
+.rpe-slider {
+  --slider-track-color: var(--muted-foreground);
+  --slider-range-color: var(--rpe-slider-range);
+  --slider-thumb-color: var(--rpe-slider-thumb);
+  --slider-thumb-border-color: var(--rpe-slider-thumb-border);
 }
 
 /* .exercise-badge-weighted {
