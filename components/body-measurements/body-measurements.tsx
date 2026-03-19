@@ -186,7 +186,7 @@ export const BodyMeasurements = () => {
           {(paginatedMeasurements) => (
             <ul className="flex flex-col gap-2">
               {paginatedMeasurements.map((m: IBodyMeasurementItem) => (
-                <li key={m.id}>
+                <li key={m.id} data-testid="body-measurement-item">
                   <Card className="w-full">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-1">
