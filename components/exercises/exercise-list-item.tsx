@@ -24,6 +24,7 @@ export const ExerciseListItem = ({
   onDelete,
 }: ExerciseListItemProps) => (
   <div
+    data-testid="exercise-item"
     className={`flex items-center gap-2 py-1.5 pl-2 rounded hover:bg-muted/50 ${
       isSearchMatch ? "border-b bg-muted/50 rounded-lg" : ""
     }`}

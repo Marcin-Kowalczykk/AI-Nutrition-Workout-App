@@ -76,6 +76,7 @@ export const ExercisesCategoryList = ({
         return (
           <div key={category.id} className="flex flex-col">
             <div
+              data-testid="exercise-category-item"
               className="flex items-center gap-2 p-3 hover:bg-muted/50 cursor-pointer min-h-12"
               onClick={() => onToggleExpanded(category.id)}
             >

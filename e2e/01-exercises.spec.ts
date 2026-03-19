@@ -14,15 +14,15 @@ test.describe('Exercises CRUD', () => {
     await page.goto('/exercises')
 
     // Create category
-    await page.locator('input[placeholder="New category name"]').fill(TEST_NAMES.category)
+    await page.getByPlaceholder('New category name').fill(TEST_NAMES.category)
     await page.getByRole('button', { name: /add category/i }).click()
     await expect(page.getByText(TEST_NAMES.category)).toBeVisible()
 
     // Expand the new category
-    await page.getByText(TEST_NAMES.category).click()
+    await page.getByTestId('exercise-category-item').filter({ hasText: TEST_NAMES.category }).click()
 
     // Add reps-based exercise
-    const repsNameInput = page.locator('input[placeholder="New exercise in this category"]')
+    const repsNameInput = page.getByPlaceholder('New exercise in this category')
     await repsNameInput.fill(TEST_NAMES.repsExercise)
     await page.getByRole('button', { name: /reps based/i }).click()
     await page.getByRole('button', { name: /add exercise/i }).click()
