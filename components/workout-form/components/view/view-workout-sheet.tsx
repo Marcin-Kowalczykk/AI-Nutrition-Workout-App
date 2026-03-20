@@ -73,7 +73,7 @@ export const ViewWorkoutSheet = () => {
       }}
     >
       <SheetContent className="flex max-h-full w-full flex-col gap-0 overflow-auto p-0 sm:w-[70%] sm:max-w-[600px]">
-        <SheetHeader className="border-b p-6">
+        <SheetHeader className="border-b p-2">
           <SheetTitle className="flex items-center justify-between m-0">
             <div className="flex items-center gap-2">
               <Button
@@ -95,7 +95,7 @@ export const ViewWorkoutSheet = () => {
           </SheetTitle>
           <SheetDescription className="hidden" />
         </SheetHeader>
-        <div className="flex-1 overflow-auto px-6 py-6">
+        <div className="flex-1 overflow-auto p-3">
           {workoutId && <WorkoutView workoutId={workoutId} />}
         </div>
       </SheetContent>
