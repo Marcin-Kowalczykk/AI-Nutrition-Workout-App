@@ -181,6 +181,7 @@ export const EditMeasurementSheet = ({
                           type="time"
                           {...field}
                           value={field.value ?? ""}
+                          className="max-w-full min-w-0"
                         />
                       </FormControl>
                       <FormMessage className="text-destructive" />
