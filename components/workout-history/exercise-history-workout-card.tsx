@@ -107,7 +107,9 @@ export const ExerciseHistoryWorkoutCard = ({
               </TableHead>
             )}
             {hasRpe && (
-              <TableHead className="w-[23%] text-[9px] text-center pr-0">
+              <TableHead
+                className={`${unitColumn ? "w-[23%]" : "w-[44%]"} text-[9px] text-center pr-0`}
+              >
                 RPE
               </TableHead>
             )}
