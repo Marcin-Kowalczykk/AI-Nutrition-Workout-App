@@ -42,7 +42,7 @@ export const ExerciseHistoryWorkoutCard = ({
   const unitColumn = getUnitColumn(exercises);
 
   const hasRpe = exercises
-    .flatMap((ex) => ex.sets)
+    .flatMap((ex) => ex.sets ?? [])
     .some((set) => set.rpe != null);
 
   const outerClasses =
@@ -116,12 +116,7 @@ export const ExerciseHistoryWorkoutCard = ({
         <TableBody>
           {exercises.map((ex) =>
             ex.sets.map((set) => {
-              const isSetChecked = isHistorySetChecked(
-                set as {
-                  isChecked?: boolean;
-                  is_checked?: boolean;
-                }
-              );
+              const isSetChecked = isHistorySetChecked(set);
               return (
                 <TableRow key={set.id}>
                   <TableCell className="flex justify-center pl-0">
