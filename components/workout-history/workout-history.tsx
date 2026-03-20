@@ -162,7 +162,7 @@ const WorkoutHistory = () => {
                           {workout.name}
                         </div>
                         {workout.description && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground line-clamp-2">
                             {workout.description}
                           </div>
                         )}
