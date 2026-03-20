@@ -41,6 +41,10 @@ export const ExerciseHistoryWorkoutCard = ({
 
   const unitColumn = getUnitColumn(exercises);
 
+  const hasRpe = exercises
+    .flatMap((ex) => ex.sets)
+    .some((set) => set.rpe != null);
+
   const outerClasses =
     variant === "compact"
       ? "shrink-0 w-[calc(50%-0.25rem)] min-w-[140px] max-w-[220px] rounded-md border border-border bg-muted/30 px-1 py-1 text-[11px] leading-snug overflow-hidden"
@@ -82,8 +86,8 @@ export const ExerciseHistoryWorkoutCard = ({
             <TableHead
               className={
                 unitColumn
-                  ? "w-[30%] text-[9px] text-center pl-0"
-                  : "w-[40%] text-[9px] text-center pl-0"
+                  ? `${hasRpe ? "w-[22%]" : "w-[30%]"} text-[9px] text-center pl-0`
+                  : `${hasRpe ? "w-[28%]" : "w-[40%]"} text-[9px] text-center pl-0`
               }
             >
               Set
@@ -91,15 +95,20 @@ export const ExerciseHistoryWorkoutCard = ({
             <TableHead
               className={
                 unitColumn
-                  ? "w-[25%] text-[9px] text-center"
-                  : "w-[60%] text-[9px] text-center pr-0"
+                  ? `${hasRpe ? "w-[22%]" : "w-[25%]"} text-[9px] text-center`
+                  : `${hasRpe ? "w-[28%]" : "w-[60%]"} text-[9px] text-center pr-0`
               }
             >
               {unitColumn === WORKOUT_UNIT_TYPE.DURATION ? "Duration" : "Reps"}
             </TableHead>
             {unitColumn !== null && (
-              <TableHead className="w-[45%] text-[9px] text-center pr-0">
+              <TableHead className={`${hasRpe ? "w-[33%]" : "w-[45%]"} text-[9px] text-center pr-0`}>
                 Weight
+              </TableHead>
+            )}
+            {hasRpe && (
+              <TableHead className="w-[23%] text-[9px] text-center pr-0">
+                RPE
               </TableHead>
             )}
           </TableRow>
@@ -148,6 +157,11 @@ export const ExerciseHistoryWorkoutCard = ({
                       {typeof set.weight === "number" && set.weight > 0
                         ? `${set.weight} kg`
                         : "-"}
+                    </TableCell>
+                  )}
+                  {hasRpe && (
+                    <TableCell className="text-center pr-0">
+                      {set.rpe != null ? set.rpe : "-"}
                     </TableCell>
                   )}
                 </TableRow>
