@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1068,11 +1069,12 @@ export const WorkoutForm = ({
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input
+                      <Textarea
                         {...field}
-                        type="text"
                         autoComplete="off"
                         disabled={isPending}
+                        rows={1}
+                        className="resize-y"
                       />
                     </FormControl>
                     <FormDescription>
@@ -1448,7 +1450,7 @@ export const WorkoutForm = ({
                           .toString()
                           .trim()
                       }
-                      className={`gap-2 shrink-0 ${!isTemplateMode ? "w-[5.75rem]" : "w-[4.25rem]"}`}
+                      className={`gap-2 shrink-0 w-[5.75rem]`}
                     >
                       <Plus className="h-4 w-4" />
                       Add Set
