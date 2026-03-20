@@ -136,6 +136,7 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
             );
 
             const isTimeBasedExercise = hasDuration && !hasPositiveReps;
+            const hasRpe = sets.some((set) => set.rpe != null);
 
             return (
               <Card key={exercise.id}>
@@ -167,6 +168,11 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                                   Weight
                                 </TableHead>
                               )}
+                              {hasRpe && (
+                                <TableHead className="w-[80px] text-center">
+                                  RPE
+                                </TableHead>
+                              )}
                             </>
                           ) : (
                             <>
@@ -176,6 +182,11 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                               {hasWeight && (
                                 <TableHead className="w-[90px] text-center">
                                   Weight
+                                </TableHead>
+                              )}
+                              {hasRpe && (
+                                <TableHead className="w-[80px] text-center">
+                                  RPE
                                 </TableHead>
                               )}
                             </>
@@ -217,6 +228,11 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                                       : "-"}
                                   </TableCell>
                                 )}
+                                {hasRpe && (
+                                  <TableCell className="text-center">
+                                    {set.rpe != null ? set.rpe : "-"}
+                                  </TableCell>
+                                )}
                               </>
                             ) : (
                               <>
@@ -233,6 +249,11 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                                     set.weight > 0
                                       ? `${set.weight} kg`
                                       : "-"}
+                                  </TableCell>
+                                )}
+                                {hasRpe && (
+                                  <TableCell className="text-center">
+                                    {set.rpe != null ? set.rpe : "-"}
                                   </TableCell>
                                 )}
                               </>
