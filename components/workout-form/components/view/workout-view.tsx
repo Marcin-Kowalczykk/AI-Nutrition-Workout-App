@@ -159,37 +159,23 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                             Set
                           </TableHead>
                           {isTimeBasedExercise ? (
-                            <>
-                              <TableHead className="w-[110px] text-center">
-                                Duration
-                              </TableHead>
-                              {hasWeight && (
-                                <TableHead className="w-[90px] text-center">
-                                  Weight
-                                </TableHead>
-                              )}
-                              {hasRpe && (
-                                <TableHead className="w-[80px] text-center">
-                                  RPE
-                                </TableHead>
-                              )}
-                            </>
+                            <TableHead className="w-[110px] text-center">
+                              Duration
+                            </TableHead>
                           ) : (
-                            <>
-                              <TableHead className="w-[80px] text-center">
-                                Reps
-                              </TableHead>
-                              {hasWeight && (
-                                <TableHead className="w-[90px] text-center">
-                                  Weight
-                                </TableHead>
-                              )}
-                              {hasRpe && (
-                                <TableHead className="w-[80px] text-center">
-                                  RPE
-                                </TableHead>
-                              )}
-                            </>
+                            <TableHead className="w-[80px] text-center">
+                              Reps
+                            </TableHead>
+                          )}
+                          {hasWeight && (
+                            <TableHead className="w-[90px] text-center">
+                              Weight
+                            </TableHead>
+                          )}
+                          {hasRpe && (
+                            <TableHead className="w-[80px] text-center">
+                              RPE
+                            </TableHead>
                           )}
                         </TableRow>
                       </TableHeader>
@@ -213,50 +199,33 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
                               {set.set_number ?? "-"}
                             </TableCell>
                             {isTimeBasedExercise ? (
-                              <>
-                                <TableCell className="text-center">
-                                  {typeof set.duration === "number" &&
-                                  set.duration > 0
-                                    ? `${set.duration} s`
-                                    : "-"}
-                                </TableCell>
-                                {hasWeight && (
-                                  <TableCell className="text-center">
-                                    {typeof set.weight === "number" &&
-                                    set.weight > 0
-                                      ? `${set.weight} kg`
-                                      : "-"}
-                                  </TableCell>
-                                )}
-                                {hasRpe && (
-                                  <TableCell className="text-center">
-                                    {set.rpe != null ? set.rpe : "-"}
-                                  </TableCell>
-                                )}
-                              </>
+                              <TableCell className="text-center">
+                                {typeof set.duration === "number" &&
+                                set.duration > 0
+                                  ? `${set.duration} s`
+                                  : "-"}
+                              </TableCell>
                             ) : (
-                              <>
-                                <TableCell className="text-center">
-                                  {set.reps !== undefined &&
-                                  set.reps !== null &&
-                                  !Number.isNaN(set.reps)
-                                    ? set.reps
-                                    : "-"}
-                                </TableCell>
-                                {hasWeight && (
-                                  <TableCell className="text-center">
-                                    {typeof set.weight === "number" &&
-                                    set.weight > 0
-                                      ? `${set.weight} kg`
-                                      : "-"}
-                                  </TableCell>
-                                )}
-                                {hasRpe && (
-                                  <TableCell className="text-center">
-                                    {set.rpe != null ? set.rpe : "-"}
-                                  </TableCell>
-                                )}
-                              </>
+                              <TableCell className="text-center">
+                                {set.reps !== undefined &&
+                                set.reps !== null &&
+                                !Number.isNaN(set.reps)
+                                  ? set.reps
+                                  : "-"}
+                              </TableCell>
+                            )}
+                            {hasWeight && (
+                              <TableCell className="text-center">
+                                {typeof set.weight === "number" &&
+                                set.weight > 0
+                                  ? `${set.weight} kg`
+                                  : "-"}
+                              </TableCell>
+                            )}
+                            {hasRpe && (
+                              <TableCell className="text-center">
+                                {set.rpe != null ? set.rpe : "-"}
+                              </TableCell>
                             )}
                           </TableRow>
                         ))}
