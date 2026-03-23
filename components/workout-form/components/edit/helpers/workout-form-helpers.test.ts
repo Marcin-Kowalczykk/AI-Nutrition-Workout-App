@@ -3,7 +3,7 @@ import { inferUnitType } from './infer-unit-type'
 import { prepareExercisesForSubmission } from './prepare-exercises-for-submission'
 import { prepareExercisesForTemplate } from './prepare-exercises-for-template'
 import { getBaselineString, getComparisonBaselineString } from './get-baseline-string'
-import { normalizeCachedFormData } from './normalize-cached-form-data'
+import { normalizeCachedFormData, formatNumericField } from './normalize-cached-form-data'
 import type { CreateWorkoutFormType } from '../../../types'
 
 // --- factory helpers ---
@@ -31,6 +31,41 @@ const makeForm = (overrides: Partial<CreateWorkoutFormType> = {}): CreateWorkout
   workout_date: '2026-01-15',
   exercises: [],
   ...overrides,
+})
+
+// ----------------------------------------------------------------
+describe('formatNumericField', () => {
+  it('returns empty string for null', () => {
+    expect(formatNumericField(null)).toBe('')
+  })
+
+  it('returns empty string for undefined', () => {
+    expect(formatNumericField(undefined)).toBe('')
+  })
+
+  it('returns empty string for 0', () => {
+    expect(formatNumericField(0)).toBe('')
+  })
+
+  it('returns empty string for string "0"', () => {
+    expect(formatNumericField('0')).toBe('')
+  })
+
+  it('returns string representation for positive number', () => {
+    expect(formatNumericField(80)).toBe('80')
+  })
+
+  it('converts numeric string to string number', () => {
+    expect(formatNumericField('10')).toBe('10')
+  })
+
+  it('returns empty string for NaN string', () => {
+    expect(formatNumericField('abc')).toBe('')
+  })
+
+  it('returns string for decimal value', () => {
+    expect(formatNumericField(72.5)).toBe('72.5')
+  })
 })
 
 // ----------------------------------------------------------------

@@ -1,6 +1,6 @@
 import type { CreateWorkoutFormType } from "../../../types";
 
-const formatNumericField = (value: unknown): string => {
+export const formatNumericField = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   const num =
     typeof value === "number" ? value : Number(String(value).trim());

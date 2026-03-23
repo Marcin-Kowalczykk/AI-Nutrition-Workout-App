@@ -62,11 +62,13 @@ import type {
   IWorkoutTemplateSetItem,
 } from "@/app/api/workout-templates/types";
 import {
+  formatNumericField,
   getComparisonBaselineString,
   inferUnitType,
   normalizeCachedFormData,
   prepareExercisesForSubmission,
   prepareExercisesForTemplate,
+  type PreparedExercise,
 } from "./helpers";
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
@@ -106,13 +108,6 @@ export const WorkoutForm = ({
     exerciseIndex: number | null;
     setIndex: number | null;
   }>({ open: false, exerciseIndex: null, setIndex: null });
-  const [changeUnitModal, setChangeUnitModal] = useState<{
-    open: boolean;
-    exerciseIndex: number | null;
-    newUnit: WorkoutUnitType | null;
-  }>({ open: false, exerciseIndex: null, newUnit: null });
-  // const [unitSelectVisibleByExerciseId, setUnitSelectVisibleByExerciseId] =
-  //   useState<Record<string, boolean>>({});
   const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
     Record<string, boolean>
   >({});
@@ -325,13 +320,6 @@ export const WorkoutForm = ({
     if (lastPrefilledTemplateIdRef.current === prefillFromTemplateId) return;
 
     lastPrefilledTemplateIdRef.current = prefillFromTemplateId;
-    const formatNumericField = (value: unknown): string => {
-      if (value === null || value === undefined) return "";
-      const num =
-        typeof value === "number" ? value : Number(String(value).trim());
-      if (Number.isNaN(num) || num === 0) return "";
-      return String(num);
-    };
     const formData: CreateWorkoutFormType = {
       name: prefillTemplateData.name || "",
       description: prefillTemplateData.description || "",
@@ -380,13 +368,6 @@ export const WorkoutForm = ({
     if (hasLoadedWorkoutDataRef.current) return;
 
     hasLoadedWorkoutDataRef.current = true;
-    const formatNumericField = (value: unknown): string => {
-      if (value === null || value === undefined) return "";
-      const num =
-        typeof value === "number" ? value : Number(String(value).trim());
-      if (Number.isNaN(num) || num === 0) return "";
-      return String(num);
-    };
     setWorkoutId(workoutData.id);
     setIsFirstSave(false);
 
@@ -452,13 +433,6 @@ export const WorkoutForm = ({
     if (hasLoadedTemplateDataRef.current) return;
 
     hasLoadedTemplateDataRef.current = true;
-    const formatNumericField = (value: unknown): string => {
-      if (value === null || value === undefined) return "";
-      const num =
-        typeof value === "number" ? value : Number(String(value).trim());
-      if (Number.isNaN(num) || num === 0) return "";
-      return String(num);
-    };
     setTemplateId(templateData.id);
     setIsFirstSave(false);
 
@@ -740,37 +714,6 @@ export const WorkoutForm = ({
     return WORKOUT_UNIT_TYPE.REPS_BASED;
   };
 
-  // const handleUnitTypeChange = (
-  //   exerciseIndex: number,
-  //   newUnit: WorkoutUnitType
-  // ) => {
-  //   const currentUnit: WorkoutUnitType =
-  //     form.getValues(`exercises.${exerciseIndex}.unitType`) ??
-  //     WORKOUT_UNIT_TYPE.WEIGHT;
-  //   if (newUnit === currentUnit) return;
-
-  //   const sets = form.getValues(`exercises.${exerciseIndex}.sets`) ?? [];
-  //   const hasValues =
-  //     currentUnit === WORKOUT_UNIT_TYPE.WEIGHT
-  //       ? sets.some((s) => s.weight !== undefined && s.weight !== null)
-  //       : currentUnit === WORKOUT_UNIT_TYPE.DURATION
-  //       ? sets.some((s) => s.duration !== undefined && s.duration !== null)
-  //       : sets.some((s) => s.reps !== undefined && s.reps !== null);
-
-  //   if (hasValues) {
-  //     setChangeUnitModal({ open: true, exerciseIndex, newUnit });
-  //   } else {
-  //     applyUnitChange(exerciseIndex, newUnit);
-  //   }
-  // };
-
-  const handleConfirmChangeUnit = () => {
-    const { exerciseIndex, newUnit } = changeUnitModal;
-    if (exerciseIndex === null || newUnit === null) return;
-    applyUnitChange(exerciseIndex, newUnit);
-    setChangeUnitModal({ open: false, exerciseIndex: null, newUnit: null });
-  };
-
   if (
     (isLoadingWorkout && initialWorkoutId && !isTemplateMode) ||
     (isLoadingTemplate && initialTemplateId && isTemplateMode)
@@ -800,36 +743,17 @@ export const WorkoutForm = ({
     }
   };
 
-  const handleConfirmRemoveExercise = () => {
-    const exerciseIndex = removeExerciseModal.exerciseIndex;
-    if (exerciseIndex === null || !currentEntityId) return;
-
-    const values = form.getValues();
-    const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
-    const prepared = prepareExercisesForSubmission(newExercises);
-
-    const newValues: CreateWorkoutFormType = {
-      name: values.name,
-      description: values.description,
-      exercises: newExercises,
-      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
-    };
-
+  const saveToServer = (
+    values: CreateWorkoutFormType,
+    prepared: PreparedExercise[],
+    onSuccess: () => void
+  ) => {
+    if (!currentEntityId) return;
+    const exercises = prepared.length > 0 ? prepared : undefined;
     if (isTemplateMode) {
       updateTemplate(
-        {
-          id: currentEntityId,
-          name: values.name,
-          description: values.description,
-          exercises: prepared.length > 0 ? prepared : undefined,
-        },
-        {
-          onSuccess: () => {
-            removeExercise(exerciseIndex);
-            setRemoveExerciseModal({ open: false, exerciseIndex: null });
-            setBaselineFromValues(newValues);
-          },
-        }
+        { id: currentEntityId, name: values.name, description: values.description, exercises },
+        { onSuccess }
       );
     } else {
       const created_at =
@@ -841,17 +765,32 @@ export const WorkoutForm = ({
           description: values.description,
           end_date: new Date().toISOString(),
           ...(created_at && { created_at }),
-          exercises: prepared.length > 0 ? prepared : undefined,
+          exercises,
         },
-        {
-          onSuccess: () => {
-            removeExercise(exerciseIndex);
-            setRemoveExerciseModal({ open: false, exerciseIndex: null });
-            setBaselineFromValues(newValues);
-          },
-        }
+        { onSuccess }
       );
     }
+  };
+
+  const handleConfirmRemoveExercise = () => {
+    const exerciseIndex = removeExerciseModal.exerciseIndex;
+    if (exerciseIndex === null || !currentEntityId) return;
+
+    const values = form.getValues();
+    const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
+    const prepared = prepareExercisesForSubmission(newExercises);
+    const newValues: CreateWorkoutFormType = {
+      name: values.name,
+      description: values.description,
+      exercises: newExercises,
+      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
+    };
+
+    saveToServer(values, prepared, () => {
+      removeExercise(exerciseIndex);
+      setRemoveExerciseModal({ open: false, exerciseIndex: null });
+      setBaselineFromValues(newValues);
+    });
   };
 
   const handleAddSet = (exerciseIndex: number) => {
@@ -911,7 +850,6 @@ export const WorkoutForm = ({
       i === exerciseIndex ? { ...ex, sets: newSets } : ex
     );
     const prepared = prepareExercisesForSubmission(newExercises);
-
     const newValues: CreateWorkoutFormType = {
       name: values.name,
       description: values.description,
@@ -919,51 +857,11 @@ export const WorkoutForm = ({
       ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
     };
 
-    if (isTemplateMode) {
-      updateTemplate(
-        {
-          id: currentEntityId,
-          name: values.name,
-          description: values.description,
-          exercises: prepared.length > 0 ? prepared : undefined,
-        },
-        {
-          onSuccess: () => {
-            doRemoveSetFromForm(exerciseIndex, setIndex);
-            setRemoveSetModal({
-              open: false,
-              exerciseIndex: null,
-              setIndex: null,
-            });
-            setBaselineFromValues(newValues);
-          },
-        }
-      );
-    } else {
-      const created_at =
-        values.workout_date && getCreatedAtFromWorkoutDate(values.workout_date);
-      updateWorkout(
-        {
-          id: currentEntityId,
-          name: values.name,
-          description: values.description,
-          end_date: new Date().toISOString(),
-          ...(created_at && { created_at }),
-          exercises: prepared.length > 0 ? prepared : undefined,
-        },
-        {
-          onSuccess: () => {
-            doRemoveSetFromForm(exerciseIndex, setIndex);
-            setRemoveSetModal({
-              open: false,
-              exerciseIndex: null,
-              setIndex: null,
-            });
-            setBaselineFromValues(newValues);
-          },
-        }
-      );
-    }
+    saveToServer(values, prepared, () => {
+      doRemoveSetFromForm(exerciseIndex, setIndex);
+      setRemoveSetModal({ open: false, exerciseIndex: null, setIndex: null });
+      setBaselineFromValues(newValues);
+    });
   };
 
   const handleDiscardWorkoutClick = () => {
@@ -996,15 +894,18 @@ export const WorkoutForm = ({
   };
 
   const workoutName = form.watch("name") ?? "";
+  const submitLabel = isFirstSave
+    ? isTemplateMode ? "Save Template" : "Save Workout"
+    : isTemplateMode ? "Update Template" : "Update Workout";
+
+  const submitForm = (form.handleSubmit as unknown as (
+    fn: (data: CreateWorkoutFormType) => void | Promise<void>
+  ) => (e?: React.BaseSyntheticEvent) => void)(onSubmitHandler);
 
   return (
     <Form {...form}>
       <form
-        onSubmit={(
-          form.handleSubmit as unknown as (
-            fn: (data: CreateWorkoutFormType) => void | Promise<void>
-          ) => (e?: React.BaseSyntheticEvent) => void
-        )(onSubmitHandler)}
+        onSubmit={submitForm}
         noValidate
       >
         <div className="flex flex-col gap-3">
@@ -1127,21 +1028,6 @@ export const WorkoutForm = ({
           )}
 
           <div className="flex flex-col gap-2">
-            {/* <div className="flex items-center justify-between">
-              <FormLabel>Exercises</FormLabel>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddExercise}
-                disabled={isPending}
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Exercise
-              </Button>
-            </div> */}
-
             {exerciseFields.map((exercise, exerciseIndex) => (
               <Card key={exercise.id} className="overflow-hidden">
                 <CardHeader className="flex flex-row items-start space-y-0 p-2">
@@ -1220,6 +1106,12 @@ export const WorkoutForm = ({
                           setErrors?.reps?.message ??
                           setErrors?.weight?.message ??
                           setErrors?.duration?.message;
+                        const rpeKey = `${exerciseIndex}-${setIndex}`;
+                        const rpeValue = form.watch(
+                          `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
+                        ) as number | null | undefined;
+                        const rpeDisplayValue =
+                          rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1 min-w-0">
@@ -1314,7 +1206,7 @@ export const WorkoutForm = ({
                                   );
                                 }
 
-                                // REPS-BASED: zawsze Reps, opcjonalnie Weight.
+                                // REPS-BASED: Reps + Weight.
                                 return (
                                   <>
                                     <FormField
@@ -1340,32 +1232,29 @@ export const WorkoutForm = ({
                                         </FormItem>
                                       )}
                                     />
-                                    {unitType ===
-                                      WORKOUT_UNIT_TYPE.REPS_BASED && (
-                                      <FormField
-                                        control={form.control}
-                                        name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
-                                        render={({ field }) => (
-                                          <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Weight [kg]</FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                type="number"
-                                                step={0.1}
-                                                min={0}
-                                                autoComplete="off"
-                                                disabled={isPending}
-                                                {...field}
-                                                value={field.value ?? ""}
-                                                onChange={(e) =>
-                                                  field.onChange(e.target.value)
-                                                }
-                                              />
-                                            </FormControl>
-                                          </FormItem>
-                                        )}
-                                      />
-                                    )}
+                                    <FormField
+                                      control={form.control}
+                                      name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
+                                      render={({ field }) => (
+                                        <FormItem className="flex-1 min-w-0">
+                                          <FormLabel>Weight [kg]</FormLabel>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              step={0.1}
+                                              min={0}
+                                              autoComplete="off"
+                                              disabled={isPending}
+                                              {...field}
+                                              value={field.value ?? ""}
+                                              onChange={(e) =>
+                                                field.onChange(e.target.value)
+                                              }
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
                                   </>
                                 );
                               })()}
@@ -1393,40 +1282,27 @@ export const WorkoutForm = ({
                                 <Trash2 />
                               </Button>
                             </div>
-                            {!isTemplateMode &&
-                              rpeOpenBySet[
-                                `${exerciseIndex}-${setIndex}`
-                              ] && (() => {
-                                const rpeKey = `${exerciseIndex}-${setIndex}`;
-                                const rpeValue = form.watch(
-                                  `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
-                                ) as number | null | undefined;
-                                const displayValue =
-                                  rpeSliderDisplayBySet[rpeKey] ??
-                                  rpeValue ??
-                                  5;
-                                return (
-                                  <RpeSliderPanel
-                                    rpeValue={rpeValue}
-                                    displayValue={displayValue}
-                                    isPending={isPending}
-                                    onValueChange={(val) => {
-                                      setRpeDisplay(rpeKey, val);
-                                      form.setValue(
-                                        `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
-                                        val
-                                      );
-                                    }}
-                                    onClear={() => {
-                                      form.setValue(
-                                        `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
-                                        null
-                                      );
-                                      clearRpeDisplay(rpeKey);
-                                    }}
-                                  />
-                                );
-                              })()}
+                            {!isTemplateMode && rpeOpenBySet[rpeKey] && (
+                              <RpeSliderPanel
+                                rpeValue={rpeValue}
+                                displayValue={rpeDisplayValue}
+                                isPending={isPending}
+                                onValueChange={(val) => {
+                                  setRpeDisplay(rpeKey, val);
+                                  form.setValue(
+                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
+                                    val
+                                  );
+                                }}
+                                onClear={() => {
+                                  form.setValue(
+                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
+                                    null
+                                  );
+                                  clearRpeDisplay(rpeKey);
+                                }}
+                              />
+                            )}
                             {setErrorMsg && (
                               <p className="text-destructive text-sm mt-1 text-center">
                                 {setErrorMsg}
@@ -1479,30 +1355,10 @@ export const WorkoutForm = ({
                         type="button"
                         variant="default"
                         disabled={isPending}
-                        onClick={() =>
-                          (
-                            form.handleSubmit as unknown as (
-                              fn: (
-                                data: CreateWorkoutFormType
-                              ) => void | Promise<void>
-                            ) => (e?: React.BaseSyntheticEvent) => void
-                          )(onSubmitHandler)()
-                        }
+                        onClick={() => submitForm()}
                         className="mt-2 w-full"
                       >
-                        {isPending ? (
-                          <Loader />
-                        ) : isFirstSave ? (
-                          isTemplateMode ? (
-                            "Save Template"
-                          ) : (
-                            "Save Workout"
-                          )
-                        ) : isTemplateMode ? (
-                          "Update Template"
-                        ) : (
-                          "Update Workout"
-                        )}
+                        {isPending ? <Loader /> : submitLabel}
                       </Button>
                     )}
                 </CardContent>
@@ -1531,19 +1387,7 @@ export const WorkoutForm = ({
               variant="default"
               disabled={isPending || !hasFormChanges()}
             >
-              {isPending ? (
-                <Loader />
-              ) : isFirstSave ? (
-                isTemplateMode ? (
-                  "Save Template"
-                ) : (
-                  "Save Workout"
-                )
-              ) : isTemplateMode ? (
-                "Update Template"
-              ) : (
-                "Update Workout"
-              )}
+              {isPending ? <Loader /> : submitLabel}
             </Button>
             <Button
               type="button"
@@ -1608,22 +1452,6 @@ export const WorkoutForm = ({
         isPending={isUpdating}
       />
 
-      <ConfirmModal
-        open={changeUnitModal.open}
-        onOpenChange={(open) =>
-          !open &&
-          setChangeUnitModal({
-            open: false,
-            exerciseIndex: null,
-            newUnit: null,
-          })
-        }
-        title="Change unit"
-        description="Entered values (weight or duration) for this exercise will be removed. Do you want to continue?"
-        confirmLabel="Yes, change"
-        cancelLabel="Cancel"
-        onConfirm={handleConfirmChangeUnit}
-      />
     </Form>
   );
 };
