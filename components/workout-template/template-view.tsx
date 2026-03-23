@@ -1,9 +1,22 @@
 "use client";
 
+// hooks
 import { useGetTemplate } from "./api/use-get-template";
+
+// components
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+// types
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
@@ -69,61 +82,99 @@ export function TemplateView({ templateId }: TemplateViewProps) {
           <p className="text-muted-foreground text-sm">No exercises added</p>
         ) : (
           templateData.exercises.map(
-            (exercise: IWorkoutTemplateExerciseItem) => (
-              <Card key={exercise.id}>
-                <CardHeader>
-                  <CardTitle>{exercise.name || "Unnamed Exercise"}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  {!exercise.sets || exercise.sets.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">
-                      No sets added
-                    </p>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      <div className="grid grid-cols-12 gap-2 pb-2 border-b">
-                        <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                          Set
-                        </div>
-                        <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                          Reps
-                        </div>
-                        <div className="col-span-2 text-xs font-medium text-muted-foreground text-center">
-                          Weight
-                        </div>
-                        <div className="col-span-3 text-xs font-medium text-muted-foreground text-center">
-                          Duration
-                        </div>
-                      </div>
+            (exercise: IWorkoutTemplateExerciseItem) => {
+              const sets = exercise.sets ?? [];
+              const hasWeight = sets.some(
+                (set) =>
+                  typeof set.weight === "number" &&
+                  !Number.isNaN(set.weight) &&
+                  set.weight > 0
+              );
+              const hasDuration = sets.some(
+                (set) =>
+                  typeof set.duration === "number" &&
+                  !Number.isNaN(set.duration) &&
+                  set.duration > 0
+              );
+              const hasPositiveReps = sets.some(
+                (set) =>
+                  typeof set.reps === "number" &&
+                  !Number.isNaN(set.reps) &&
+                  set.reps > 0
+              );
+              const isTimeBasedExercise = hasDuration && !hasPositiveReps;
 
-                      {exercise.sets.map((set: IWorkoutTemplateSetItem) => (
-                        <div
-                          key={set.id}
-                          className="grid grid-cols-12 gap-2 items-center"
-                        >
-                          <div className="col-span-2 text-sm text-center">
-                            {set.set_number ?? "-"}
-                          </div>
-                          <div className="col-span-2 text-sm text-center">
-                            {set.reps !== undefined ? set.reps : "-"}
-                          </div>
-                          <div className="col-span-2 text-sm text-center">
-                            {set.weight !== undefined
-                              ? `${set.weight} kg`
-                              : "-"}
-                          </div>
-                          <div className="col-span-3 text-sm text-center">
-                            {set.duration !== undefined
-                              ? `${set.duration} s`
-                              : "-"}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )
+              return (
+                <Card key={exercise.id}>
+                  <CardHeader>
+                    <CardTitle>{exercise.name || "Unnamed Exercise"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    {sets.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">
+                        No sets added
+                      </p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[60px] text-center">
+                              Set
+                            </TableHead>
+                            {isTimeBasedExercise ? (
+                              <TableHead className="w-[110px] text-center">
+                                Duration
+                              </TableHead>
+                            ) : (
+                              <TableHead className="w-[80px] text-center">
+                                Reps
+                              </TableHead>
+                            )}
+                            {hasWeight && (
+                              <TableHead className="w-[90px] text-center">
+                                Weight
+                              </TableHead>
+                            )}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sets.map((set: IWorkoutTemplateSetItem) => (
+                            <TableRow key={set.id}>
+                              <TableCell className="text-center">
+                                {set.set_number ?? "-"}
+                              </TableCell>
+                              {isTimeBasedExercise ? (
+                                <TableCell className="text-center">
+                                  {typeof set.duration === "number" &&
+                                  set.duration > 0
+                                    ? `${set.duration} s`
+                                    : "-"}
+                                </TableCell>
+                              ) : (
+                                <TableCell className="text-center">
+                                  {typeof set.reps === "number" &&
+                                  !Number.isNaN(set.reps)
+                                    ? set.reps
+                                    : "-"}
+                                </TableCell>
+                              )}
+                              {hasWeight && (
+                                <TableCell className="text-center">
+                                  {typeof set.weight === "number" &&
+                                  set.weight > 0
+                                    ? `${set.weight} kg`
+                                    : "-"}
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            }
           )
         )}
       </div>

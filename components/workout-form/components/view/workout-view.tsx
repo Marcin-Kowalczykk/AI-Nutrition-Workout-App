@@ -140,10 +140,10 @@ export const WorkoutView = ({ workoutId }: WorkoutViewProps) => {
 
             return (
               <Card key={exercise.id}>
-                <CardHeader className="p-2">
-                  <CardTitle className="text-sm font-semibold">{exercise.name || "Unnamed Exercise"}</CardTitle>
+                <CardHeader>
+                  <CardTitle>{exercise.name || "Unnamed Exercise"}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 pt-0 flex flex-col gap-1">
+                <CardContent className="flex flex-col gap-4">
                   {sets.length === 0 ? (
                     <p className="text-muted-foreground text-sm">
                       No sets added

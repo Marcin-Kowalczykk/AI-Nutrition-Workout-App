@@ -91,7 +91,7 @@ export function ViewTemplateSheet() {
             </SheetTitle>
             <SheetDescription className="hidden" />
           </SheetHeader>
-          <div className="flex-1 overflow-auto px-6 py-6">
+          <div className="flex-1 overflow-auto p-4">
             {templateId && <TemplateView templateId={templateId} />}
           </div>
         </SheetContent>
