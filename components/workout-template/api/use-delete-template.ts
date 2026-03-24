@@ -1,7 +1,8 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/lib/supabase/get-access-token";
+import { TEMPLATES_QUERY_KEY } from "./use-list-templates";
 
 type UseDeleteTemplateOptions = {
   onSuccess?: () => void;
@@ -12,6 +13,8 @@ export const useDeleteTemplate = ({
   onSuccess,
   onError,
 }: UseDeleteTemplateOptions = {}) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (templateId: string) => {
       const accessToken = await getAccessToken();
@@ -26,7 +29,11 @@ export const useDeleteTemplate = ({
       }
       return response.json();
     },
-    onSuccess: () => onSuccess?.(),
+    onSuccess: (_, templateId) => {
+      queryClient.removeQueries({ queryKey: ["workout-template", templateId] });
+      queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
+      onSuccess?.();
+    },
     onError: (error) => onError?.(error.message),
   });
   return mutation;

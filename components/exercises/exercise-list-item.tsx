@@ -5,12 +5,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import type { IExercise } from "@/app/api/exercises/types";
 import { ExerciseUnitBadge } from "./exercise-unit-badge";
+import { Loader } from "@/components/shared/loader";
 
 interface ExerciseListItemProps {
   exercise: IExercise;
   multiDeleteMode: boolean;
   isSelected: boolean;
   isSearchMatch: boolean;
+  isDeleting?: boolean;
   onToggleSelection: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -20,6 +22,7 @@ export const ExerciseListItem = ({
   multiDeleteMode,
   isSelected,
   isSearchMatch,
+  isDeleting = false,
   onToggleSelection,
   onDelete,
 }: ExerciseListItemProps) => (
@@ -27,7 +30,7 @@ export const ExerciseListItem = ({
     data-testid="exercise-item"
     className={`flex items-center gap-2 py-1.5 pl-2 rounded hover:bg-muted/50 ${
       isSearchMatch ? "border-b bg-muted/50 rounded-lg" : ""
-    }`}
+    } ${isDeleting ? "opacity-50 pointer-events-none" : ""}`}
     onClick={(e) => e.stopPropagation()}
   >
     {multiDeleteMode && (
@@ -48,8 +51,9 @@ export const ExerciseListItem = ({
         e.stopPropagation();
         onDelete(exercise.id);
       }}
+      disabled={isDeleting}
     >
-      <Trash2 className="h-4 w-4" />
+      {isDeleting ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
     </Button>
   </div>
 );

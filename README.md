@@ -97,6 +97,7 @@ npm run test:e2e:ui     # Open Playwright UI Mode for sequential suite
   - Step‑by‑step workout form with autosave (draft cached in `localStorage`)
   - Create from scratch or reuse structure via **templates**
   - Rich editing: exercise list, sets, reps, weights, notes
+  - Compare current exercises with past exercises during workout
   - Protection against losing data when changing tabs during create/editing
 
 - **Templates**

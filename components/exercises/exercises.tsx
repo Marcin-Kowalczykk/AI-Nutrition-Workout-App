@@ -48,6 +48,8 @@ export const Exercises = () => {
   }>({ open: false, exerciseId: null });
   const [deleteSelectedModalOpen, setDeleteSelectedModalOpen] = useState(false);
   const [multiDeleteMode, setMultiDeleteMode] = useState(false);
+  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
   const { data: categoriesData, isLoading: loadingCategories } =
     useListCategories();
@@ -66,13 +68,17 @@ export const Exercises = () => {
   const { mutate: deleteCategories, isPending: isDeletingCategories } =
     useDeleteCategories({
       onSuccess: () => {
+        setDeletingCategoryId(null);
         setSelectedCategoryIds(new Set());
         setSelectedExerciseIds(new Set());
       },
     });
   const { mutate: deleteExercises, isPending: isDeletingExercises } =
     useDeleteExercises({
-      onSuccess: () => setSelectedExerciseIds(new Set()),
+      onSuccess: () => {
+        setDeletingExerciseId(null);
+        setSelectedExerciseIds(new Set());
+      },
     });
 
   const categories = useMemo(
@@ -259,6 +265,8 @@ export const Exercises = () => {
           newExerciseByCategory={newExerciseByCategory}
           newExerciseUnitByCategory={newExerciseUnitByCategory}
           isCreatingExercise={isCreatingExercise}
+          deletingExerciseId={deletingExerciseId}
+          deletingCategoryId={deletingCategoryId}
           onToggleExpanded={toggleExpanded}
           onToggleCategorySelection={toggleCategorySelection}
           onToggleExerciseSelection={(id) =>
@@ -303,6 +311,7 @@ export const Exercises = () => {
         cancelLabel="Cancel"
         onConfirm={() => {
           if (deleteCategoryModal.categoryId) {
+            setDeletingCategoryId(deleteCategoryModal.categoryId);
             deleteCategories([deleteCategoryModal.categoryId]);
             setDeleteCategoryModal({ open: false, categoryId: null });
           }
@@ -322,6 +331,7 @@ export const Exercises = () => {
         cancelLabel="Cancel"
         onConfirm={() => {
           if (deleteExerciseModal.exerciseId) {
+            setDeletingExerciseId(deleteExerciseModal.exerciseId);
             deleteExercises([deleteExerciseModal.exerciseId]);
             setDeleteExerciseModal({ open: false, exerciseId: null });
           }

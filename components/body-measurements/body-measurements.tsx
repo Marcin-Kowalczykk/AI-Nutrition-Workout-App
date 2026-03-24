@@ -49,14 +49,16 @@ export const BodyMeasurements = () => {
   const [measurementToDelete, setMeasurementToDelete] = useState<string | null>(
     null
   );
+  const [deletingMeasurementId, setDeletingMeasurementId] = useState<string | null>(null);
 
   const { mutate: deleteMeasurement, isPending: isDeleting } =
     useDeleteBodyMeasurement({
       onSuccess: () => {
         toast.success("Measurement deleted");
-        setMeasurementToDelete(null);
+        setDeletingMeasurementId(null);
       },
       onError: (err) => {
+        setDeletingMeasurementId(null);
         toast.error(err || "Failed to delete measurement");
       },
     });
@@ -186,7 +188,7 @@ export const BodyMeasurements = () => {
           {(paginatedMeasurements) => (
             <ul className="flex flex-col gap-2">
               {paginatedMeasurements.map((m: IBodyMeasurementItem) => (
-                <li key={m.id} data-testid="body-measurement-item">
+                <li key={m.id} data-testid="body-measurement-item" className={deletingMeasurementId === m.id ? "opacity-50 pointer-events-none" : ""}>
                   <Card className="w-full">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -216,8 +218,9 @@ export const BodyMeasurements = () => {
                             onClick={() => setMeasurementToDelete(m.id)}
                             className="h-9 w-9 text-destructive hover:text-destructive"
                             aria-label="Delete measurement"
+                            disabled={deletingMeasurementId === m.id}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {deletingMeasurementId === m.id ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
                           </Button>
                         </div>
                       </div>
@@ -287,7 +290,11 @@ export const BodyMeasurements = () => {
         cancelLabel="Cancel"
         confirmVariant="destructive"
         onConfirm={() => {
-          if (measurementToDelete) deleteMeasurement(measurementToDelete);
+          if (measurementToDelete) {
+            setDeletingMeasurementId(measurementToDelete);
+            setMeasurementToDelete(null);
+            deleteMeasurement(measurementToDelete);
+          }
         }}
         isPending={isDeleting}
       />

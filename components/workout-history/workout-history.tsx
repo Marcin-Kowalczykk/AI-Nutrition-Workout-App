@@ -39,6 +39,7 @@ const WorkoutHistory = () => {
   const [workoutIdToDelete, setWorkoutIdToDelete] = useState<string | null>(
     null
   );
+  const [deletingWorkoutId, setDeletingWorkoutId] = useState<string | null>(null);
 
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
@@ -58,10 +59,11 @@ const WorkoutHistory = () => {
   const { mutate: deleteWorkout, isPending: isDeleting } = useDeleteWorkout({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["get-workout-history"] });
-      setWorkoutIdToDelete(null);
+      setDeletingWorkoutId(null);
       toast.success("Workout deleted");
     },
     onError: (err) => {
+      setDeletingWorkoutId(null);
       toast.error(err || "Failed to delete workout");
     },
   });
@@ -86,6 +88,8 @@ const WorkoutHistory = () => {
 
   const handleConfirmDelete = () => {
     if (workoutIdToDelete) {
+      setDeletingWorkoutId(workoutIdToDelete);
+      setWorkoutIdToDelete(null);
       deleteWorkout(workoutIdToDelete);
     }
   };
@@ -150,7 +154,7 @@ const WorkoutHistory = () => {
         {(paginatedWorkouts) => (
           <ul className="flex flex-col gap-2">
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
-              <li key={workout.id} data-testid="workout-history-item">
+              <li key={workout.id} data-testid="workout-history-item" className={deletingWorkoutId === workout.id ? "opacity-50 pointer-events-none" : ""}>
                 <Card className="w-full">
                   <CardContent className="p-2">
                     <div className="flex items-start justify-between gap-2">
@@ -191,8 +195,9 @@ const WorkoutHistory = () => {
                           onClick={() => setWorkoutIdToDelete(workout.id)}
                           className="h-9 w-9 text-destructive hover:text-destructive"
                           aria-label="Delete workout"
+                          disabled={deletingWorkoutId === workout.id}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {deletingWorkoutId === workout.id ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </div>

@@ -31,6 +31,7 @@ export function TemplateList() {
   const [templateIdToDelete, setTemplateIdToDelete] = useState<string | null>(
     null
   );
+  const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
   const handleView = (templateId: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,10 +48,11 @@ export function TemplateList() {
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
-      setTemplateIdToDelete(null);
+      setDeletingTemplateId(null);
       toast.success("Template deleted");
     },
     onError: (err) => {
+      setDeletingTemplateId(null);
       toast.error(err || "Failed to delete template");
     },
   });
@@ -105,7 +107,7 @@ export function TemplateList() {
       ) : (
         <ul className="flex flex-col gap-2">
           {filteredTemplates.map((template: IWorkoutTemplateItem) => (
-            <li key={template.id} data-testid="workout-template-item">
+            <li key={template.id} data-testid="workout-template-item" className={deletingTemplateId === template.id ? "opacity-50 pointer-events-none" : ""}>
               <Card className="w-full">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2">
@@ -153,8 +155,9 @@ export function TemplateList() {
                         onClick={() => setTemplateIdToDelete(template.id)}
                         className="h-9 w-9 text-destructive hover:text-destructive"
                         aria-label="Delete template"
+                        disabled={deletingTemplateId === template.id}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {deletingTemplateId === template.id ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
@@ -173,9 +176,13 @@ export function TemplateList() {
         confirmLabel="Delete"
         confirmVariant="destructive"
         cancelLabel="Cancel"
-        onConfirm={() =>
-          templateIdToDelete && deleteTemplate(templateIdToDelete)
-        }
+        onConfirm={() => {
+          if (templateIdToDelete) {
+            setDeletingTemplateId(templateIdToDelete);
+            setTemplateIdToDelete(null);
+            deleteTemplate(templateIdToDelete);
+          }
+        }}
         isPending={isDeleting}
       />
     </div>

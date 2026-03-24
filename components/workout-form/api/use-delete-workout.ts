@@ -1,7 +1,7 @@
 "use client";
 
 // hooks
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // utils
 import { getAccessToken } from "@/lib/supabase/get-access-token";
@@ -18,6 +18,8 @@ export const useDeleteWorkout = ({
   onSuccess,
   onError,
 }: UseDeleteWorkoutOptions = {}) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (workoutId: string) => {
       const accessToken = await getAccessToken();
@@ -45,7 +47,9 @@ export const useDeleteWorkout = ({
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, workoutId) => {
+      queryClient.removeQueries({ queryKey: ["get-single-workout", workoutId] });
+      queryClient.invalidateQueries({ queryKey: ["get-workout-history"] });
       if (onSuccess) {
         onSuccess(data as IDeleteWorkoutResponse);
       }

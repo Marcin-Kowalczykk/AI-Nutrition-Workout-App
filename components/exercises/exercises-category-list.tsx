@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader } from "@/components/shared/loader";
 import type {
   IExercise,
   IExerciseCategory,
@@ -27,6 +28,8 @@ interface ExercisesCategoryListProps {
   newExerciseByCategory: Record<string, string>;
   newExerciseUnitByCategory: Record<string, ExerciseUnitType | "">;
   isCreatingExercise: boolean;
+  deletingExerciseId: string | null;
+  deletingCategoryId: string | null;
   onToggleExpanded: (id: string) => void;
   onToggleCategorySelection: (id: string) => void;
   onToggleExerciseSelection: (id: string) => void;
@@ -48,6 +51,8 @@ export const ExercisesCategoryList = ({
   newExerciseByCategory,
   newExerciseUnitByCategory,
   isCreatingExercise,
+  deletingExerciseId,
+  deletingCategoryId,
   onToggleExpanded,
   onToggleCategorySelection,
   onToggleExerciseSelection,
@@ -73,8 +78,10 @@ export const ExercisesCategoryList = ({
         const isExpanded = expandedIds.has(category.id);
         const isCategorySelected = selectedCategoryIds.has(category.id);
 
+        const isCategoryDeleting = deletingCategoryId === category.id;
+
         return (
-          <div key={category.id} className="flex flex-col">
+          <div key={category.id} className={`flex flex-col${isCategoryDeleting ? " opacity-50 pointer-events-none" : ""}`}>
             <div
               data-testid="exercise-category-item"
               className="flex items-center gap-2 p-3 hover:bg-muted/50 cursor-pointer min-h-12"
@@ -109,8 +116,9 @@ export const ExercisesCategoryList = ({
                     e.stopPropagation();
                     onOpenDeleteCategory(category.id);
                   }}
+                  disabled={isCategoryDeleting}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isCategoryDeleting ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
                 </Button>
               )}
             </div>
@@ -126,6 +134,7 @@ export const ExercisesCategoryList = ({
                     isSearchMatch={
                       !!searchLower && ex.name?.toLowerCase().includes(searchLower)
                     }
+                    isDeleting={deletingExerciseId === ex.id}
                     onToggleSelection={onToggleExerciseSelection}
                     onDelete={onOpenDeleteExercise}
                   />
