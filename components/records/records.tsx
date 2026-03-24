@@ -310,11 +310,7 @@ export const Records = () => {
                     No record yet 😢
                   </span>
                 ),
-                date: (
-                  <span className="text-muted-foreground">
-                    No record yet 😢
-                  </span>
-                ),
+                date: "",
               };
             }
 
