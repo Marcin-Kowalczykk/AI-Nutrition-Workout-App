@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // hooks
 import { useCreateWorkout } from './use-create-workout'
@@ -10,6 +12,15 @@ import { useDeleteWorkout } from './use-delete-workout'
 // utils
 import { server } from '../../../tests/msw-server'
 import { createQueryWrapper } from '../../../tests/test-utils'
+
+const createQueryClientWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children)
+  return { queryClient, Wrapper }
+}
 
 // types
 import type { ICreateWorkoutResponse } from '@/app/api/workouts/create-new-workout/route'
@@ -194,5 +205,45 @@ describe('useDeleteWorkout', () => {
     })
 
     await waitFor(() => expect(onError).toHaveBeenCalledOnce())
+  })
+
+  it('removes get-single-workout cache entry on success', async () => {
+    server.use(
+      http.delete('/api/workouts/delete-workout', () =>
+        HttpResponse.json<IDeleteWorkoutResponse>({ success: true })
+      )
+    )
+
+    const { queryClient, Wrapper } = createQueryClientWrapper()
+    queryClient.setQueryData(['get-single-workout', 'workout-1'], makeWorkout())
+
+    const { result } = renderHook(() => useDeleteWorkout({}), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.mutate('workout-1')
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(queryClient.getQueryData(['get-single-workout', 'workout-1'])).toBeUndefined()
+  })
+
+  it('invalidates get-workout-history on success', async () => {
+    server.use(
+      http.delete('/api/workouts/delete-workout', () =>
+        HttpResponse.json<IDeleteWorkoutResponse>({ success: true })
+      )
+    )
+
+    const { queryClient, Wrapper } = createQueryClientWrapper()
+    queryClient.setQueryData(['get-workout-history'], { workouts: [] })
+
+    const { result } = renderHook(() => useDeleteWorkout({}), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.mutate('workout-1')
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(queryClient.getQueryState(['get-workout-history'])?.isInvalidated).toBe(true)
   })
 })

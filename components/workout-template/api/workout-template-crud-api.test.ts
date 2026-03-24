@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // hooks
 import { useCreateTemplate } from './use-create-template'
@@ -10,10 +12,20 @@ import { useDeleteTemplate } from './use-delete-template'
 // utils
 import { server } from '../../../tests/msw-server'
 import { createQueryWrapper } from '../../../tests/test-utils'
+import { TEMPLATES_QUERY_KEY } from './use-list-templates'
 
 // types
 import type { IWorkoutTemplateItem } from '@/app/api/workout-templates/types'
 import type { ICreateTemplateResponse } from '@/app/api/workout-templates/create/route'
+
+const createQueryClientWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children)
+  return { queryClient, Wrapper }
+}
 
 vi.mock('@/lib/supabase/get-access-token', () => ({
   getAccessToken: async () => 'test-token',
@@ -150,6 +162,46 @@ describe('useDeleteTemplate', () => {
 
     await waitFor(() => expect(onError).toHaveBeenCalledOnce())
     expect(onError.mock.calls[0][0]).toMatch(/template not found/i)
+  })
+
+  it('removes workout-template cache entry on success', async () => {
+    server.use(
+      http.delete('/api/workout-templates/delete', () =>
+        HttpResponse.json({ success: true })
+      )
+    )
+
+    const { queryClient, Wrapper } = createQueryClientWrapper()
+    queryClient.setQueryData(['workout-template', 'tmpl-1'], makeTemplate('Push'))
+
+    const { result } = renderHook(() => useDeleteTemplate({}), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.mutate('tmpl-1')
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(queryClient.getQueryData(['workout-template', 'tmpl-1'])).toBeUndefined()
+  })
+
+  it('invalidates workout-templates-list on success', async () => {
+    server.use(
+      http.delete('/api/workout-templates/delete', () =>
+        HttpResponse.json({ success: true })
+      )
+    )
+
+    const { queryClient, Wrapper } = createQueryClientWrapper()
+    queryClient.setQueryData(TEMPLATES_QUERY_KEY, { templates: [] })
+
+    const { result } = renderHook(() => useDeleteTemplate({}), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.mutate('tmpl-1')
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(queryClient.getQueryState(TEMPLATES_QUERY_KEY)?.isInvalidated).toBe(true)
   })
 })
 
