@@ -98,46 +98,67 @@ export const AddMeasurementSheet = ({
             noValidate
           >
             <div className="flex-1 space-y-6 p-6">
-              <FormField
-                control={form.control}
-                name="weight_kg"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Weight (kg) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min={0}
-                        max={999.9}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-destructive" />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="measured_at_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Measurement time</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="time"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-destructive" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="weight_kg"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weight [kg] *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={999.9}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-destructive" />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="height_cm"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Height (cm)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min={0}
-                        max={999.9}
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-destructive" />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="height_cm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Height [cm]</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={999.9}
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-destructive" />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
@@ -160,28 +181,10 @@ export const AddMeasurementSheet = ({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="measured_at_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Measurement time</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="time"
-                          {...field}
-                          value={field.value ?? ""}
-                          className="max-w-full min-w-0"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-destructive" />
-                    </FormItem>
-                  )}
-                />
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-3">Circumferences (cm)</p>
+                <p className="text-sm font-medium mb-3">Circumferences [cm]</p>
                 <div className="grid grid-cols-2 gap-4">
                   {CIRCUMFERENCE_KEYS.map((key) => (
                     <FormField
