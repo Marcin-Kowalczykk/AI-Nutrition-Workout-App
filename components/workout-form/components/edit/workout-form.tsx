@@ -235,6 +235,7 @@ export const WorkoutForm = ({
       setIsFirstSave(false);
       clearCache();
       toast.success("Template created successfully");
+      router.replace(`/workout/template/${data.id}/edit`);
     },
     onError: (error) => {
       toast.error(error || "Failed to create template. Please try again.");
