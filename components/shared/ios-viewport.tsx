@@ -2,6 +2,16 @@
 
 import { useEffect } from "react";
 
+const getOffsetFromContainer = (el: HTMLElement, container: HTMLElement): number => {
+  let top = 0;
+  let current: HTMLElement | null = el;
+  while (current && current !== container) {
+    top += current.offsetTop;
+    current = current.offsetParent as HTMLElement | null;
+  }
+  return top;
+};
+
 const scrollInputIntoView = (el: HTMLElement) => {
   const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
 
@@ -17,15 +27,11 @@ const scrollInputIntoView = (el: HTMLElement) => {
     return;
   }
 
-  const elRect = el.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  // Absolute position of the element within the scrollable content
-  const elAbsoluteTop = elRect.top - containerRect.top + container.scrollTop;
-
-  // Scroll so the element is vertically centered in the visible viewport
-  const targetScrollTop =
-    elAbsoluteTop - viewportHeight / 2 + elRect.height / 2;
+  // offsetTop traversal gives the true position in scrollable content regardless
+  // of current scroll position or keyboard viewport state (getBoundingClientRect
+  // would return wrong values when element is behind the keyboard)
+  const elAbsoluteTop = getOffsetFromContainer(el, container);
+  const targetScrollTop = elAbsoluteTop - viewportHeight / 2 + el.offsetHeight / 2;
 
   container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
 };
