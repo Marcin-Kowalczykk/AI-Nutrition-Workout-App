@@ -1030,7 +1030,7 @@ export const WorkoutForm = ({
 
           <div className="flex flex-col gap-2">
             {exerciseFields.map((exercise, exerciseIndex) => (
-              <Card key={exercise.id} className="overflow-hidden">
+              <Card key={exercise.id}>
                 <CardHeader className="flex flex-row items-start space-y-0 p-2">
                   <CardTitle className="flex w-full flex-wrap items-stretch gap-x-1 gap-y-2 min-w-0">
                     <div className="flex shrink-0 items-center">
