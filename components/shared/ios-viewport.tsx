@@ -15,20 +15,34 @@ export const IosViewportListener = () => {
       if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
 
       if (!isKeyboardVisible()) {
-        setTimeout(() => {
-          if (document.activeElement !== target) return;
-          const vv = window.visualViewport;
-          const vpHeight = vv?.height ?? window.innerHeight;
-          const offsetTop = vv?.offsetTop ?? 0;
-          const elRect = target.getBoundingClientRect();
-          const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
-          const GAP = 16;
-          if (elVisualBottom <= vpHeight - GAP) return;
-          const container = document.querySelector<HTMLElement>("[data-scroll-container]");
-          if (!container) return;
-          const targetScrollTop = elRect.top + target.offsetHeight + container.scrollTop - offsetTop - (vpHeight - GAP);
-          container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight));
-        }, 350);
+        const vv = window.visualViewport;
+        if (!vv) return;
+        let done = false;
+        const cleanup = () => {
+          vv.removeEventListener("resize", onResize);
+          clearTimeout(fallbackTimer);
+        };
+        const onResize = () => {
+          if (!isKeyboardVisible() || done) return;
+          done = true;
+          cleanup();
+          setTimeout(() => {
+            if (document.activeElement !== target) return;
+            const vpHeight = vv.height;
+            const offsetTop = vv.offsetTop;
+            const elRect = target.getBoundingClientRect();
+            const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
+            const GAP = 16;
+            const targetBottom = vpHeight - GAP;
+            if (Math.abs(elVisualBottom - targetBottom) < 20) return;
+            const container = document.querySelector<HTMLElement>("[data-scroll-container]");
+            if (!container) return;
+            const targetScrollTop = container.scrollTop + (elVisualBottom - targetBottom);
+            container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight));
+          }, 100);
+        };
+        vv.addEventListener("resize", onResize);
+        const fallbackTimer = setTimeout(cleanup, 1500);
         return;
       }
 
