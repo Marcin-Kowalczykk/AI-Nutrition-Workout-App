@@ -23,7 +23,7 @@ const scrollInputAboveKeyboard = (
     const offsetTop = vv.offsetTop;
     const elRect = target.getBoundingClientRect();
     const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
-    const GAP = 0;
+    const GAP = 16;
     const targetBottom = vpHeight - GAP;
     if (Math.abs(elVisualBottom - targetBottom) < 20) return;
     const targetScrollTop =
