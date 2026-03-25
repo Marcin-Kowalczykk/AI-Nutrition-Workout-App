@@ -26,14 +26,14 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               <div
                 ref={scrollContainerRef}
                 data-scroll-container
-                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-0 tracking-normal"
+                className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-y-none bg-color-background p-1.5 pb-0 tracking-normal"
               >
                 {children}
                 <div className="flex w-full justify-start pt-2">
                   <BackgroundImage
                     imagePath="/images/auth-bg.jpeg"
                     className="w-full xl:w-1/2 flex-none min-h-95 md:min-h-96 lg:h-96 lg:flex-none"
-                    fallbackClassName="bg-black"
+                    fallbackClassName="bg-color-background"
                   />
                 </div>
               </div>
