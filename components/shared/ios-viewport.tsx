@@ -25,8 +25,10 @@ export const IosViewportListener = () => {
         if (vvHeight >= fullHeight * 0.75) return;
 
         const rect = target.getBoundingClientRect();
-        // Element already fully visible above keyboard
-        if (rect.top >= 20 && rect.bottom <= vvHeight - 20) return;
+        // Skip only when element is already in the ideal zone:
+        // at least 25% from the top (not crammed to the top by iOS over-scroll)
+        // and fully above the keyboard.
+        if (rect.top >= vvHeight * 0.25 && rect.bottom <= vvHeight - 20) return;
 
         const scrollContainer = document.querySelector(
           "[data-scroll-container]"
