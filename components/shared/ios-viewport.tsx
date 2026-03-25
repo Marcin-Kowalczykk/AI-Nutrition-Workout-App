@@ -2,50 +2,23 @@
 
 import { useEffect } from "react";
 
+const isKeyboardVisible = () =>
+  !!(window.visualViewport && window.visualViewport.height < window.innerHeight * 0.75);
+
 export const IosViewportListener = () => {
   useEffect(() => {
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (!isIos) return;
 
-    // With interactiveWidget:"resizes-content", window.innerHeight shrinks when
-    // the keyboard appears (equals visualViewport.height), so we must snapshot
-    // the full-screen height once — before any keyboard opens — to detect the
-    // keyboard reliably later.
-    const fullHeight = window.innerHeight;
-
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
+      if (!isKeyboardVisible()) return;
       setTimeout(() => {
-        if (document.activeElement !== target) return;
-        if (!window.visualViewport) return;
-
-        const vvHeight = window.visualViewport.height;
-        // Keyboard not visible — nothing to do
-        if (vvHeight >= fullHeight * 0.75) return;
-
-        const rect = target.getBoundingClientRect();
-        // Element already fully visible above keyboard
-        if (rect.top >= 20 && rect.bottom <= vvHeight - 20) return;
-
-        const scrollContainer = document.querySelector(
-          "[data-scroll-container]"
-        ) as HTMLElement | null;
-        if (!scrollContainer) {
-          target.scrollIntoView({ block: "nearest", behavior: "instant" });
-          return;
+        if (document.activeElement === target) {
+          target.scrollIntoView({ block: "center", behavior: "instant" });
         }
-
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const elementTopInContainer =
-          rect.top - containerRect.top + scrollContainer.scrollTop;
-        // Place element at ~35% from top of visual viewport (above keyboard)
-        const targetScrollTop = elementTopInContainer - vvHeight * 0.35;
-        scrollContainer.scrollTo({
-          top: Math.max(0, targetScrollTop),
-          behavior: "instant",
-        });
-      }, 300);
+      }, 100);
     };
 
     const handleFocusOut = () => {
@@ -62,3 +35,4 @@ export const IosViewportListener = () => {
 
   return null;
 };
+ 
