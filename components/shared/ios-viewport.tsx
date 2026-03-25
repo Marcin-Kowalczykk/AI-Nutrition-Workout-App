@@ -3,10 +3,9 @@
 import { useEffect } from "react";
 
 const scrollInputIntoView = (el: HTMLElement) => {
-  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const vv = window.visualViewport;
+  const viewportHeight = vv?.height ?? window.innerHeight;
 
-  // Use the explicitly-marked scroll container rather than detecting by overflow style,
-  // because overflow detection can accidentally match inner scrollable components
   const container = document.querySelector<HTMLElement>("[data-scroll-container]");
 
   if (!container) {
@@ -15,17 +14,15 @@ const scrollInputIntoView = (el: HTMLElement) => {
   }
 
   const elRect = el.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
 
-  // Absolute position of the element within the scrollable content.
-  // getBoundingClientRect is viewport-relative; adding scrollTop converts to content-relative.
-  // window.scrollY cancels out in (elRect.top - containerRect.top), so it's scroll-safe.
-  const elAbsoluteTop = elRect.top - containerRect.top + container.scrollTop;
+  const offsetTop = vv?.offsetTop ?? 0;
+  const targetScrollTop =
+    elRect.top + container.scrollTop - offsetTop - viewportHeight / 2 + el.offsetHeight / 2;
 
-  // Scroll so the element is vertically centered in the visible viewport (above keyboard)
-  const targetScrollTop = elAbsoluteTop - viewportHeight / 2 + el.offsetHeight / 2;
-
-  container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
+  container.scrollTo({
+    top: Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight)),
+    behavior: "smooth",
+  });
 };
 
 const isKeyboardVisible = () =>
@@ -39,8 +36,6 @@ export const IosViewportListener = () => {
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
-      // If keyboard is already open (switching inputs) use a short delay,
-      // otherwise wait for the keyboard open animation (~300ms on iOS)
       const delay = isKeyboardVisible() ? 100 : 350;
       setTimeout(() => {
         if (document.activeElement === target) scrollInputIntoView(target);
