@@ -8,6 +8,33 @@ const isKeyboardVisible = () =>
 const getContainer = () =>
   document.querySelector<HTMLElement>("[data-scroll-container]");
 
+const scrollInputAboveKeyboard = (
+  target: HTMLElement,
+  vv: VisualViewport
+) => {
+  const container = getContainer();
+  if (!container) return;
+
+  container.style.paddingBottom = `${window.innerHeight}px`;
+
+  requestAnimationFrame(() => {
+    if (document.activeElement !== target) return;
+    const vpHeight = vv.height;
+    const offsetTop = vv.offsetTop;
+    const elRect = target.getBoundingClientRect();
+    const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
+    const GAP = 16;
+    const targetBottom = vpHeight - GAP;
+    if (Math.abs(elVisualBottom - targetBottom) < 20) return;
+    const targetScrollTop =
+      container.scrollTop + (elVisualBottom - targetBottom);
+    container.scrollTop = Math.max(
+      0,
+      Math.min(targetScrollTop, container.scrollHeight - container.clientHeight)
+    );
+  });
+};
+
 export const IosViewportListener = () => {
   useEffect(() => {
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -21,43 +48,17 @@ export const IosViewportListener = () => {
         const vv = window.visualViewport;
         if (!vv) return;
         let done = false;
-        const cleanup = () => {
-          vv.removeEventListener("resize", onResize);
-          clearTimeout(fallbackTimer);
-        };
-        const onResize = () => {
-          if (!isKeyboardVisible() || done) return;
+
+        const run = () => {
+          if (done || !isKeyboardVisible()) return;
           done = true;
-          cleanup();
-
-          const container = getContainer();
-          if (!container) return;
-
-          container.style.paddingBottom = `${window.innerHeight}px`;
-
-          setTimeout(() => {
-            if (document.activeElement !== target) return;
-            const vpHeight = vv.height;
-            const offsetTop = vv.offsetTop;
-            const elRect = target.getBoundingClientRect();
-            const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
-            const GAP = 16;
-            const targetBottom = vpHeight - GAP;
-            if (Math.abs(elVisualBottom - targetBottom) < 20) return;
-            const targetScrollTop =
-              container.scrollTop + (elVisualBottom - targetBottom);
-            container.scrollTop = Math.max(
-              0,
-              Math.min(
-                targetScrollTop,
-                container.scrollHeight - container.clientHeight
-              )
-            );
-          }, 50);
+          vv.removeEventListener("resize", run);
+          clearTimeout(fallback);
+          scrollInputAboveKeyboard(target, vv);
         };
 
-        vv.addEventListener("resize", onResize);
-        const fallbackTimer = setTimeout(cleanup, 1500);
+        vv.addEventListener("resize", run);
+        const fallback = setTimeout(run, 450);
         return;
       }
 
