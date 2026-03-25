@@ -5,6 +5,9 @@ import { useEffect } from "react";
 const isKeyboardVisible = () =>
   !!(window.visualViewport && window.visualViewport.height < window.innerHeight * 0.75);
 
+const getContainer = () =>
+  document.querySelector<HTMLElement>("[data-scroll-container]");
+
 export const IosViewportListener = () => {
   useEffect(() => {
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -26,6 +29,12 @@ export const IosViewportListener = () => {
           if (!isKeyboardVisible() || done) return;
           done = true;
           cleanup();
+
+          const container = getContainer();
+          if (!container) return;
+
+          container.style.paddingBottom = `${window.innerHeight}px`;
+
           setTimeout(() => {
             if (document.activeElement !== target) return;
             const vpHeight = vv.height;
@@ -35,12 +44,18 @@ export const IosViewportListener = () => {
             const GAP = 16;
             const targetBottom = vpHeight - GAP;
             if (Math.abs(elVisualBottom - targetBottom) < 20) return;
-            const container = document.querySelector<HTMLElement>("[data-scroll-container]");
-            if (!container) return;
-            const targetScrollTop = container.scrollTop + (elVisualBottom - targetBottom);
-            container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight));
-          }, 100);
+            const targetScrollTop =
+              container.scrollTop + (elVisualBottom - targetBottom);
+            container.scrollTop = Math.max(
+              0,
+              Math.min(
+                targetScrollTop,
+                container.scrollHeight - container.clientHeight
+              )
+            );
+          }, 50);
         };
+
         vv.addEventListener("resize", onResize);
         const fallbackTimer = setTimeout(cleanup, 1500);
         return;
@@ -54,7 +69,13 @@ export const IosViewportListener = () => {
     };
 
     const handleFocusOut = () => {
-      setTimeout(() => window.scrollTo(0, 0), 50);
+      setTimeout(() => {
+        if (!isKeyboardVisible()) {
+          const container = getContainer();
+          if (container) container.style.paddingBottom = "";
+        }
+        window.scrollTo(0, 0);
+      }, 100);
     };
 
     document.addEventListener("focusin", handleFocusIn);
