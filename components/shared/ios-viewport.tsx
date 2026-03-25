@@ -2,35 +2,27 @@
 
 import { useEffect } from "react";
 
-const getOffsetFromContainer = (el: HTMLElement, container: HTMLElement): number => {
-  let top = 0;
-  let current: HTMLElement | null = el;
-  while (current && current !== container) {
-    top += current.offsetTop;
-    current = current.offsetParent as HTMLElement | null;
-  }
-  return top;
-};
-
 const scrollInputIntoView = (el: HTMLElement) => {
   const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
 
-  let container: HTMLElement | null = el.parentElement;
-  while (container) {
-    const { overflowY } = window.getComputedStyle(container);
-    if (overflowY === "auto" || overflowY === "scroll") break;
-    container = container.parentElement;
-  }
+  // Use the explicitly-marked scroll container rather than detecting by overflow style,
+  // because overflow detection can accidentally match inner scrollable components
+  const container = document.querySelector<HTMLElement>("[data-scroll-container]");
 
   if (!container) {
     el.scrollIntoView({ block: "center" });
     return;
   }
 
-  // offsetTop traversal gives the true position in scrollable content regardless
-  // of current scroll position or keyboard viewport state (getBoundingClientRect
-  // would return wrong values when element is behind the keyboard)
-  const elAbsoluteTop = getOffsetFromContainer(el, container);
+  const elRect = el.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  // Absolute position of the element within the scrollable content.
+  // getBoundingClientRect is viewport-relative; adding scrollTop converts to content-relative.
+  // window.scrollY cancels out in (elRect.top - containerRect.top), so it's scroll-safe.
+  const elAbsoluteTop = elRect.top - containerRect.top + container.scrollTop;
+
+  // Scroll so the element is vertically centered in the visible viewport (above keyboard)
   const targetScrollTop = elAbsoluteTop - viewportHeight / 2 + el.offsetHeight / 2;
 
   container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
