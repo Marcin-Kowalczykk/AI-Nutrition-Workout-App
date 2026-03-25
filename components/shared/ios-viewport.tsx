@@ -16,7 +16,7 @@ export const IosViewportListener = () => {
       if (!isKeyboardVisible()) return;
       setTimeout(() => {
         if (document.activeElement === target) {
-          target.scrollIntoView({ block: "center", behavior: "smooth" });
+          target.scrollIntoView({ block: "center", behavior: "instant" });
         }
       }, 100);
     };
