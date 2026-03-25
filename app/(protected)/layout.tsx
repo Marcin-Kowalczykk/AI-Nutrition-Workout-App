@@ -25,6 +25,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
               {isMobile ? <TopBar /> : null}
               <div
                 ref={scrollContainerRef}
+                data-scroll-container
                 className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden bg-color-background p-1.5 pb-0 tracking-normal"
               >
                 {children}

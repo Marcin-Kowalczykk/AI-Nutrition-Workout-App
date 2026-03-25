@@ -13,7 +13,25 @@ export const IosViewportListener = () => {
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
-      if (!isKeyboardVisible()) return;
+
+      if (!isKeyboardVisible()) {
+        setTimeout(() => {
+          if (document.activeElement !== target) return;
+          const vv = window.visualViewport;
+          const vpHeight = vv?.height ?? window.innerHeight;
+          const offsetTop = vv?.offsetTop ?? 0;
+          const elRect = target.getBoundingClientRect();
+          const elVisualBottom = elRect.top - offsetTop + target.offsetHeight;
+          const GAP = 16;
+          if (elVisualBottom <= vpHeight - GAP) return;
+          const container = document.querySelector<HTMLElement>("[data-scroll-container]");
+          if (!container) return;
+          const targetScrollTop = elRect.top + target.offsetHeight + container.scrollTop - offsetTop - (vpHeight - GAP);
+          container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight));
+        }, 350);
+        return;
+      }
+
       setTimeout(() => {
         if (document.activeElement === target) {
           target.scrollIntoView({ block: "center", behavior: "instant" });
