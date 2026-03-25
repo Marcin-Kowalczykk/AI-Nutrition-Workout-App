@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { Loader } from "@/components/shared/loader";
 import { WorkoutForm } from "./edit/workout-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface WorkoutProps {
   workoutId?: string | null;
@@ -20,7 +20,7 @@ const Workout = ({
 }: WorkoutProps) => {
   return (
     <Suspense fallback={<Loader />}>
-      <Card className="w-full min-w-0 shrink-0">
+      <Card>
         <CardContent className="p-2 pt-3">
           <WorkoutForm
             workoutId={workoutId}

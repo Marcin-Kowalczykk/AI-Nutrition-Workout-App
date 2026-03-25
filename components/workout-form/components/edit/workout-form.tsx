@@ -184,8 +184,7 @@ export const WorkoutForm = ({
       setIsFirstSave(false);
       clearCache();
       toast.success("Workout created successfully");
-      // Po pierwszym zapisie nowego workoutu przechodzimy na stronę edycji,
-      // żeby odświeżenie strony nie otwierało pustego formularza create.
+
       router.replace(`/workout/edit?id=${data.id}`);
     },
     onError: (error) => {
@@ -711,7 +710,6 @@ export const WorkoutForm = ({
     unitType: ExerciseUnitType | undefined
   ): WorkoutUnitType => {
     if (unitType === "time-based") return WORKOUT_UNIT_TYPE.DURATION;
-    // All non-time-based exercises are reps-based (reps + optional weight)
     return WORKOUT_UNIT_TYPE.REPS_BASED;
   };
 
