@@ -4,25 +4,28 @@ import { useEffect } from "react";
 
 const scrollInputIntoView = (el: HTMLElement) => {
   const vv = window.visualViewport;
-  const viewportHeight = vv?.height ?? window.innerHeight;
+  const vpHeight = vv?.height ?? window.innerHeight;
+  const offsetTop = vv?.offsetTop ?? 0;
+
+  const elRect = el.getBoundingClientRect();
+  const elVisualTop = elRect.top - offsetTop;
+  const elVisualBottom = elVisualTop + el.offsetHeight;
+
+  if (elVisualTop >= 0 && elVisualBottom <= vpHeight) return;
 
   const container = document.querySelector<HTMLElement>("[data-scroll-container]");
-
   if (!container) {
-    el.scrollIntoView({ block: "center" });
+    el.scrollIntoView({ block: "nearest" });
     return;
   }
 
-  const elRect = el.getBoundingClientRect();
-
-  const offsetTop = vv?.offsetTop ?? 0;
   const targetScrollTop =
-    elRect.top + container.scrollTop - offsetTop - viewportHeight / 2 + el.offsetHeight / 2;
+    elRect.top + container.scrollTop - offsetTop - vpHeight / 2 + el.offsetHeight / 2;
 
-  container.scrollTo({
-    top: Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight)),
-    behavior: "smooth",
-  });
+  container.scrollTop = Math.max(
+    0,
+    Math.min(targetScrollTop, container.scrollHeight - container.clientHeight)
+  );
 };
 
 const isKeyboardVisible = () =>
