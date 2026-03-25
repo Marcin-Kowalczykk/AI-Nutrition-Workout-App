@@ -7,6 +7,12 @@ export const IosViewportListener = () => {
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (!isIos) return;
 
+    // With interactiveWidget:"resizes-content", window.innerHeight shrinks when
+    // the keyboard appears (equals visualViewport.height), so we must snapshot
+    // the full-screen height once — before any keyboard opens — to detect the
+    // keyboard reliably later.
+    const fullHeight = window.innerHeight;
+
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
@@ -16,7 +22,7 @@ export const IosViewportListener = () => {
 
         const vvHeight = window.visualViewport.height;
         // Keyboard not visible — nothing to do
-        if (vvHeight >= window.innerHeight * 0.75) return;
+        if (vvHeight >= fullHeight * 0.75) return;
 
         const rect = target.getBoundingClientRect();
         // Element already fully visible above keyboard
