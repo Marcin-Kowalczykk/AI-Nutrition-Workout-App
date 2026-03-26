@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox"; // replaced with native input for iOS keyboard fix
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
@@ -1121,11 +1121,15 @@ export const WorkoutForm = ({
                                   render={({ field }) => (
                                     <FormItem className="shrink-0 pb-2">
                                       <FormControl>
-                                        <Checkbox
+                                        <input
+                                          type="checkbox"
+                                          tabIndex={-1}
                                           checked={field.value ?? false}
-                                          onCheckedChange={field.onChange}
+                                          onChange={(e) =>
+                                            field.onChange(e.target.checked)
+                                          }
                                           disabled={isPending}
-                                          className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success"
+                                          className="h-5 w-5 shrink-0 appearance-none rounded-full border border-secondary-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 checked:bg-success/10 checked:border-success accent-success"
                                         />
                                       </FormControl>
                                     </FormItem>
