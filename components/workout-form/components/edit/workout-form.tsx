@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-// import { Checkbox } from "@/components/ui/checkbox"; // replaced with native input for iOS keyboard fix
+import { NativeCheckbox } from "@/components/shared/native-checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
@@ -1121,22 +1121,17 @@ export const WorkoutForm = ({
                                   render={({ field }) => (
                                     <FormItem className="shrink-0 pb-2">
                                       <FormControl>
-                                        <input
-                                          type="checkbox"
-                                          tabIndex={-1}
+                                        <NativeCheckbox
                                           checked={field.value ?? false}
-                                          onChange={(e) =>
-                                            field.onChange(e.target.checked)
-                                          }
+                                          onChange={field.onChange}
                                           disabled={isPending}
-                                          className="h-5 w-5 shrink-0 appearance-none rounded-full border border-secondary-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 checked:bg-success/10 checked:border-success accent-success"
                                         />
                                       </FormControl>
                                     </FormItem>
                                   )}
                                 />
                               )}
-                              <div className="w-14 shrink-0 min-w-0">
+                              <div className="w-14 shrink-0 min-w-0 ml-3">
                                 <FormLabel>Set</FormLabel>
                                 <Input
                                   type="text"
