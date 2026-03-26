@@ -38,8 +38,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
-// import { DatePicker } from "@/components/shared/date-picker"; // TEMP: removed for mobile keyboard debug
-import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe";
+import { DatePicker } from "@/components/shared/date-picker";
+// import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe"; // TEMP: removed for mobile keyboard debug
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
@@ -111,13 +111,16 @@ export const WorkoutForm = ({
   const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
     Record<string, boolean>
   >({});
-  const {
-    rpeOpenBySet,
-    rpeSliderDisplayBySet,
-    toggleRpePanel,
-    clearRpeDisplay,
-    setRpeDisplay,
-  } = useRpeState();
+  // TEMP: RPE removed for mobile keyboard debug
+  // const {
+  //   rpeOpenBySet,
+  //   rpeSliderDisplayBySet,
+  //   toggleRpePanel,
+  //   clearRpeDisplay,
+  //   setRpeDisplay,
+  // } = useRpeState();
+  const rpeOpenBySet: Record<string, boolean> = {};
+  const rpeSliderDisplayBySet: Record<string, number> = {};
   const [headerVisible, setHeaderVisible] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
@@ -985,7 +988,44 @@ export const WorkoutForm = ({
                 )}
               />
 
-              {/* TEMP: DatePicker temporarily removed for mobile keyboard debug */}
+              {!isTemplateMode && (
+                <FormField
+                  name="workout_date"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Workout date</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          label=""
+                          value={
+                            field.value
+                              ? new Date(field.value + "T12:00:00")
+                              : undefined
+                          }
+                          onChange={(date) =>
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : undefined
+                            )
+                          }
+                          placeholder="choose date"
+                          showClear={false}
+                          fromYear={new Date().getFullYear() - 1}
+                          toYear={new Date().getFullYear()}
+                          disabled={(date) => {
+                            const d = startOfDay(date);
+                            const today = startOfDay(new Date());
+                            const oneYearAgo = subDays(today, 365);
+                            return d < oneYearAgo || d > today;
+                          }}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </>
           )}
 
@@ -1069,11 +1109,13 @@ export const WorkoutForm = ({
                           setErrors?.weight?.message ??
                           setErrors?.duration?.message;
                         const rpeKey = `${exerciseIndex}-${setIndex}`;
-                        const rpeValue = form.watch(
-                          `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
-                        ) as number | null | undefined;
-                        const rpeDisplayValue =
-                          rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
+                        // TEMP: RPE removed for mobile keyboard debug
+                        // const rpeValue = form.watch(
+                        //   `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
+                        // ) as number | null | undefined;
+                        // const rpeDisplayValue =
+                        //   rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
+                        void rpeKey; void rpeSliderDisplayBySet;
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1 min-w-0">
@@ -1221,16 +1263,7 @@ export const WorkoutForm = ({
                                 );
                               })()}
 
-                              {!isTemplateMode && (
-                                <RpeToggleButton
-                                  control={form.control}
-                                  exerciseIndex={exerciseIndex}
-                                  setIndex={setIndex}
-                                  rpeOpenBySet={rpeOpenBySet}
-                                  isPending={isPending}
-                                  onToggle={toggleRpePanel}
-                                />
-                              )}
+                              {/* TEMP: RpeToggleButton removed for mobile keyboard debug */}
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -1244,27 +1277,7 @@ export const WorkoutForm = ({
                                 <Trash2 />
                               </Button>
                             </div>
-                            {!isTemplateMode && rpeOpenBySet[rpeKey] && (
-                              <RpeSliderPanel
-                                rpeValue={rpeValue}
-                                displayValue={rpeDisplayValue}
-                                isPending={isPending}
-                                onValueChange={(val) => {
-                                  setRpeDisplay(rpeKey, val);
-                                  form.setValue(
-                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
-                                    val
-                                  );
-                                }}
-                                onClear={() => {
-                                  form.setValue(
-                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
-                                    null
-                                  );
-                                  clearRpeDisplay(rpeKey);
-                                }}
-                              />
-                            )}
+                            {/* TEMP: RpeSliderPanel removed for mobile keyboard debug */}
                             {setErrorMsg && (
                               <p className="text-destructive text-sm mt-1 text-center">
                                 {setErrorMsg}
