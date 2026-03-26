@@ -26,10 +26,13 @@ test.describe('Comparisons page', () => {
   test('shows both workouts for time-based exercise', async ({ page }) => {
     await page.goto('/comparisons')
 
-    // Select time exercise
+    // Select time exercise and wait for history data to load
     await page.getByRole('combobox').first().click()
     await page.getByPlaceholder('Search exercises...').fill(TEST_NAMES.timeExercise)
-    await page.getByRole('button', { name: TEST_NAMES.timeExercise }).click()
+    await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200),
+      page.getByRole('button', { name: TEST_NAMES.timeExercise }).click(),
+    ])
 
     // Both workouts should appear
     await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()
