@@ -104,13 +104,16 @@ const buildChartData = (
       }
     } else {
       if (config.mode === "reps_only") {
+        const repsOnlyWeightTarget = toNumber(config.weightTarget);
+        const filterByWeight = repsOnlyWeightTarget !== null && repsOnlyWeightTarget > 0;
+
         for (const ex of exercises) {
           for (const set of ex.sets ?? []) {
             const weight = toNumber((set as IWorkoutSetItem).weight) ?? 0;
             const reps = toNumber((set as IWorkoutSetItem).reps);
             const duration = toNumber((set as IWorkoutSetItem).duration) ?? 0;
             if (reps === null || reps <= 0) continue;
-            if (weight !== 0) continue;
+            if (filterByWeight ? weight !== repsOnlyWeightTarget : weight !== 0) continue;
 
             matchingSets.push({ reps, weight, duration });
 

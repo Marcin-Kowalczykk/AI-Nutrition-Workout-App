@@ -86,6 +86,7 @@ export const ChartConfigModal = ({
                   setDraft((prev) => ({
                     ...prev,
                     mode: value as ChartMode,
+                    weightTarget: "",
                   }))
                 }
                 className="flex flex-row flex-wrap gap-4"
@@ -129,11 +130,30 @@ export const ChartConfigModal = ({
           )}
 
           {!isTimeBased && draft.mode === "reps_only" && (
-            <div className="flex flex-col gap-1.5">
+            <>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Weight [kg] (optional)
+                </label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={draft.weightTarget}
+                  onChange={(e) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      weightTarget: e.target.value,
+                    }))
+                  }
+                />
+              </div>
               <p className="text-xs text-muted-foreground">
-                The chart will show how your max reps change over time. (only sets without additional weight will be included)
+                {draft.weightTarget
+                  ? `The chart will show how your max reps change over time for sets at ${draft.weightTarget} kg.`
+                  : "The chart will show how your max reps change over time. (only sets without additional weight will be included)"}
               </p>
-            </div>
+            </>
           )}
 
           {isTimeBased && (
