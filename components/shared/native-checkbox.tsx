@@ -32,7 +32,7 @@ export const NativeCheckbox = ({
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
       disabled={disabled}
-      className="sr-only"
+      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer disabled:cursor-not-allowed"
     />
     <div
       className={cn(
