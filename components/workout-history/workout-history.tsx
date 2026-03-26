@@ -7,7 +7,7 @@ import { pl } from "date-fns/locale";
 // components
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
@@ -212,11 +212,18 @@ const WorkoutHistory = () => {
       {!hasAnyWorkouts && (
         <Card className="mt-2 xl:w-1/2 w-full">
           <CardContent>
-            <ul className="text-sm text-muted-foreground py-2">
+            <ul className="text-sm text-muted-foreground py-2 mb-3">
               <li>No workouts in the selected date range.</li>
               <li>Try adjusting the date filters or create a new workout.</li>
               <li>You can also create a template to reuse it later.</li>
             </ul>
+            <Button
+              onClick={() => router.push(EnableRoutes.CreateNewWorkout)}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create your first workout
+            </Button>
           </CardContent>
         </Card>
       )}
