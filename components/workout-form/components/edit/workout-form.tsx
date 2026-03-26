@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox"; // TEMP: removed for mobile keyboard debug
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
@@ -1119,24 +1119,7 @@ export const WorkoutForm = ({
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1 min-w-0">
-                              {!isTemplateMode && (
-                                <FormField
-                                  control={form.control}
-                                  name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
-                                  render={({ field }) => (
-                                    <FormItem className="flex items-center shrink-0">
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value ?? false}
-                                          onCheckedChange={field.onChange}
-                                          disabled={isPending}
-                                          className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mt-7"
-                                        />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
-                              )}
+                              {/* TEMP: Checkbox removed for mobile keyboard debug */}
                               <div className="w-14 shrink-0 min-w-0 ml-3">
                                 <FormLabel>Set</FormLabel>
                                 <Input
