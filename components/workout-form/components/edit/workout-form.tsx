@@ -38,7 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
-import { DatePicker } from "@/components/shared/date-picker";
+// import { DatePicker } from "@/components/shared/date-picker"; // TEMP: removed for mobile keyboard debug
 import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe";
 
 // types and schemas
@@ -985,44 +985,7 @@ export const WorkoutForm = ({
                 )}
               />
 
-              {!isTemplateMode && (
-                <FormField
-                  name="workout_date"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Workout date</FormLabel>
-                      <FormControl>
-                        <DatePicker
-                          label=""
-                          value={
-                            field.value
-                              ? new Date(field.value + "T12:00:00")
-                              : undefined
-                          }
-                          onChange={(date) =>
-                            field.onChange(
-                              date ? format(date, "yyyy-MM-dd") : undefined
-                            )
-                          }
-                          placeholder="choose date"
-                          showClear={false}
-                          fromYear={new Date().getFullYear() - 1}
-                          toYear={new Date().getFullYear()}
-                          disabled={(date) => {
-                            const d = startOfDay(date);
-                            const today = startOfDay(new Date());
-                            const oneYearAgo = subDays(today, 365);
-                            return d < oneYearAgo || d > today;
-                          }}
-                        />
-                      </FormControl>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              {/* TEMP: DatePicker temporarily removed for mobile keyboard debug */}
             </>
           )}
 
