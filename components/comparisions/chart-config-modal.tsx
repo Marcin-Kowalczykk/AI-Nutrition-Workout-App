@@ -131,7 +131,7 @@ export const ChartConfigModal = ({
           {!isTimeBased && draft.mode === "reps_only" && (
             <div className="flex flex-col gap-1.5">
               <p className="text-xs text-muted-foreground">
-                The chart will show how your max reps change over time.
+                The chart will show how your max reps change over time. (only sets without additional weight will be included)
               </p>
             </div>
           )}
