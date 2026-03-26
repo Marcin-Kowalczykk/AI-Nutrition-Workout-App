@@ -88,9 +88,19 @@ export const Records = () => {
     ? getAllWeightsForExercise(workouts, normalizedExerciseName)
     : [];
 
+  const allRepsWithWeights = useMemo(() => {
+    if (!isRepsBasedExercise || !allReps.length) return allReps;
+    const withWeight = new Set(
+      getBestRecordsByReps(workouts, normalizedExerciseName, allReps).map(
+        (r) => r.reps
+      )
+    );
+    return allReps.filter((reps) => withWeight.has(reps));
+  }, [isRepsBasedExercise, workouts, normalizedExerciseName, allReps]);
+
   const defaultSelectedReps = isRepsBasedExercise
     ? getMostFrequentReps(workouts, normalizedExerciseName, 5).filter((reps) =>
-        allReps.includes(reps)
+        allRepsWithWeights.includes(reps)
       )
     : isTimeBasedExercise
     ? allReps
@@ -292,26 +302,13 @@ export const Records = () => {
           title="Weight records"
           firstHeader="Reps"
           secondHeader="Weight"
-          rows={effectiveSelectedReps.map((reps) => {
+          rows={effectiveSelectedReps.flatMap((reps) => {
             const record = bestWeightedRecords.find(
               (item) => item.reps === reps
             );
 
             if (!record || !record.weight) {
-              return {
-                key: reps,
-                first: (
-                  <>
-                    {reps} rep{reps !== 1 ? "s" : ""}
-                  </>
-                ),
-                second: (
-                  <span className="text-muted-foreground">
-                    No record yet 😢
-                  </span>
-                ),
-                date: "",
-              };
+              return [];
             }
 
             const isBest = maxWeight !== null && record.weight === maxWeight;
@@ -380,7 +377,7 @@ export const Records = () => {
         isLoading={isLoading}
         isRepsOnlyExercise={isRepsOnlyExercise}
         isTimeBasedExercise={isTimeBasedExercise}
-        allReps={allReps}
+        allReps={allRepsWithWeights}
         effectiveSelectedReps={effectiveSelectedReps}
         onToggleRep={handleToggleRep}
       />

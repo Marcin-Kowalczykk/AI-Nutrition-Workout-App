@@ -149,7 +149,6 @@ const WorkoutHistory = () => {
         initialPageSize={8}
         pageSizeOptions={[8, 15, 20, 30, 50]}
         className="xl:w-1/2 w-full flex flex-col gap-2"
-        controlsWrapperClassName="mb-2"
       >
         {(paginatedWorkouts) => (
           <ul className="flex flex-col gap-2">
