@@ -22,7 +22,11 @@ export const IosViewportListener = () => {
     };
 
     const handleFocusOut = () => {
-      setTimeout(() => window.scrollTo(0, 0), 50);
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+        window.scrollTo(0, 0);
+      }, 50);
     };
 
     document.addEventListener("focusin", handleFocusIn);
