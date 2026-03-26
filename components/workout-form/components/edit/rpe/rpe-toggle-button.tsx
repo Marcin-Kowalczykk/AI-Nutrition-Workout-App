@@ -36,7 +36,7 @@ export const RpeToggleButton = ({
       const rpeKey = `${exerciseIndex}-${setIndex}`;
       const isRpeOpen = rpeOpenBySet[rpeKey] === true;
       return (
-        <FormItem className="shrink-0 self-end">
+        <FormItem className="shrink-0">
           <FormControl>
             <Button
               type="button"

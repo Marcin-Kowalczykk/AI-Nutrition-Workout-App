@@ -1113,26 +1113,26 @@ export const WorkoutForm = ({
                           rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1 min-w-0">
+                            <div className="flex items-end gap-1 min-w-0">
                               {!isTemplateMode && (
                                 <FormField
                                   control={form.control}
                                   name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
                                   render={({ field }) => (
-                                    <FormItem className="shrink-0 self-end">
+                                    <FormItem className="shrink-0 pb-2">
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value ?? false}
                                           onCheckedChange={field.onChange}
                                           disabled={isPending}
-                                          className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success mb-2"
+                                          className="h-5 w-5 border-secondary-foreground [&>svg]:h-4 [&>svg]:w-4 data-[state=checked]:bg-secondary-success data-[state=checked]:border-success data-[state=checked]:text-success"
                                         />
                                       </FormControl>
                                     </FormItem>
                                   )}
                                 />
                               )}
-                              <div className="w-14 shrink-0 min-w-0 ml-3">
+                              <div className="w-14 shrink-0 min-w-0">
                                 <FormLabel>Set</FormLabel>
                                 <Input
                                   type="text"
@@ -1276,7 +1276,7 @@ export const WorkoutForm = ({
                                   handleRemoveSetClick(exerciseIndex, setIndex)
                                 }
                                 disabled={isPending}
-                                className="text-destructive size-4 hover:text-destructive shrink-0 min-w-0 p-0.5 mt-6"
+                                className="text-destructive size-4 hover:text-destructive shrink-0 min-w-0 p-0.5 mb-2"
                               >
                                 <Trash2 />
                               </Button>
