@@ -24,6 +24,7 @@ import { useWorkoutHistorySearch } from "./hooks/use-workout-history-search";
 
 // types
 import { IWorkoutItem } from "@/app/api/workouts/types";
+import { EnableRoutes } from "@/components/shared/sidebar/nav-main";
 import CenterWrapper from "../shared/center-wrapper";
 
 const WorkoutHistory = () => {
