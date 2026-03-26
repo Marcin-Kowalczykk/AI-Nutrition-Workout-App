@@ -39,7 +39,7 @@ import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../../../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { DatePicker } from "@/components/shared/date-picker";
-// import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe"; // TEMP: removed for mobile keyboard debug
+import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe";
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
@@ -111,16 +111,13 @@ export const WorkoutForm = ({
   const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
     Record<string, boolean>
   >({});
-  // TEMP: RPE removed for mobile keyboard debug
-  // const {
-  //   rpeOpenBySet,
-  //   rpeSliderDisplayBySet,
-  //   toggleRpePanel,
-  //   clearRpeDisplay,
-  //   setRpeDisplay,
-  // } = useRpeState();
-  const rpeOpenBySet: Record<string, boolean> = {};
-  const rpeSliderDisplayBySet: Record<string, number> = {};
+  const {
+    rpeOpenBySet,
+    rpeSliderDisplayBySet,
+    toggleRpePanel,
+    clearRpeDisplay,
+    setRpeDisplay,
+  } = useRpeState();
   const [headerVisible, setHeaderVisible] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
@@ -1109,13 +1106,11 @@ export const WorkoutForm = ({
                           setErrors?.weight?.message ??
                           setErrors?.duration?.message;
                         const rpeKey = `${exerciseIndex}-${setIndex}`;
-                        // TEMP: RPE removed for mobile keyboard debug
-                        // const rpeValue = form.watch(
-                        //   `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
-                        // ) as number | null | undefined;
-                        // const rpeDisplayValue =
-                        //   rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
-                        void rpeKey; void rpeSliderDisplayBySet;
+                        const rpeValue = form.watch(
+                          `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`
+                        ) as number | null | undefined;
+                        const rpeDisplayValue =
+                          rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1 min-w-0">
@@ -1246,7 +1241,16 @@ export const WorkoutForm = ({
                                 );
                               })()}
 
-                              {/* TEMP: RpeToggleButton removed for mobile keyboard debug */}
+                              {!isTemplateMode && (
+                                <RpeToggleButton
+                                  control={form.control}
+                                  exerciseIndex={exerciseIndex}
+                                  setIndex={setIndex}
+                                  rpeOpenBySet={rpeOpenBySet}
+                                  isPending={isPending}
+                                  onToggle={toggleRpePanel}
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -1260,7 +1264,27 @@ export const WorkoutForm = ({
                                 <Trash2 />
                               </Button>
                             </div>
-                            {/* TEMP: RpeSliderPanel removed for mobile keyboard debug */}
+                            {!isTemplateMode && rpeOpenBySet[rpeKey] && (
+                              <RpeSliderPanel
+                                rpeValue={rpeValue}
+                                displayValue={rpeDisplayValue}
+                                isPending={isPending}
+                                onValueChange={(val) => {
+                                  setRpeDisplay(rpeKey, val);
+                                  form.setValue(
+                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
+                                    val
+                                  );
+                                }}
+                                onClear={() => {
+                                  form.setValue(
+                                    `exercises.${exerciseIndex}.sets.${setIndex}.rpe` as `exercises.${number}.sets.${number}.rpe`,
+                                    null
+                                  );
+                                  clearRpeDisplay(rpeKey);
+                                }}
+                              />
+                            )}
                             {setErrorMsg && (
                               <p className="text-destructive text-sm mt-1 text-center">
                                 {setErrorMsg}
