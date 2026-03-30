@@ -87,30 +87,33 @@ const MealSection = ({
 
         {productFields.map((productField, productIndex) => (
           <div key={productField.id} className="flex flex-col gap-1.5 border-t pt-2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Product {productIndex + 1}
-              </p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeProduct(productIndex)}
-                className="h-5 w-5 text-destructive hover:text-destructive"
-                aria-label={`Remove product ${productIndex + 1}`}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
             <FormField
               control={control}
               name={`meals.${mealIndex}.products.${productIndex}.product_name`}
               render={({ field }) => (
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs">Product name</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="e.g. Chicken breast" className="h-8 text-sm" />
-                  </FormControl>
+                  <div className="flex items-start gap-1">
+                    <FormControl>
+                      <textarea
+                        {...field}
+                        rows={2}
+                        className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                      />
+                    </FormControl>
+                    {productFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeProduct(productIndex)}
+                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                        aria-label={`Remove product ${productIndex + 1}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage className="text-destructive" />
                 </FormItem>
               )}
