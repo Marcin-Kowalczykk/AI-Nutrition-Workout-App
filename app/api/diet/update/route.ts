@@ -27,7 +27,7 @@ export type IUpdateDietDayRequestBody = {
 
 export type IUpdateDietDayResponse = IDietDay;
 
-export const PUT = async (request: Request) => {
+export async function PUT(request: Request) {
   try {
     const supabase = await createClient();
 
@@ -166,4 +166,4 @@ export const PUT = async (request: Request) => {
       { status: 500 }
     );
   }
-};
+}

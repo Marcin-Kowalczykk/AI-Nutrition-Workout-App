@@ -6,7 +6,7 @@ import { TABLE_NAMES } from "@/app/api/tableNames";
 
 export type IDeleteDietDayResponse = { success: true };
 
-export const DELETE = async (request: Request) => {
+export async function DELETE(request: Request) {
   try {
     const supabase = await createClient();
 
@@ -59,4 +59,4 @@ export const DELETE = async (request: Request) => {
       { status: 500 }
     );
   }
-};
+}

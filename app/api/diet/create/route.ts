@@ -26,7 +26,7 @@ export type ICreateDietDayRequestBody = {
 
 export type ICreateDietDayResponse = IDietDay;
 
-export const POST = async (request: Request) => {
+export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
@@ -141,4 +141,4 @@ export const POST = async (request: Request) => {
       { status: 500 }
     );
   }
-};
+}
