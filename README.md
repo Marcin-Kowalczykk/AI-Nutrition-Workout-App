@@ -116,7 +116,7 @@ npm run test:e2e:ui     # Open Playwright UI Mode for sequential suite
 
 - **Diet & body tracking**
 
-  - **Diet history** page for logging diet‑related entries
+  - **Diet history** — full CRUD for daily nutrition logs: meals grouped by day, each meal containing products with kcal, protein, carbs and fat values; date range filters, inline edit/delete with confirmation; totals (kcal, protein, carbs, fat) computed and displayed per day
   - **Kcal calculator** for estimating daily calorie needs
   - **Body measurements**
     - Quick logging of **weight**, optional **height** and **circumferences** (arm, chest, waist, hips, thigh, calf)
@@ -229,7 +229,7 @@ npm run test:e2e:ui     # Open Playwright UI Mode for sequential suite
 
 ### Unit tests — Vitest + React Testing Library
 
-**300+ tests, ~90% coverage** across helpers, hooks, and components.
+**365+ tests, ~90% coverage** across helpers, hooks, and components.
 
 ```bash
 npm run test            # run once
@@ -238,9 +238,9 @@ npm run test:coverage   # coverage report (terminal table + HTML in coverage/)
 ```
 
 **What is covered:**
-- Pure helper functions (`lib/crypto.ts`, records/body-measurements helpers)
+- Pure helper functions (`lib/crypto.ts`, records/body-measurements/diet helpers)
 - Search/filter hooks (`useWorkoutHistorySearch`, `useTemplateSearch`, etc.)
-- TanStack Query hooks with MSW mocks (body-measurements, exercises, workout-template, workout-form APIs)
+- TanStack Query hooks with MSW mocks (body-measurements, exercises, workout-template, workout-form, diet APIs)
 - Components with logic (`PaginatedSection`, `AddMeasurementSheet`, `Exercises`)
 - Auth hooks (login, register, forgot/reset password, logout)
 - CRUD hooks for exercises, workout templates, workouts
@@ -266,7 +266,7 @@ npm run test:e2e:ui     # Playwright UI Mode for sequential suite
 | Group | Files | Description |
 |-------|-------|-------------|
 | Sequential suite | `e2e/0*.spec.ts` (01–08) | Tests depend on each other; share a fixed `RUN_ID`; must run in order |
-| Independent tests | `e2e/1*.spec.ts` (10–15) | Each test is fully self-contained; cleans up its own data |
+| Independent tests | `e2e/1*.spec.ts` (10–17) | Each test is fully self-contained; cleans up its own data |
 
 **Sequential suite flow (01 → 08):**
 1. `01` — create exercise category + exercises
@@ -278,13 +278,15 @@ npm run test:e2e:ui     # Playwright UI Mode for sequential suite
 7. `07` — verify comparisons page
 8. `08` — cleanup all test data via API
 
-**Independent tests (10–15):**
+**Independent tests (10–17):**
 - `10` — auth (login/logout)
 - `11` — body measurements (create + cleanup)
 - `12` — workout create (create + cleanup)
 - `13` — create workout from template (read-only)
 - `14` — workout edit (create dedicated workout → edit → cleanup)
 - `15` — unsaved changes guard (no data created)
+- `16` — workout template create + edit
+- `17` — diet history (add, edit, delete)
 
 ---
 
