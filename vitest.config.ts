@@ -82,6 +82,8 @@ export default defineConfig({
         // Body measurements: page wrapper and edit form — tested via e2e
         'components/body-measurements/body-measurements.tsx',
         'components/body-measurements/edit-measurement-sheet.tsx',
+        // Diet panel: UI components tested via e2e
+        'components/diet/*.tsx',
         // Profile settings: UI form only (API hook tested separately)
         'components/profile-settings/components/**',
         // Global hooks — low ROI
