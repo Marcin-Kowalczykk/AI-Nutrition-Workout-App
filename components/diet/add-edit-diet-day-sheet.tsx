@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
@@ -66,121 +67,123 @@ const MealSection = ({
   });
 
   return (
-    <div className="border rounded-md p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
-        {showRemoveMeal && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onRemoveMeal}
-            className="h-7 w-7 text-destructive hover:text-destructive"
-            aria-label={`Remove meal ${mealIndex + 1}`}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        )}
-      </div>
-
-      {productFields.map((productField, productIndex) => (
-        <div key={productField.id} className="flex flex-col gap-2 border-t pt-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Product {productIndex + 1}
-            </p>
+    <Card>
+      <CardContent className="p-3 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
+          {showRemoveMeal && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => removeProduct(productIndex)}
+              onClick={onRemoveMeal}
               className="h-6 w-6 text-destructive hover:text-destructive"
-              aria-label={`Remove product ${productIndex + 1}`}
+              aria-label={`Remove meal ${mealIndex + 1}`}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
-          </div>
-          <FormField
-            control={control}
-            name={`meals.${mealIndex}.products.${productIndex}.product_name`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product name</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="e.g. Chicken breast" />
-                </FormControl>
-                <FormMessage className="text-destructive" />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kcal</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} />
-                  </FormControl>
-                  <FormMessage className="text-destructive" />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.protein_value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Protein [g]</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} />
-                  </FormControl>
-                  <FormMessage className="text-destructive" />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.carbs_value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Carbs [g]</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} />
-                  </FormControl>
-                  <FormMessage className="text-destructive" />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.fat_value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fat [g]</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} />
-                  </FormControl>
-                  <FormMessage className="text-destructive" />
-                </FormItem>
-              )}
-            />
-          </div>
+          )}
         </div>
-      ))}
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => appendProduct({ ...DEFAULT_PRODUCT })}
-        className="w-full mt-1"
-      >
-        <Plus className="h-3.5 w-3.5 mr-1.5" />
-        Add product
-      </Button>
-    </div>
+        {productFields.map((productField, productIndex) => (
+          <div key={productField.id} className="flex flex-col gap-1.5 border-t pt-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Product {productIndex + 1}
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeProduct(productIndex)}
+                className="h-5 w-5 text-destructive hover:text-destructive"
+                aria-label={`Remove product ${productIndex + 1}`}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.product_name`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Product name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="e.g. Chicken breast" className="h-8 text-sm" />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-1.5">
+              <FormField
+                control={control}
+                name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Kcal</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                    </FormControl>
+                    <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name={`meals.${mealIndex}.products.${productIndex}.protein_value`}
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Protein [g]</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                    </FormControl>
+                    <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name={`meals.${mealIndex}.products.${productIndex}.carbs_value`}
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Carbs [g]</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                    </FormControl>
+                    <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name={`meals.${mealIndex}.products.${productIndex}.fat_value`}
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Fat [g]</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                    </FormControl>
+                    <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => appendProduct({ ...DEFAULT_PRODUCT })}
+          className="w-full h-7 text-xs mt-1"
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          Add product
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -258,7 +261,7 @@ export const AddEditDietDaySheet = ({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex max-h-full w-full flex-col gap-0 overflow-auto p-0 sm:w-[70%] sm:max-w-[600px]">
-        <SheetHeader className="border-b p-6">
+        <SheetHeader className="border-b px-4 py-3">
           <SheetTitle className="m-0">
             {isEditing ? "Edit diet day" : "Add diet day"}
           </SheetTitle>
@@ -270,13 +273,13 @@ export const AddEditDietDaySheet = ({
             className="flex flex-1 flex-col overflow-auto"
             noValidate
           >
-            <div className="flex-1 space-y-6 p-6">
+            <div className="flex-1 flex flex-col gap-3 p-3">
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Date</FormLabel>
                     <FormControl>
                       <DatePicker
                         value={field.value}
@@ -290,7 +293,7 @@ export const AddEditDietDaySheet = ({
                 )}
               />
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 {mealFields.map((mealField, mealIndex) => (
                   <MealSection
                     key={mealField.id}
@@ -305,18 +308,16 @@ export const AddEditDietDaySheet = ({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    appendMeal({ ...DEFAULT_MEAL })
-                  }
-                  className="w-full"
+                  onClick={() => appendMeal({ ...DEFAULT_MEAL })}
+                  className="w-full h-8 text-xs"
                 >
-                  <Plus className="h-4 w-4 mr-1.5" />
+                  <Plus className="h-3.5 w-3.5 mr-1" />
                   Add meal
                 </Button>
               </div>
             </div>
 
-            <SheetFooter className="border-t p-6">
+            <SheetFooter className="border-t px-4 py-3">
               <Button
                 type="submit"
                 disabled={isPending || !form.formState.isDirty}
