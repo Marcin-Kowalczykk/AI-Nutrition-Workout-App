@@ -4,4 +4,7 @@ export const TABLE_NAMES = {
   EXERCISE_CATEGORIES: "exercise_categories",
   EXERCISES: "exercises",
   BODY_MEASUREMENTS: "body_measurements",
+  DIET_DAYS: "diet_days",
+  DIET_MEALS: "diet_meals",
+  DIET_PRODUCTS: "diet_products",
 };
