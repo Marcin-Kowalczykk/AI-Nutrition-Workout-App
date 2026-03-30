@@ -37,51 +37,51 @@ export const DietDayCard = ({
         isDeleting ? " opacity-50 pointer-events-none" : ""
       }`}
     >
-      <CardContent className="p-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-col gap-1 flex-1 min-w-0">
-            <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
-              {formattedDate}
-            </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <span>
-                <strong>Kcal:</strong> {Math.round(day.total_kcal)}
-              </span>
-              <span>
-                <strong>Białko:</strong> {Math.round(day.total_protein_value)} g
-              </span>
-              <span>
-                <strong>Węgle:</strong> {Math.round(day.total_carbs_value)} g
-              </span>
-              <span>
-                <strong>Tłuszcze:</strong> {Math.round(day.total_fat_value)} g
-              </span>
-            </div>
+      <CardContent className="p-2 flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-1 w-fit">
+            {formattedDate}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="outline"
               size="icon"
               onClick={() => onEdit(day)}
-              className="h-9 w-9 text-foreground"
+              className="h-8 w-8 text-foreground"
               aria-label="Edit diet day"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="outline"
               size="icon"
               onClick={() => onDelete(day.id)}
-              className="h-9 w-9 text-destructive hover:text-destructive"
+              className="h-8 w-8 text-destructive hover:text-destructive"
               aria-label="Delete diet day"
               disabled={isDeleting}
             >
               {isDeleting ? (
                 <Loader size={16} />
               ) : (
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               )}
             </Button>
+          </div>
+        </div>
+        <div className="flex flex-col gap-0.5 text-xs">
+          <span>
+            <strong>Kcal:</strong> {Math.round(day.total_kcal)}
+          </span>
+          <div className="flex flex-wrap gap-x-3">
+            <span>
+              <strong>Protein:</strong> {Math.round(day.total_protein_value)} g
+            </span>
+            <span>
+              <strong>Carbs:</strong> {Math.round(day.total_carbs_value)} g
+            </span>
+            <span>
+              <strong>Fat:</strong> {Math.round(day.total_fat_value)} g
+            </span>
           </div>
         </div>
       </CardContent>
