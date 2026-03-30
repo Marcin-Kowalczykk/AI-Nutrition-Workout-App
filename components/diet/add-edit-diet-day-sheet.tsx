@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm, useFormContext, useFieldArray, Control } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Calculator } from "lucide-react";
 
@@ -59,50 +59,44 @@ const ProductFields = ({
   onRemove,
   showRemove,
 }: ProductFieldsProps) => {
-  const { setValue } = useFormContext<DietDayFormValues>();
+  const { setValue, getValues } = useFormContext<DietDayFormValues>();
 
   const [calcOpen, setCalcOpen] = useState(false);
-  const [grams, setGrams] = useState("");
-  const [kcalPer100, setKcalPer100] = useState("");
-  const [proteinPer100, setProteinPer100] = useState("");
-  const [carbsPer100, setCarbsPer100] = useState("");
-  const [fatPer100, setFatPer100] = useState("");
+  const autoOpenedRef = useRef(false);
+
+  const weightGrams = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.weight_grams` });
+  const kcalPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.kcal_per_100g` });
+  const proteinPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_per_100g` });
+  const carbsPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_per_100g` });
+  const fatPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_per_100g` });
 
   useEffect(() => {
-    const g = parseFloat(grams);
+    if (autoOpenedRef.current) return;
+    if (weightGrams || kcalPer100 || proteinPer100 || carbsPer100 || fatPer100) {
+      setCalcOpen(true);
+      autoOpenedRef.current = true;
+    }
+  }, [weightGrams, kcalPer100, proteinPer100, carbsPer100, fatPer100]);
+
+  const recalculate = () => {
+    const g = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.weight_grams`) || "");
     if (!g || g <= 0) return;
     const factor = g / 100;
 
-    const kcal = parseFloat(kcalPer100);
-    const protein = parseFloat(proteinPer100);
-    const carbs = parseFloat(carbsPer100);
-    const fat = parseFloat(fatPer100);
+    const kcal = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.kcal_per_100g`) || "");
+    const protein = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.protein_per_100g`) || "");
+    const carbs = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`) || "");
+    const fat = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.fat_per_100g`) || "");
 
     if (!isNaN(kcal))
-      setValue(
-        `meals.${mealIndex}.products.${productIndex}.product_kcal`,
-        String((kcal * factor).toFixed(2)),
-        { shouldDirty: true }
-      );
+      setValue(`meals.${mealIndex}.products.${productIndex}.product_kcal`, String((kcal * factor).toFixed(2)), { shouldDirty: true });
     if (!isNaN(protein))
-      setValue(
-        `meals.${mealIndex}.products.${productIndex}.protein_value`,
-        String((protein * factor).toFixed(2)),
-        { shouldDirty: true }
-      );
+      setValue(`meals.${mealIndex}.products.${productIndex}.protein_value`, String((protein * factor).toFixed(2)), { shouldDirty: true });
     if (!isNaN(carbs))
-      setValue(
-        `meals.${mealIndex}.products.${productIndex}.carbs_value`,
-        String((carbs * factor).toFixed(2)),
-        { shouldDirty: true }
-      );
+      setValue(`meals.${mealIndex}.products.${productIndex}.carbs_value`, String((carbs * factor).toFixed(2)), { shouldDirty: true });
     if (!isNaN(fat))
-      setValue(
-        `meals.${mealIndex}.products.${productIndex}.fat_value`,
-        String((fat * factor).toFixed(2)),
-        { shouldDirty: true }
-      );
-  }, [grams, kcalPer100, proteinPer100, carbsPer100, fatPer100, mealIndex, productIndex, setValue]);
+      setValue(`meals.${mealIndex}.products.${productIndex}.fat_value`, String((fat * factor).toFixed(2)), { shouldDirty: true });
+  };
 
   return (
     <div className="flex flex-col gap-1.5 border-t pt-2">
@@ -210,61 +204,91 @@ const ProductFields = ({
             Enter portion weight and macros per 100 g — values above will be filled automatically.
           </p>
           <div className="grid grid-cols-2 gap-1.5">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium">Grams</label>
-              <Input
-                type="number"
-                step="1"
-                min={0}
-                value={grams}
-                onChange={(e) => setGrams(e.target.value)}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium">Kcal / 100g</label>
-              <Input
-                type="number"
-                step="0.01"
-                min={0}
-                value={kcalPer100}
-                onChange={(e) => setKcalPer100(e.target.value)}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium">Protein / 100g</label>
-              <Input
-                type="number"
-                step="0.01"
-                min={0}
-                value={proteinPer100}
-                onChange={(e) => setProteinPer100(e.target.value)}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium">Carbs / 100g</label>
-              <Input
-                type="number"
-                step="0.01"
-                min={0}
-                value={carbsPer100}
-                onChange={(e) => setCarbsPer100(e.target.value)}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium">Fat / 100g</label>
-              <Input
-                type="number"
-                step="0.01"
-                min={0}
-                value={fatPer100}
-                onChange={(e) => setFatPer100(e.target.value)}
-                className="h-8 text-sm"
-              />
-            </div>
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.weight_grams`}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium">Grams</label>
+                  <Input
+                    type="number"
+                    step="1"
+                    min={0}
+                    {...field}
+                    onChange={(e) => { field.onChange(e); recalculate(); }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.kcal_per_100g`}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium">Kcal / 100g</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    {...field}
+                    onChange={(e) => { field.onChange(e); recalculate(); }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.protein_per_100g`}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium">Protein / 100g</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    {...field}
+                    onChange={(e) => { field.onChange(e); recalculate(); }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium">Carbs / 100g</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    {...field}
+                    onChange={(e) => { field.onChange(e); recalculate(); }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.fat_per_100g`}
+              render={({ field }) => (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium">Fat / 100g</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    {...field}
+                    onChange={(e) => { field.onChange(e); recalculate(); }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+            />
           </div>
         </div>
       )}
