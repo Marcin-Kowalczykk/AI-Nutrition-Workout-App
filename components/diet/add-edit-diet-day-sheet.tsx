@@ -34,6 +34,7 @@ import { useUpdateDietDay } from "./api/use-update-diet-day";
 import {
   dietDayFormSchema,
   DietDayFormValues,
+  DEFAULT_MEAL,
   DEFAULT_PRODUCT,
 } from "./types";
 import type { IDietDay } from "@/app/api/diet/types";
@@ -200,7 +201,7 @@ export const AddEditDietDaySheet = ({
     resolver: zodResolver(dietDayFormSchema),
     defaultValues: {
       date: new Date(),
-      meals: [{ products: [{ ...DEFAULT_PRODUCT }] }],
+      meals: [{ ...DEFAULT_MEAL }],
     },
     mode: "onChange",
   });
@@ -239,7 +240,7 @@ export const AddEditDietDaySheet = ({
     } else {
       form.reset({
         date: new Date(),
-        meals: [{ products: [{ ...DEFAULT_PRODUCT }] }],
+        meals: [{ ...DEFAULT_MEAL }],
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -305,7 +306,7 @@ export const AddEditDietDaySheet = ({
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    appendMeal({ products: [{ ...DEFAULT_PRODUCT }] })
+                    appendMeal({ ...DEFAULT_MEAL })
                   }
                   className="w-full"
                 >
