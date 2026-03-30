@@ -13,6 +13,11 @@ export const buildDietDayPayload = (
       protein_value: Number(p.protein_value),
       carbs_value: Number(p.carbs_value),
       fat_value: Number(p.fat_value),
+      weight_grams: p.weight_grams ? Number(p.weight_grams) : null,
+      kcal_per_100g: p.kcal_per_100g ? Number(p.kcal_per_100g) : null,
+      protein_per_100g: p.protein_per_100g ? Number(p.protein_per_100g) : null,
+      carbs_per_100g: p.carbs_per_100g ? Number(p.carbs_per_100g) : null,
+      fat_per_100g: p.fat_per_100g ? Number(p.fat_per_100g) : null,
     })),
   })),
 });

@@ -91,7 +91,6 @@ export function NavMain() {
       title: NavMainTitles.DietHistory,
       url: EnableRoutes.DietHistory,
       icon: FilesIcon,
-      comingSoon: true,
     },
     {
       title: NavMainTitles.KcalCalculator,

@@ -8,6 +8,9 @@ export type IDietProduct = {
   fat_value: number;
   weight_grams: number | null;
   kcal_per_100g: number | null;
+  protein_per_100g: number | null;
+  carbs_per_100g: number | null;
+  fat_per_100g: number | null;
   created_at: string;
 };
 

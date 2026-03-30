@@ -13,6 +13,11 @@ export const dietProductSchema = z.object({
   protein_value: nonNegativeNumberString,
   carbs_value: nonNegativeNumberString,
   fat_value: nonNegativeNumberString,
+  weight_grams: z.string().optional(),
+  kcal_per_100g: z.string().optional(),
+  protein_per_100g: z.string().optional(),
+  carbs_per_100g: z.string().optional(),
+  fat_per_100g: z.string().optional(),
 });
 
 export const dietMealSchema = z.object({
@@ -34,6 +39,11 @@ export const DEFAULT_PRODUCT: DietProductFormValues = {
   protein_value: "",
   carbs_value: "",
   fat_value: "",
+  weight_grams: "",
+  kcal_per_100g: "",
+  protein_per_100g: "",
+  carbs_per_100g: "",
+  fat_per_100g: "",
 };
 
 export const DEFAULT_MEAL: DietMealFormValues = {

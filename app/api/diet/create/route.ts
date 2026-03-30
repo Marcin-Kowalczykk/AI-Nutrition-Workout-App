@@ -13,6 +13,11 @@ type ProductInput = {
   protein_value: number;
   carbs_value: number;
   fat_value: number;
+  weight_grams?: number | null;
+  kcal_per_100g?: number | null;
+  protein_per_100g?: number | null;
+  carbs_per_100g?: number | null;
+  fat_per_100g?: number | null;
 };
 
 type MealInput = {
@@ -91,6 +96,11 @@ export async function POST(request: Request) {
               protein_value: p.protein_value,
               carbs_value: p.carbs_value,
               fat_value: p.fat_value,
+              weight_grams: p.weight_grams ?? null,
+              kcal_per_100g: p.kcal_per_100g ?? null,
+              protein_per_100g: p.protein_per_100g ?? null,
+              carbs_per_100g: p.carbs_per_100g ?? null,
+              fat_per_100g: p.fat_per_100g ?? null,
             }))
           )
           .select();
