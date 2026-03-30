@@ -132,7 +132,7 @@ const ProductFields = ({
                 <textarea
                   {...field}
                   rows={2}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                 />
               </FormControl>
               {showRemove && (
@@ -161,7 +161,7 @@ const ProductFields = ({
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">Kcal</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
               </FormControl>
               <FormMessage className="text-destructive" />
             </FormItem>
@@ -174,7 +174,7 @@ const ProductFields = ({
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">Protein [g]</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
               </FormControl>
               <FormMessage className="text-destructive" />
             </FormItem>
@@ -187,7 +187,7 @@ const ProductFields = ({
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">Carbs [g]</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
               </FormControl>
               <FormMessage className="text-destructive" />
             </FormItem>
@@ -200,7 +200,7 @@ const ProductFields = ({
             <FormItem className="space-y-1">
               <FormLabel className="text-xs">Fat [g]</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8 text-sm" />
+                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
               </FormControl>
               <FormMessage className="text-destructive" />
             </FormItem>
@@ -237,7 +237,7 @@ const ProductFields = ({
                     min={0}
                     {...field}
                     onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8 text-sm"
+                    className="h-8"
                   />
                 </div>
               )}
@@ -254,7 +254,7 @@ const ProductFields = ({
                     min={0}
                     {...field}
                     onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8 text-sm"
+                    className="h-8"
                   />
                 </div>
               )}
@@ -273,7 +273,7 @@ const ProductFields = ({
                     min={0}
                     {...field}
                     onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8 text-sm"
+                    className="h-8"
                   />
                 </div>
               )}
@@ -290,7 +290,7 @@ const ProductFields = ({
                     min={0}
                     {...field}
                     onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8 text-sm"
+                    className="h-8"
                   />
                 </div>
               )}
@@ -307,7 +307,7 @@ const ProductFields = ({
                     min={0}
                     {...field}
                     onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8 text-sm"
+                    className="h-8"
                   />
                 </div>
               )}
