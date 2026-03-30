@@ -259,6 +259,8 @@ const ProductFields = ({
                 </div>
               )}
             />
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
             <FormField
               control={control}
               name={`meals.${mealIndex}.products.${productIndex}.protein_per_100g`}
