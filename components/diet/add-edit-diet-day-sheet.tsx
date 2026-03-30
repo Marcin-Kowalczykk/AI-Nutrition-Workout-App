@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
+import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { toast } from "sonner";
 
 //hooks
@@ -62,8 +63,11 @@ const ProductFields = ({
   const { setValue, getValues } = useFormContext<DietDayFormValues>();
 
   const [calcOpen, setCalcOpen] = useState(false);
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const autoOpenedRef = useRef(false);
 
+  const productName = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_name` });
+  const productKcal = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_kcal` });
   const weightGrams = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.weight_grams` });
   const kcalPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.kcal_per_100g` });
   const proteinPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_per_100g` });
@@ -98,8 +102,25 @@ const ProductFields = ({
       setValue(`meals.${mealIndex}.products.${productIndex}.fat_value`, String((fat * factor).toFixed(2)), { shouldDirty: true });
   };
 
+  const handleRemoveClick = () => {
+    if (productName || productKcal) {
+      setRemoveConfirmOpen(true);
+    } else {
+      onRemove();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-1.5 border-t pt-2">
+      <ConfirmModal
+        open={removeConfirmOpen}
+        onOpenChange={setRemoveConfirmOpen}
+        title="Remove product?"
+        description="This product has data. Are you sure you want to remove it?"
+        confirmLabel="Remove"
+        confirmVariant="destructive"
+        onConfirm={() => { setRemoveConfirmOpen(false); onRemove(); }}
+      />
       <FormField
         control={control}
         name={`meals.${mealIndex}.products.${productIndex}.product_name`}
@@ -119,7 +140,7 @@ const ProductFields = ({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={onRemove}
+                  onClick={handleRemoveClick}
                   className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
                   aria-label={`Remove product ${productIndex + 1}`}
                 >
@@ -132,7 +153,7 @@ const ProductFields = ({
         )}
       />
 
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-4 gap-1.5">
         <FormField
           control={control}
           name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
@@ -318,9 +339,30 @@ const MealSection = ({
     name: `meals.${mealIndex}.products`,
   });
 
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
+
+  const handleRemoveMealClick = () => {
+    const hasFilled = mealProducts.some((p) => p.product_name || p.product_kcal);
+    if (hasFilled) {
+      setRemoveConfirmOpen(true);
+    } else {
+      onRemoveMeal();
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-3 flex flex-col gap-2">
+        <ConfirmModal
+          open={removeConfirmOpen}
+          onOpenChange={setRemoveConfirmOpen}
+          title="Remove meal?"
+          description="This meal has data. Are you sure you want to remove it?"
+          confirmLabel="Remove"
+          confirmVariant="destructive"
+          onConfirm={() => { setRemoveConfirmOpen(false); onRemoveMeal(); }}
+        />
         <div className="flex items-center justify-between">
           <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
           {showRemoveMeal && (
@@ -328,7 +370,7 @@ const MealSection = ({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={onRemoveMeal}
+              onClick={handleRemoveMealClick}
               className="h-6 w-6 text-destructive hover:text-destructive"
               aria-label={`Remove meal ${mealIndex + 1}`}
             >
