@@ -9,6 +9,20 @@ test.describe('Diet history', () => {
 
   test.beforeEach(async ({ page }) => {
     await loginAs(page, EMAIL, PASSWORD)
+
+    // Clean up any leftover diet entries from the last 7 days (from previous failed runs)
+    const end = new Date()
+    const start = new Date()
+    start.setDate(start.getDate() - 7)
+    const historyRes = await page.request.get(
+      `/api/diet/get-history?start_date=${start.toISOString()}&end_date=${end.toISOString()}`
+    )
+    if (historyRes.ok()) {
+      const { days } = await historyRes.json()
+      for (const day of days ?? []) {
+        await page.request.delete(`/api/diet/delete?id=${day.id}`)
+      }
+    }
   })
 
   test.afterEach(async ({ page }) => {
@@ -32,20 +46,21 @@ test.describe('Diet history', () => {
     await page.getByLabel('Fat [g]').fill('3.6')
 
     const [response] = await Promise.all([
-      page.waitForResponse(r => r.url().includes('/api/diet/create') && r.status() === 201),
+      page.waitForResponse(r => r.url().includes('/api/diet/create')),
       page.getByRole('button', { name: /^save$/i }).click(),
     ])
+    expect(response.status()).toBe(201)
     const data = await response.json()
     createdDayId = data.id
 
     await expect(page.getByRole('dialog')).not.toBeVisible()
-    await expect(page.getByTestId('diet-day-item')).toBeVisible()
+    await expect(page.getByTestId('diet-day-item').first()).toBeVisible()
   })
 
   test('edits an existing diet day', async ({ page }) => {
     await page.goto('/diet-history')
 
-    // Use yesterday to avoid UNIQUE conflict with today's date from other tests
+    // Use yesterday to avoid UNIQUE conflict with today from the "adds" test
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
 
@@ -61,7 +76,7 @@ test.describe('Diet history', () => {
     createdDayId = created.id
 
     await page.reload()
-    await expect(page.getByTestId('diet-day-item')).toBeVisible()
+    await expect(page.getByTestId('diet-day-item').first()).toBeVisible()
 
     await page.getByRole('button', { name: /edit diet day/i }).first().click()
     await expect(page.getByRole('dialog')).toBeVisible()
@@ -72,7 +87,7 @@ test.describe('Diet history', () => {
     await expect(kcalInput).toHaveValue('200')
 
     const [response] = await Promise.all([
-      page.waitForResponse(r => r.url().includes('/api/diet/update') && r.status() === 200),
+      page.waitForResponse(r => r.url().includes('/api/diet/update')),
       page.getByRole('button', { name: /^save$/i }).click(),
     ])
     expect(response.status()).toBe(200)
@@ -99,7 +114,7 @@ test.describe('Diet history', () => {
     createdDayId = created.id
 
     await page.reload()
-    await expect(page.getByTestId('diet-day-item')).toBeVisible()
+    await expect(page.getByTestId('diet-day-item').first()).toBeVisible()
 
     await page.getByRole('button', { name: /delete diet day/i }).first().click()
 
