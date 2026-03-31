@@ -26,7 +26,7 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 <p align="center">
   <img src=".github/demo/comparisions-list.jpeg" height="500" alt="Comparisons list" />
   <img src=".github/demo/comparisions-chart.jpeg" height="500" alt="Comparisons chart" />
-  <img src=".github/demo/comparisions-dropdown.PNG" height="500" alt="Comparisons exercise picker" />
+  <img src=".github/demo/comparisions-dropdown.jpeg" height="500" alt="Comparisons exercise picker" />
 </p>
 
 <p align="center">
