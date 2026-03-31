@@ -659,6 +659,7 @@ export const AddEditDietDaySheet = ({
   dayToEdit = null,
 }: AddEditDietDaySheetProps) => {
   const isEditing = dayToEdit !== null;
+  const closeOnSuccessRef = useRef(true);
 
   const form = useForm<DietDayFormValues>({
     resolver: zodResolver(dietDayFormSchema),
@@ -681,7 +682,8 @@ export const AddEditDietDaySheet = ({
   const { mutate: createDay, isPending: isCreating } = useCreateDietDay({
     onSuccess: () => {
       toast.success("Diet day saved");
-      onOpenChange(false);
+      if (closeOnSuccessRef.current) onOpenChange(false);
+      closeOnSuccessRef.current = true;
     },
     onError: (err) => toast.error(err || "Failed to save diet day"),
   });
@@ -689,7 +691,8 @@ export const AddEditDietDaySheet = ({
   const { mutate: updateDay, isPending: isUpdating } = useUpdateDietDay({
     onSuccess: () => {
       toast.success("Diet day updated");
-      onOpenChange(false);
+      if (closeOnSuccessRef.current) onOpenChange(false);
+      closeOnSuccessRef.current = true;
     },
     onError: (err) => toast.error(err || "Failed to update diet day"),
   });
@@ -716,6 +719,11 @@ export const AddEditDietDaySheet = ({
     } else {
       createDay(payload);
     }
+  };
+
+  const handleProductSave = () => {
+    closeOnSuccessRef.current = false;
+    form.handleSubmit(onSubmit)();
   };
 
   return (
@@ -763,7 +771,7 @@ export const AddEditDietDaySheet = ({
                     control={form.control}
                     onRemoveMeal={() => removeMeal(mealIndex)}
                     showRemoveMeal={mealFields.length > 1}
-                    onSave={form.handleSubmit(onSubmit)}
+                    onSave={handleProductSave}
                   />
                 ))}
 
