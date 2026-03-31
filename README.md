@@ -9,11 +9,19 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 ### Workout — template & create & edit
 
-![Workout demo](https://github.com/user-attachments/assets/1ceb3103-c0c1-485d-ba85-7fa234093095)
+▶ **[Click to watch video](https://github.com/user-attachments/assets/1ceb3103-c0c1-485d-ba85-7fa234093095)**
+
+<a href="https://github.com/user-attachments/assets/1ceb3103-c0c1-485d-ba85-7fa234093095">
+  <img src=".github/demo/workout-placeholder.jpeg" height="500" alt="▶ Click to watch workout demo" />
+</a>
 
 ### Diet — add diet day
 
-![Diet demo](https://github.com/user-attachments/assets/3b962cc7-7233-408a-8a73-ab00f724bb98)
+▶ **[Click to watch video](https://github.com/user-attachments/assets/3b962cc7-7233-408a-8a73-ab00f724bb98)**
+
+<a href="https://github.com/user-attachments/assets/3b962cc7-7233-408a-8a73-ab00f724bb98">
+  <img src=".github/demo/diet-placeholder.jpeg" height="500" alt="▶ Click to watch diet demo" />
+</a>
 
 ### Screenshots
 
