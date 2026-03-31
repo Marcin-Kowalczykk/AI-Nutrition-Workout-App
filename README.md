@@ -9,11 +9,11 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 ### Workout — template & create & edit
 
-<video src="https://github.com/user-attachments/assets/1ceb3103-c0c1-485d-ba85-7fa234093095" autoplay loop muted playsinline width="100%"></video>
+![Workout demo](https://github.com/user-attachments/assets/1ceb3103-c0c1-485d-ba85-7fa234093095)
 
 ### Diet — add diet day
 
-<video src="https://github.com/user-attachments/assets/3b962cc7-7233-408a-8a73-ab00f724bb98" autoplay loop muted playsinline width="100%"></video>
+![Diet demo](https://github.com/user-attachments/assets/3b962cc7-7233-408a-8a73-ab00f724bb98)
 
 ### Screenshots
 
