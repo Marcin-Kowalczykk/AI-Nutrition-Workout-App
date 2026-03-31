@@ -383,6 +383,19 @@ const MealSection = ({
 
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
+  const mealTotals = useMemo(
+    () =>
+      mealProducts.reduce(
+        (acc, p) => ({
+          kcal: acc.kcal + (parseFloat(p.product_kcal) || 0),
+          protein: acc.protein + (parseFloat(p.protein_value) || 0),
+          carbs: acc.carbs + (parseFloat(p.carbs_value) || 0),
+          fat: acc.fat + (parseFloat(p.fat_value) || 0),
+        }),
+        { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+      ),
+    [mealProducts]
+  );
 
   const handleRemoveMealClick = () => {
     const hasFilled = mealProducts.some((p) => p.product_name || p.product_kcal);
@@ -405,15 +418,22 @@ const MealSection = ({
           confirmVariant="destructive"
           onConfirm={() => { setRemoveConfirmOpen(false); onRemoveMeal(); }}
         />
-        <div className="flex items-center justify-between">
-          <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+            <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {mealTotals.kcal.toFixed(0)} kcal · P: {mealTotals.protein.toFixed(1)}g · C:{" "}
+              {mealTotals.carbs.toFixed(1)}g · F: {mealTotals.fat.toFixed(1)}g
+            </p>
+          </div>
           {showRemoveMeal && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={handleRemoveMealClick}
-              className="h-6 w-6 text-destructive hover:text-destructive"
+              className="h-6 w-6 text-destructive hover:text-destructive shrink-0"
               aria-label={`Remove meal ${mealIndex + 1}`}
             >
               <Trash2 className="h-3.5 w-3.5" />
