@@ -155,7 +155,11 @@ const ProductFields = ({
     }
     setCalcOpen(false);
     const name = getValues(`meals.${mealIndex}.products.${productIndex}.product_name`);
-    if (name) setMode("view");
+    if (!name) {
+      if (showRemove) onRemove();
+      return;
+    }
+    setMode("view");
   };
 
   const saveEdit = () => {
@@ -506,6 +510,7 @@ const ProductFields = ({
               variant="ghost"
               size="sm"
               onClick={saveEdit}
+              disabled={!productName}
               className="h-6 px-2 text-xs gap-1"
             >
               <Check className="h-3 w-3" />
