@@ -420,7 +420,7 @@ const MealSection = ({
         />
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+            <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
             <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
             <p className="text-xs text-muted-foreground truncate">
               {mealTotals.kcal.toFixed(0)} kcal · P: {mealTotals.protein.toFixed(1)}g · C:{" "}
