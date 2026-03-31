@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator } from "lucide-react";
+import { Plus, Trash2, Calculator, Pencil, Check, X, Info } from "lucide-react";
 
 //components
 import {
@@ -27,6 +27,13 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 //hooks
 import { useCreateDietDay } from "./api/use-create-diet-day";
@@ -44,6 +51,39 @@ import type { IDietDay } from "@/app/api/diet/types";
 //helpers
 import { buildDietDayPayload } from "./helpers/build-diet-day-payload";
 import { dietDayToFormValues } from "./helpers/diet-day-to-form-values";
+
+interface DaySummaryProps {
+  control: Control<DietDayFormValues>;
+}
+
+const DaySummary = ({ control }: DaySummaryProps) => {
+  const meals = useWatch({ control, name: "meals" });
+  const totals = useMemo(
+    () =>
+      meals
+        .flatMap((m) => m.products)
+        .reduce(
+          (acc, p) => ({
+            kcal: acc.kcal + (parseFloat(p.product_kcal) || 0),
+            protein: acc.protein + (parseFloat(p.protein_value) || 0),
+            carbs: acc.carbs + (parseFloat(p.carbs_value) || 0),
+            fat: acc.fat + (parseFloat(p.fat_value) || 0),
+          }),
+          { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+        ),
+    [meals]
+  );
+
+  return (
+    <div className="border rounded-md px-3 py-2 bg-muted/30">
+      <p className="text-sm font-semibold">{totals.kcal.toFixed(0)} kcal</p>
+      <p className="text-xs text-muted-foreground">
+        P: {totals.protein.toFixed(1)}g · C: {totals.carbs.toFixed(1)}g · F:{" "}
+        {totals.fat.toFixed(1)}g
+      </p>
+    </div>
+  );
+};
 
 interface ProductFieldsProps {
   mealIndex: number;
@@ -512,6 +552,8 @@ export const AddEditDietDaySheet = ({
                   </FormItem>
                 )}
               />
+
+              <DaySummary control={form.control} />
 
               <div className="flex flex-col gap-2">
                 {mealFields.map((mealField, mealIndex) => (
