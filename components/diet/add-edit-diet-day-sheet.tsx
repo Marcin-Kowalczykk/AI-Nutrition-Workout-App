@@ -43,6 +43,7 @@ import { useUpdateDietDay } from "./api/use-update-diet-day";
 import {
   dietDayFormSchema,
   DietDayFormValues,
+  DietProductFormValues,
   DEFAULT_MEAL,
   DEFAULT_PRODUCT,
 } from "./types";
@@ -104,7 +105,13 @@ const ProductFields = ({
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const autoOpenedRef = useRef(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const snapshotRef = useRef<DietProductFormValues | null>(null);
+
+  const [mode, setMode] = useState<"view" | "edit">(() => {
+    const name = getValues(`meals.${mealIndex}.products.${productIndex}.product_name`);
+    return name ? "view" : "edit";
+  });
 
   const productName = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_name` });
   const productKcal = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_kcal` });
@@ -114,13 +121,50 @@ const ProductFields = ({
   const carbsPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_per_100g` });
   const fatPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_per_100g` });
 
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (weightGrams || kcalPer100 || proteinPer100 || carbsPer100 || fatPer100) {
+  const proteinValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_value` });
+  const carbsValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_value` });
+  const fatValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_value` });
+
+  const enterEdit = () => {
+    snapshotRef.current = getValues(`meals.${mealIndex}.products.${productIndex}`);
+    const snap = snapshotRef.current;
+    if (snap && (snap.weight_grams || snap.kcal_per_100g || snap.protein_per_100g)) {
       setCalcOpen(true);
-      autoOpenedRef.current = true;
     }
-  }, [weightGrams, kcalPer100, proteinPer100, carbsPer100, fatPer100]);
+    setMode("edit");
+  };
+
+  const cancelEdit = () => {
+    if (snapshotRef.current) {
+      const snap = snapshotRef.current;
+      (
+        [
+          "product_name",
+          "product_kcal",
+          "protein_value",
+          "carbs_value",
+          "fat_value",
+          "weight_grams",
+          "kcal_per_100g",
+          "protein_per_100g",
+          "carbs_per_100g",
+          "fat_per_100g",
+        ] as const
+      ).forEach((f) => {
+        setValue(
+          `meals.${mealIndex}.products.${productIndex}.${f}`,
+          snap[f] ?? "",
+          { shouldDirty: true }
+        );
+      });
+    }
+    setCalcOpen(false);
+    setMode("view");
+  };
+
+  const saveEdit = () => {
+    setMode("view");
+  };
 
   const recalculate = () => {
     const g = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.weight_grams`) || "");
@@ -159,199 +203,299 @@ const ProductFields = ({
         description="This product has data. Are you sure you want to remove it?"
         confirmLabel="Remove"
         confirmVariant="destructive"
-        onConfirm={() => { setRemoveConfirmOpen(false); onRemove(); }}
-      />
-      <FormField
-        control={control}
-        name={`meals.${mealIndex}.products.${productIndex}.product_name`}
-        render={({ field }) => (
-          <FormItem className="space-y-1">
-            <FormLabel className="text-xs">Product name</FormLabel>
-            <div className="flex items-start gap-1">
-              <FormControl>
-                <textarea
-                  {...field}
-                  rows={2}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
-                />
-              </FormControl>
-              {showRemove && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRemoveClick}
-                  className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-                  aria-label={`Remove product ${productIndex + 1}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-            <FormMessage className="text-destructive" />
-          </FormItem>
-        )}
+        onConfirm={() => {
+          setRemoveConfirmOpen(false);
+          onRemove();
+        }}
       />
 
-      <div className="grid grid-cols-4 gap-1.5">
-        <FormField
-          control={control}
-          name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="text-xs">Kcal</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
-              </FormControl>
-              <FormMessage className="text-destructive" />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name={`meals.${mealIndex}.products.${productIndex}.protein_value`}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="text-xs">Protein [g]</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
-              </FormControl>
-              <FormMessage className="text-destructive" />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name={`meals.${mealIndex}.products.${productIndex}.carbs_value`}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="text-xs">Carbs [g]</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
-              </FormControl>
-              <FormMessage className="text-destructive" />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name={`meals.${mealIndex}.products.${productIndex}.fat_value`}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="text-xs">Fat [g]</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" min={0} {...field} className="h-8" />
-              </FormControl>
-              <FormMessage className="text-destructive" />
-            </FormItem>
-          )}
-        />
-      </div>
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Calculator</DialogTitle>
+            <DialogDescription>
+              Enter portion weight and macros per 100 g — values above will be
+              filled automatically.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => setCalcOpen((v) => !v)}
-        className="h-6 w-fit px-1.5 text-xs text-muted-foreground hover:text-foreground self-start"
-      >
-        <Calculator className="h-3 w-3 mr-1" />
-        {calcOpen ? "Hide calculator" : "Calculate from 100g"}
-      </Button>
-
-      {calcOpen && (
-        <div className="flex flex-col gap-1.5 rounded-md border border-dashed p-2">
-          <p className="text-xs text-muted-foreground">
-            Enter portion weight and macros per 100 g — values above will be filled automatically.
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
+      {mode === "view" ? (
+        <div className="flex items-center justify-between gap-2 py-0.5">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <p className="text-sm font-medium truncate">{productName}</p>
+            <p className="text-xs text-muted-foreground">
+              {productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
+            </p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={enterEdit}
+              className="h-7 w-7"
+              aria-label={`Edit product ${productIndex + 1}`}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            {showRemove && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveClick}
+                className="h-7 w-7 text-destructive hover:text-destructive"
+                aria-label={`Remove product ${productIndex + 1}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1.5 border-l-2 border-primary-element pl-2">
+          <div className="flex items-start justify-between gap-1">
             <FormField
               control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.weight_grams`}
+              name={`meals.${mealIndex}.products.${productIndex}.product_name`}
               render={({ field }) => (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">Grams</label>
-                  <Input
-                    type="number"
-                    step="1"
-                    min={0}
-                    {...field}
-                    onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8"
-                  />
-                </div>
+                <FormItem className="space-y-1 flex-1">
+                  <FormLabel className="text-xs">Product name</FormLabel>
+                  <FormControl>
+                    <textarea
+                      {...field}
+                      rows={2}
+                      className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
+            {showRemove && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveClick}
+                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive mt-5"
+                aria-label={`Remove product ${productIndex + 1}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 gap-1.5">
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Kcal</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
               )}
             />
             <FormField
               control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.kcal_per_100g`}
+              name={`meals.${mealIndex}.products.${productIndex}.protein_value`}
               render={({ field }) => (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">Kcal / 100g</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    {...field}
-                    onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8"
-                  />
-                </div>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Protein [g]</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.carbs_value`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Carbs [g]</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name={`meals.${mealIndex}.products.${productIndex}.fat_value`}
+              render={({ field }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Fat [g]</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                  </FormControl>
+                  <FormMessage className="text-destructive" />
+                </FormItem>
               )}
             />
           </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.protein_per_100g`}
-              render={({ field }) => (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">Protein / 100g</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    {...field}
-                    onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8"
-                  />
-                </div>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`}
-              render={({ field }) => (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">Carbs / 100g</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    {...field}
-                    onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8"
-                  />
-                </div>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`meals.${mealIndex}.products.${productIndex}.fat_per_100g`}
-              render={({ field }) => (
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">Fat / 100g</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    {...field}
-                    onChange={(e) => { field.onChange(e); recalculate(); }}
-                    className="h-8"
-                  />
-                </div>
-              )}
-            />
+
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCalcOpen((v) => !v)}
+              className="h-6 w-fit px-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Calculator className="h-3 w-3 mr-1" />
+              {calcOpen ? "Hide calculator" : "Calculate from 100g"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setInfoOpen(true)}
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              aria-label="Calculator info"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          {calcOpen && (
+            <div className="flex flex-col gap-1.5 rounded-md border border-dashed border-l-2 border-l-primary-element p-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <FormField
+                  control={control}
+                  name={`meals.${mealIndex}.products.${productIndex}.weight_grams`}
+                  render={({ field }) => (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium">Grams</label>
+                      <Input
+                        type="number"
+                        step="1"
+                        min={0}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          recalculate();
+                        }}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`meals.${mealIndex}.products.${productIndex}.kcal_per_100g`}
+                  render={({ field }) => (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium">Kcal / 100g</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          recalculate();
+                        }}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <FormField
+                  control={control}
+                  name={`meals.${mealIndex}.products.${productIndex}.protein_per_100g`}
+                  render={({ field }) => (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium">Protein / 100g</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          recalculate();
+                        }}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`}
+                  render={({ field }) => (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium">Carbs / 100g</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          recalculate();
+                        }}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`meals.${mealIndex}.products.${productIndex}.fat_per_100g`}
+                  render={({ field }) => (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium">Fat / 100g</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          recalculate();
+                        }}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-0.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={saveEdit}
+              className="h-6 px-2 text-xs gap-1"
+            >
+              <Check className="h-3 w-3" />
+              Save
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={cancelEdit}
+              className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+            >
+              <X className="h-3 w-3" />
+              Cancel
+            </Button>
           </div>
         </div>
       )}
