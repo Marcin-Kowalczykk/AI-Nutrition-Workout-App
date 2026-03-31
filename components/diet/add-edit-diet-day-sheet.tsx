@@ -102,7 +102,7 @@ const ProductFields = ({
   showRemove,
   onSave,
 }: ProductFieldsProps) => {
-  const { setValue, getValues } = useFormContext<DietDayFormValues>();
+  const { setValue, getValues, formState: { isDirty } } = useFormContext<DietDayFormValues>();
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
@@ -166,7 +166,7 @@ const ProductFields = ({
 
   const saveEdit = () => {
     setMode("view");
-    onSave();
+    if (isDirty) onSave();
   };
 
   const hasCalcData = () => {
