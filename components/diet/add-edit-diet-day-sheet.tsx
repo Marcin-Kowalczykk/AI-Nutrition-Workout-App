@@ -58,10 +58,10 @@ interface DaySummaryProps {
 }
 
 const DaySummary = ({ control }: DaySummaryProps) => {
-  const meals = useWatch({ control, name: "meals" }) ?? [];
+  const meals = useWatch({ control, name: "meals" });
   const totals = useMemo(
     () =>
-      meals
+      (meals ?? [])
         .flatMap((m) => m.products)
         .reduce(
           (acc, p) => ({
@@ -115,11 +115,6 @@ const ProductFields = ({
 
   const productName = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_name` });
   const productKcal = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.product_kcal` });
-  const weightGrams = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.weight_grams` });
-  const kcalPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.kcal_per_100g` });
-  const proteinPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_per_100g` });
-  const carbsPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_per_100g` });
-  const fatPer100 = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_per_100g` });
 
   const proteinValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_value` });
   const carbsValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_value` });
@@ -367,7 +362,7 @@ const ProductFields = ({
           </div>
 
           {calcOpen && (
-            <div className="flex flex-col gap-1.5 rounded-md border border-dashed border-l-2 border-l-primary-element p-2">
+            <div className="flex flex-col gap-1.5 rounded-md border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
               <div className="grid grid-cols-2 gap-1.5">
                 <FormField
                   control={control}
@@ -526,10 +521,10 @@ const MealSection = ({
   });
 
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` }) ?? [];
+  const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
   const mealTotals = useMemo(
     () =>
-      mealProducts.reduce(
+      (mealProducts ?? []).reduce(
         (acc, p) => ({
           kcal: acc.kcal + (parseFloat(p.product_kcal) || 0),
           protein: acc.protein + (parseFloat(p.protein_value) || 0),
