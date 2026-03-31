@@ -64,9 +64,10 @@ const makeFormValues = (overrides: Partial<DietDayFormValues> = {}): DietDayForm
 
 // ----------------------------------------------------------------
 describe('buildDietDayPayload', () => {
-  it('formats date as YYYY-MM-DD', () => {
-    // Use noon UTC to avoid day-shift in any timezone
-    const result = buildDietDayPayload(makeFormValues({ date: new Date('2026-03-15T12:00:00Z') }))
+  it('formats date as YYYY-MM-DD using local date, not UTC', () => {
+    // Local midnight (new Date('YYYY-MM-DDT00:00:00') has no timezone suffix → local time)
+    // In UTC+1/+2 this would shift a day back via toISOString() — must use local getDate()
+    const result = buildDietDayPayload(makeFormValues({ date: new Date('2026-03-15T00:00:00') }))
     expect(result.date).toBe('2026-03-15')
   })
 

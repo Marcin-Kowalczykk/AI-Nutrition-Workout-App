@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
+import { Loader } from "@/components/shared/loader";
 import {
   Form,
   FormControl,
@@ -800,7 +801,10 @@ export const AddEditDietDaySheet = ({
                 type="submit"
                 disabled={isPending || !form.formState.isDirty}
               >
-                {isPending ? "Saving…" : "Save"}
+                {isPending ? <Loader size={16} /> : null}
+                {isPending
+                  ? isEditing ? "Updating…" : "Saving…"
+                  : isEditing ? "Update" : "Save"}
               </Button>
             </SheetFooter>
           </form>

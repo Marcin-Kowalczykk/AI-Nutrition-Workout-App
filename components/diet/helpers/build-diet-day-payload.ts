@@ -5,7 +5,7 @@ import type { ICreateDietDayRequestBody } from "@/app/api/diet/create/route";
 export const buildDietDayPayload = (
   values: DietDayFormValues
 ): ICreateDietDayRequestBody => ({
-  date: values.date.toISOString().split("T")[0],
+  date: `${values.date.getFullYear()}-${String(values.date.getMonth() + 1).padStart(2, "0")}-${String(values.date.getDate()).padStart(2, "0")}`,
   meals: values.meals.map((meal) => ({
     products: meal.products.map((p) => ({
       product_name: p.product_name,
