@@ -9,17 +9,17 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 ### Workout — template & create & edit
 
-▶ **[Click to watch video](https://github.com/Marcin-Kowalczykk/Training-diet-app/releases/download/demo-assets/workout-demo.-.COMPRESS.mp4)**
+▶ **[Click to watch video](https://youtube.com/shorts/NupzJJFw8lM)**
 
-<a href="https://github.com/Marcin-Kowalczykk/Training-diet-app/releases/download/demo-assets/workout-demo.-.COMPRESS.mp4">
+<a href="https://youtube.com/shorts/NupzJJFw8lM">
   <img src=".github/demo/workout-placeholder.jpeg" height="500" alt="▶ Click to watch workout demo" />
 </a>
 
 ### Diet — add diet day
 
-▶ **[Click to watch video](https://github.com/Marcin-Kowalczykk/Training-diet-app/releases/download/demo-assets/diet-demo.-.COMPRESS.mp4)**
+▶ **[Click to watch video](https://youtube.com/shorts/MWoEAzMC528)**
 
-<a href="https://github.com/Marcin-Kowalczykk/Training-diet-app/releases/download/demo-assets/diet-demo.-.COMPRESS.mp4">
+<a href="https://youtube.com/shorts/MWoEAzMC528">
   <img src=".github/demo/diet-placeholder.jpeg" height="500" alt="▶ Click to watch diet demo" />
 </a>
 
