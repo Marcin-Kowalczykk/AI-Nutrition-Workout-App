@@ -91,6 +91,7 @@ interface ProductFieldsProps {
   control: Control<DietDayFormValues>;
   onRemove: () => void;
   showRemove: boolean;
+  onSave: () => void;
 }
 
 const ProductFields = ({
@@ -99,6 +100,7 @@ const ProductFields = ({
   control,
   onRemove,
   showRemove,
+  onSave,
 }: ProductFieldsProps) => {
   const { setValue, getValues } = useFormContext<DietDayFormValues>();
 
@@ -164,6 +166,7 @@ const ProductFields = ({
 
   const saveEdit = () => {
     setMode("view");
+    onSave();
   };
 
   const hasCalcData = () => {
@@ -538,6 +541,7 @@ interface MealSectionProps {
   control: Control<DietDayFormValues>;
   onRemoveMeal: () => void;
   showRemoveMeal: boolean;
+  onSave: () => void;
 }
 
 const MealSection = ({
@@ -545,6 +549,7 @@ const MealSection = ({
   control,
   onRemoveMeal,
   showRemoveMeal,
+  onSave,
 }: MealSectionProps) => {
   const {
     fields: productFields,
@@ -623,6 +628,7 @@ const MealSection = ({
             control={control}
             onRemove={() => removeProduct(productIndex)}
             showRemove={productFields.length > 1}
+            onSave={onSave}
           />
         ))}
 
@@ -757,6 +763,7 @@ export const AddEditDietDaySheet = ({
                     control={form.control}
                     onRemoveMeal={() => removeMeal(mealIndex)}
                     showRemoveMeal={mealFields.length > 1}
+                    onSave={form.handleSubmit(onSubmit)}
                   />
                 ))}
 
