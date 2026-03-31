@@ -77,10 +77,9 @@ const DaySummary = ({ control }: DaySummaryProps) => {
 
   return (
     <div className="border rounded-md px-3 py-2 bg-muted/30">
-      <p className="text-sm font-semibold">{totals.kcal.toFixed(0)} kcal</p>
       <p className="text-xs text-muted-foreground">
-        P: {totals.protein.toFixed(1)}g · C: {totals.carbs.toFixed(1)}g · F:{" "}
-        {totals.fat.toFixed(1)}g
+        <span className="font-semibold text-sm text-foreground">{totals.kcal.toFixed(0)} kcal</span>
+        {" · "}P: {totals.protein.toFixed(1)}g · C: {totals.carbs.toFixed(1)}g · F: {totals.fat.toFixed(1)}g
       </p>
     </div>
   );
@@ -106,6 +105,7 @@ const ProductFields = ({
   const [calcOpen, setCalcOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
   const snapshotRef = useRef<DietProductFormValues | null>(null);
 
   const [mode, setMode] = useState<"view" | "edit">(() => {
@@ -161,6 +161,25 @@ const ProductFields = ({
     setMode("view");
   };
 
+  const hasCalcData = () => {
+    const vals = getValues(`meals.${mealIndex}.products.${productIndex}`);
+    return !!(vals.weight_grams || vals.kcal_per_100g || vals.protein_per_100g || vals.carbs_per_100g || vals.fat_per_100g);
+  };
+
+  const handleMainInputFocus = () => {
+    if (hasCalcData()) {
+      setClearCalcConfirmOpen(true);
+    }
+  };
+
+  const handleClearCalcConfirm = () => {
+    (["weight_grams", "kcal_per_100g", "protein_per_100g", "carbs_per_100g", "fat_per_100g"] as const).forEach((f) => {
+      setValue(`meals.${mealIndex}.products.${productIndex}.${f}`, "", { shouldDirty: true });
+    });
+    setCalcOpen(false);
+    setClearCalcConfirmOpen(false);
+  };
+
   const recalculate = () => {
     const g = parseFloat(getValues(`meals.${mealIndex}.products.${productIndex}.weight_grams`) || "");
     if (!g || g <= 0) return;
@@ -202,6 +221,16 @@ const ProductFields = ({
           setRemoveConfirmOpen(false);
           onRemove();
         }}
+      />
+
+      <ConfirmModal
+        open={clearCalcConfirmOpen}
+        onOpenChange={setClearCalcConfirmOpen}
+        title="Clear calculator?"
+        description="Editing these values manually will clear all calculator fields. Do you want to continue?"
+        confirmLabel="Continue"
+        confirmVariant="default"
+        onConfirm={handleClearCalcConfirm}
       />
 
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
@@ -291,7 +320,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs">Kcal</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -304,7 +333,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs">Protein [g]</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -317,7 +346,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs">Carbs [g]</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -330,7 +359,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs">Fat [g]</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
