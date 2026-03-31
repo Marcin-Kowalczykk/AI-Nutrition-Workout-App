@@ -100,7 +100,7 @@ const ProductFields = ({
   onRemove,
   onSave,
 }: ProductFieldsProps) => {
-  const { setValue, getValues, formState: { isDirty } } = useFormContext<DietDayFormValues>();
+  const { setValue, getValues, formState: { isDirty }, trigger } = useFormContext<DietDayFormValues>();
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
@@ -162,7 +162,15 @@ const ProductFields = ({
     setMode("view");
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
+    const isValid = await trigger([
+      `meals.${mealIndex}.products.${productIndex}.product_name`,
+      `meals.${mealIndex}.products.${productIndex}.product_kcal`,
+      `meals.${mealIndex}.products.${productIndex}.protein_value`,
+      `meals.${mealIndex}.products.${productIndex}.carbs_value`,
+      `meals.${mealIndex}.products.${productIndex}.fat_value`,
+    ]);
+    if (!isValid) return;
     setMode("view");
     if (isDirty) onSave();
   };
@@ -667,7 +675,7 @@ export const AddEditDietDaySheet = ({
       date: new Date(),
       meals: [{ ...DEFAULT_MEAL }],
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const {
