@@ -270,16 +270,18 @@ const ProductFields = ({
             >
               <Pencil className="h-3.5 w-3.5" />
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleRemoveClick}
-              className="h-7 w-7 text-destructive hover:text-destructive"
-              aria-label={`Remove product ${productIndex + 1}`}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            {!!(productName || productKcal) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveClick}
+                className="h-7 w-7 text-destructive hover:text-destructive"
+                aria-label={`Remove product ${productIndex + 1}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </div>
       ) : (
@@ -307,16 +309,18 @@ const ProductFields = ({
                 </FormItem>
               )}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleRemoveClick}
-              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive mt-5"
-              aria-label={`Remove product ${productIndex + 1}`}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            {!!(productName || productKcal) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveClick}
+                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive mt-5"
+                aria-label={`Remove product ${productIndex + 1}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-4 gap-1.5">
@@ -603,16 +607,18 @@ const MealSection = ({
               {mealTotals.carbs.toFixed(1)}g · F: {mealTotals.fat.toFixed(1)}g
             </p>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleRemoveMealClick}
-            className="h-6 w-6 text-destructive hover:text-destructive shrink-0"
-            aria-label={`Remove meal ${mealIndex + 1}`}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          {(mealProducts ?? []).some((p) => p.product_name || p.product_kcal) && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleRemoveMealClick}
+              className="h-6 w-6 text-destructive hover:text-destructive shrink-0"
+              aria-label={`Remove meal ${mealIndex + 1}`}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
 
         {productFields.map((productField, productIndex) => (
