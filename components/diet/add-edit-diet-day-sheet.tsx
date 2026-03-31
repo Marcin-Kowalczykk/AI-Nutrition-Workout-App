@@ -300,6 +300,11 @@ const ProductFields = ({
                       {...field}
                       rows={2}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                      onInput={(e) => {
+                        const el = e.currentTarget;
+                        el.style.height = "auto";
+                        el.style.height = `${el.scrollHeight}px`;
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-destructive" />
@@ -399,7 +404,7 @@ const ProductFields = ({
           </div>
 
           {calcOpen && (
-            <div className="flex flex-col gap-1.5 rounded-md border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
+            <div className="flex flex-col gap-1.5 border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
               <div className="grid grid-cols-2 gap-1.5">
                 <FormField
                   control={control}
