@@ -38,16 +38,18 @@ test.describe('Diet history', () => {
     await page.getByRole('button', { name: /add diet day/i }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
 
-    // Fill in product fields
+    // New product starts in edit mode (empty product_name)
     await page.getByLabel('Product name').fill('Chicken breast')
     await page.getByLabel('Kcal').fill('165')
     await page.getByLabel('Protein [g]').fill('31')
     await page.getByLabel('Carbs [g]').fill('0')
     await page.getByLabel('Fat [g]').fill('3.6')
 
+    // Use the main Save button (SheetFooter, type="submit") — .last() avoids the
+    // product-level Save button that is also visible when a product is in edit mode
     const [response] = await Promise.all([
       page.waitForResponse(r => r.url().includes('/api/diet/create')),
-      page.getByRole('button', { name: /^save$/i }).click(),
+      page.getByRole('button', { name: /^save$/i }).last().click(),
     ])
     expect(response.status()).toBe(201)
     const data = await response.json()
@@ -81,14 +83,18 @@ test.describe('Diet history', () => {
     await page.getByRole('button', { name: /edit diet day/i }).first().click()
     await expect(page.getByRole('dialog')).toBeVisible()
 
+    // Existing products start in view mode — click the pencil to enter edit mode
+    await page.getByRole('button', { name: /edit product 1/i }).click()
+
     // Update kcal value
     const kcalInput = page.getByLabel('Kcal')
     await kcalInput.fill('200')
     await expect(kcalInput).toHaveValue('200')
 
+    // Use .last() — product-level Save is also visible when product is in edit mode
     const [response] = await Promise.all([
       page.waitForResponse(r => r.url().includes('/api/diet/update')),
-      page.getByRole('button', { name: /^save$/i }).click(),
+      page.getByRole('button', { name: /^save$/i }).last().click(),
     ])
     expect(response.status()).toBe(200)
 
