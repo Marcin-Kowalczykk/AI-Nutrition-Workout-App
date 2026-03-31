@@ -79,6 +79,12 @@ export async function PUT(request: Request) {
       .single();
 
     if (updateError) {
+      if (updateError.code === "23505") {
+        return NextResponse.json(
+          { error: "A diet plan for this date already exists." },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 

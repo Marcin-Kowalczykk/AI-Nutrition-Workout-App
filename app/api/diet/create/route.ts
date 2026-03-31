@@ -64,6 +64,12 @@ export async function POST(request: Request) {
 
     if (dayError) {
       console.error("Error creating diet day:", dayError);
+      if (dayError.code === "23505") {
+        return NextResponse.json(
+          { error: "A diet plan for this date already exists." },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: dayError.message }, { status: 400 });
     }
 
