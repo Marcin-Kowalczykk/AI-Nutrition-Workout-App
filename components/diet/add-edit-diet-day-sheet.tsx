@@ -154,7 +154,8 @@ const ProductFields = ({
       });
     }
     setCalcOpen(false);
-    setMode("view");
+    const name = getValues(`meals.${mealIndex}.products.${productIndex}.product_name`);
+    if (name) setMode("view");
   };
 
   const saveEdit = () => {
