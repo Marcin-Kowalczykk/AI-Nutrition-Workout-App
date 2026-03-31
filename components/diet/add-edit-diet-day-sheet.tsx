@@ -57,7 +57,7 @@ interface DaySummaryProps {
 }
 
 const DaySummary = ({ control }: DaySummaryProps) => {
-  const meals = useWatch({ control, name: "meals" });
+  const meals = useWatch({ control, name: "meals" }) ?? [];
   const totals = useMemo(
     () =>
       meals
