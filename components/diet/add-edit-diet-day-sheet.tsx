@@ -382,7 +382,7 @@ const MealSection = ({
   });
 
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
+  const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` }) ?? [];
   const mealTotals = useMemo(
     () =>
       mealProducts.reduce(
