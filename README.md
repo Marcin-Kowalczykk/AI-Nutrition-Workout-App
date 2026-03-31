@@ -5,9 +5,50 @@ Built with **Next.js App Router**, **Supabase** and a modern UI (shadcn/ui + Tai
 
 ---
 
+## 📸 Demo
+
+### Workout — template & create & edit
+
+<video src=".github/demo/workout-demo.mp4" autoplay loop muted playsinline width="100%"></video>
+
+### Diet — add diet day
+
+<video src=".github/demo/diet-demo.mp4" autoplay loop muted playsinline width="100%"></video>
+
+### Screenshots
+
+<p align="center">
+  <img src=".github/demo/workout-history.jpeg" height="500" alt="Workout history" />
+  <img src=".github/demo/exercises.jpeg" height="500" alt="Exercises" />
+  <img src=".github/demo/exercises-category.jpeg" height="500" alt="Exercise categories" />
+</p>
+
+<p align="center">
+  <img src=".github/demo/comparisions-list.jpeg" height="500" alt="Comparisons list" />
+  <img src=".github/demo/comparisions-chart.jpeg" height="500" alt="Comparisons chart" />
+  <img src=".github/demo/comparisions-dropdown.PNG" height="500" alt="Comparisons exercise picker" />
+</p>
+
+<p align="center">
+  <img src=".github/demo/records.jpeg" height="500" alt="Records" />
+  <img src=".github/demo/records-filters.jpeg" height="500" alt="Records filters" />
+  <img src=".github/demo/measurement-list.jpeg" height="500" alt="Body measurements" />
+</p>
+
+<p align="center">
+  <img src=".github/demo/measurement-sheet.jpeg" height="500" alt="Add measurement" />
+  <img src=".github/demo/profile.jpeg" height="500" alt="Profile settings" />
+</p>
+
+---
+
 ## 📋 Table of contents
 
 - [Training Diet App](#training-diet-app)
+  - [📸 Demo](#-demo)
+    - [Workout — template \& create \& edit](#workout--template--create--edit)
+    - [Diet — add diet day](#diet--add-diet-day)
+    - [Screenshots](#screenshots)
   - [📋 Table of contents](#-table-of-contents)
   - [🚀 Getting started](#-getting-started)
     - [Prerequisites](#prerequisites)
