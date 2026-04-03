@@ -225,6 +225,40 @@ const ProductFields = ({
     }
   };
 
+  const handleScanApply = ({
+    kcal,
+    protein,
+    carbs,
+    fat,
+  }: {
+    kcal: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+  }) => {
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.kcal_per_100g`,
+      kcal,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.protein_per_100g`,
+      protein,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.carbs_per_100g`,
+      carbs,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.fat_per_100g`,
+      fat,
+      { shouldDirty: true }
+    );
+    recalculate();
+  };
+
   return (
     <div className="flex flex-col gap-1.5 border-t pt-2">
       <ConfirmModal
@@ -564,7 +598,7 @@ const ProductFields = ({
       <ProductScannerDialog
         open={scanDialogOpen}
         onOpenChange={setScanDialogOpen}
-        onApply={() => {}}
+        onApply={handleScanApply}
       />
     </div>
   );
