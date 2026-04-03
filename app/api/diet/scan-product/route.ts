@@ -7,10 +7,11 @@ import { TABLE_NAMES } from "@/app/api/tableNames";
 
 const anthropic = new Anthropic();
 
-const SCAN_PROMPT = `You are analyzing a nutrition label photo. Extract ONLY the nutritional values per 100g.
-Return a JSON object with exactly these keys: kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g.
-All values must be numbers (not strings). If you cannot read a value clearly, use null.
-Do not include any other text — only the JSON object.`;
+const SYSTEM_PROMPT = `You are a nutrition label parser. You only output raw JSON. No explanations, no markdown, no code blocks. Only a valid JSON object.`;
+
+const SCAN_PROMPT = `Extract nutritional values per 100g from this label.
+Return exactly: {"kcal_per_100g": <number|null>, "protein_per_100g": <number|null>, "carbs_per_100g": <number|null>, "fat_per_100g": <number|null>}
+All values must be numbers. If you cannot read a value clearly, use null.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 256,
+      system: SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
