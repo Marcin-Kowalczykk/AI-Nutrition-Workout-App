@@ -448,21 +448,17 @@ const ProductFields = ({
 
           {calcOpen && (
             <div className="flex flex-col gap-1.5 border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
-              <div className="flex items-center justify-between rounded-md border border-dashed px-2 py-1.5">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Camera className="h-3.5 w-3.5" />
-                  Scan product to fill 100g values
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setScanDialogOpen(true)}
-                  className="h-6 px-2 text-xs text-primary-element hover:text-primary-element"
-                >
-                  Open camera
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setScanDialogOpen(true)}
+                className="w-full h-7 text-xs gap-1.5"
+              >
+                <Camera className="h-3 w-3" />
+                Scan product to fill 100g values —{" "}
+                <span className="text-primary-element">Open camera</span>
+              </Button>
               <div className="grid grid-cols-2 gap-1.5">
                 <FormField
                   control={control}
