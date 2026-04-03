@@ -166,6 +166,7 @@ npm run test:e2e:ui     # Open Playwright UI Mode for sequential suite
 - **Diet & body tracking**
 
   - **Diet history** — full CRUD for daily nutrition logs: meals grouped by day, each meal containing products with kcal, protein, carbs and fat values; date range filters, inline edit/delete with confirmation; totals (kcal, protein, carbs, fat) computed and displayed per day
+  - **Scan product** — take a photo of a nutrition label on mobile and let Claude AI automatically fill in the per-100g values (kcal, protein, carbs, fat) in the product calculator; editable result before applying; daily scan limit per user (configurable), with an owner bypass
   - **Kcal calculator** for estimating daily calorie needs
   - **Body measurements**
     - Quick logging of **weight**, optional **height** and **circumferences** (arm, chest, waist, hips, thigh, calf)
@@ -336,6 +337,7 @@ npm run test:e2e:ui     # Playwright UI Mode for sequential suite
 - `15` — unsaved changes guard (no data created)
 - `16` — workout template create + edit
 - `17` — diet history (add, edit, delete)
+- `18` — diet scan product (mocked API, full UI flow)
 
 ---
 
@@ -361,6 +363,7 @@ npm run test:e2e:ui     # Playwright UI Mode for sequential suite
 | Styling | [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
 | Data fetching | [TanStack Query v5](https://tanstack.com/query/latest) |
 | Backend | [Supabase](https://supabase.com/) — PostgreSQL, Auth, RLS |
+| AI | [Anthropic Claude](https://www.anthropic.com/) (`claude-sonnet-4-6`) — vision API for nutrition label scanning |
 | Charts | [Recharts](https://recharts.org/) |
 | Themes | [next-themes](https://github.com/pacocoursey/next-themes) |
 | Unit tests | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) + [MSW](https://mswjs.io/) |
