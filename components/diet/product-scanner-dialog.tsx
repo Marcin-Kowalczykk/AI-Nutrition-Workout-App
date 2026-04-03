@@ -40,12 +40,14 @@ const resizeImageIfNeeded = (file: File): Promise<File> => {
       canvas.toBlob(
         (blob) => {
           URL.revokeObjectURL(url);
-          resolve(new File([blob!], file.name, { type: "image/jpeg" }));
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name, { type: "image/jpeg" }));
         },
         "image/jpeg",
         0.85
       );
     };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
     img.src = url;
   });
 };
