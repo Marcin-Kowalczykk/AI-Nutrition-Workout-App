@@ -6,8 +6,6 @@ const EMAIL = process.env.E2E_EMAIL!
 const PASSWORD = process.env.E2E_PASSWORD!
 
 test.describe('Diet scan product', () => {
-  let createdDayId: string | null = null
-
   test.beforeEach(async ({ page }) => {
     await loginAs(page, EMAIL, PASSWORD)
 
@@ -23,13 +21,6 @@ test.describe('Diet scan product', () => {
       for (const day of days ?? []) {
         await page.request.delete(`/api/diet/delete?id=${day.id}`)
       }
-    }
-  })
-
-  test.afterEach(async ({ page }) => {
-    if (createdDayId) {
-      await page.request.delete(`/api/diet/delete?id=${createdDayId}`)
-      createdDayId = null
     }
   })
 
@@ -49,6 +40,7 @@ test.describe('Diet scan product', () => {
     })
 
     await page.goto('/diet-history')
+    await page.waitForResponse(r => r.url().includes('/api/diet/get-history') && r.status() === 200)
     await page.getByRole('button', { name: /add diet day/i }).click()
     await expect(page.getByRole('dialog').first()).toBeVisible()
 
@@ -80,9 +72,14 @@ test.describe('Diet scan product', () => {
     await expect(scanDialog).not.toBeVisible()
 
     // Verify calculator fields are filled
+    // Calculator uses plain <label> tags (not FormLabel) — locate input via parent div
     const kcalPer100gInput = page.locator('label', { hasText: 'Kcal / 100g' }).locator('..').locator('input')
     const proteinPer100gInput = page.locator('label', { hasText: 'Protein / 100g' }).locator('..').locator('input')
+    const carbsPer100gInput = page.locator('label', { hasText: 'Carbs / 100g' }).locator('..').locator('input')
+    const fatPer100gInput = page.locator('label', { hasText: 'Fat / 100g' }).locator('..').locator('input')
     await expect(kcalPer100gInput).toHaveValue('165')
     await expect(proteinPer100gInput).toHaveValue('31')
+    await expect(carbsPer100gInput).toHaveValue('0')
+    await expect(fatPer100gInput).toHaveValue('3.6')
   })
 })
