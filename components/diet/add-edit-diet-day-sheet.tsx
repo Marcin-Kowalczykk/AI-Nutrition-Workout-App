@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator, Pencil, Check, X, Info } from "lucide-react";
+import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera } from "lucide-react";
 
 //components
 import {
@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
+import { ProductScannerDialog } from "@/components/diet/product-scanner-dialog";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -104,6 +105,7 @@ const ProductFields = ({
   const { setValue, getValues, formState: { isDirty }, trigger } = useFormContext<DietDayFormValues>();
 
   const [calcOpen, setCalcOpen] = useState(false);
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
@@ -412,6 +414,21 @@ const ProductFields = ({
 
           {calcOpen && (
             <div className="flex flex-col gap-1.5 border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
+              <div className="flex items-center justify-between rounded-md border border-dashed px-2 py-1.5">
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Camera className="h-3.5 w-3.5" />
+                  Scan product to fill 100g values
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setScanDialogOpen(true)}
+                  className="h-6 px-2 text-xs text-primary-element hover:text-primary-element"
+                >
+                  Open camera
+                </Button>
+              </div>
               <div className="grid grid-cols-2 gap-1.5">
                 <FormField
                   control={control}
@@ -544,6 +561,11 @@ const ProductFields = ({
           </div>
         </div>
       )}
+      <ProductScannerDialog
+        open={scanDialogOpen}
+        onOpenChange={setScanDialogOpen}
+        onApply={() => {}}
+      />
     </div>
   );
 };
