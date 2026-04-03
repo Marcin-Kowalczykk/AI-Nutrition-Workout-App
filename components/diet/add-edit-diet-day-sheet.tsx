@@ -456,8 +456,8 @@ const ProductFields = ({
                 className="w-full h-7 text-xs gap-1.5"
               >
                 <Camera className="h-3 w-3" />
-                Scan product to fill 100g values —{" "}
-                <span className="text-primary-element">Open camera</span>
+                Scan product to fill 100g values{" "}
+                <span className="text-primary-element">(Open camera)</span>
               </Button>
               <div className="grid grid-cols-2 gap-1.5">
                 <FormField
