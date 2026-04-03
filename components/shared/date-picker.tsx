@@ -176,11 +176,15 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           </PopoverTrigger>
         </div>
         <PopoverContent
-          className="p-0 bg-background w-[calc(100vw-2rem)] sm:w-auto max-h-[min(85vh,28rem)] overflow-y-auto"
+          className="p-0 bg-background w-[calc(100vw-2rem)] sm:w-auto overflow-y-auto"
           align="start"
           style={{
             width: popoverWidth ? `${popoverWidth}px` : undefined,
+            minWidth: "280px",
+            WebkitOverflowScrolling: "touch",
           }}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
         >
           <Calendar
             mode="single"

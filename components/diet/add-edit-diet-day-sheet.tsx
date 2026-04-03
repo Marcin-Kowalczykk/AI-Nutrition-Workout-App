@@ -519,26 +519,26 @@ const ProductFields = ({
             </div>
           )}
 
-          <div className="flex items-center gap-2 pt-0.5">
+          <div className="flex items-center gap-2 pt-1">
             <Button
               type="button"
-              variant="ghost"
+              variant="default"
               size="sm"
               onClick={saveEdit}
               disabled={!productName}
-              className="h-6 px-2 text-xs gap-1"
+              className="h-8 px-3 text-xs gap-1"
             >
-              <Check className="h-3 w-3" />
+              <Check className="h-3.5 w-3.5" />
               Save
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={cancelEdit}
-              className="h-6 px-2 text-xs gap-1 text-muted-foreground"
+              className="h-8 px-3 text-xs gap-1 text-muted-foreground"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
               Cancel
             </Button>
           </div>
