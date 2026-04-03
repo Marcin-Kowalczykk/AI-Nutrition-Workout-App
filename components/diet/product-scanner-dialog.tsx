@@ -261,7 +261,7 @@ export const ProductScannerDialog = ({
         {scanState === "limit_reached" && (
           <div className="flex flex-col gap-3 py-2">
             <p className="text-sm text-muted-foreground">
-              Daily limit reached (5/5 scans). Try again tomorrow.
+              Daily scan limit reached. Try again tomorrow.
             </p>
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Close
