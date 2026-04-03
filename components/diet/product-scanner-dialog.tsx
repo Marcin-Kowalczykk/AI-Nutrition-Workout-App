@@ -3,6 +3,12 @@
 import { useRef, useState } from "react";
 import { Camera, RotateCcw } from "lucide-react";
 
+//libs
+import { toast } from "sonner";
+
+//hooks
+import { getAccessToken } from "@/lib/supabase/get-access-token";
+
 //components
 import {
   Dialog,
@@ -16,6 +22,33 @@ import { Loader } from "@/components/shared/loader";
 
 //types
 type ScanState = "idle" | "preview" | "analyzing" | "result" | "error" | "limit_reached";
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
+const resizeImageIfNeeded = (file: File): Promise<File> => {
+  if (file.size <= MAX_IMAGE_BYTES) return Promise.resolve(file);
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const ratio = Math.sqrt(MAX_IMAGE_BYTES / file.size);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.floor(img.width * ratio);
+      canvas.height = Math.floor(img.height * ratio);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(url);
+          resolve(new File([blob!], file.name, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        0.85
+      );
+    };
+    img.src = url;
+  });
+};
 
 interface ScanResult {
   kcal: string;
@@ -73,7 +106,47 @@ export const ProductScannerDialog = ({
   };
 
   const handleAnalyze = async () => {
-    // Phase 2: implemented in Task 6
+    if (!photo) return;
+    setScanState("analyzing");
+    try {
+      const resized = await resizeImageIfNeeded(photo);
+      const token = await getAccessToken();
+      const formData = new FormData();
+      formData.append("image", resized);
+
+      const response = await fetch("/api/diet/scan-product", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (response.status === 429) {
+        setScanState("limit_reached");
+        return;
+      }
+      if (response.status === 422) {
+        setError("Couldn't read the label clearly — try a better-lit photo.");
+        setScanState("error");
+        return;
+      }
+      if (!response.ok) {
+        toast.error("Analysis failed, try again.");
+        setScanState("preview");
+        return;
+      }
+
+      const data = await response.json();
+      setResult({
+        kcal: data.kcal_per_100g != null ? String(data.kcal_per_100g) : "",
+        protein: data.protein_per_100g != null ? String(data.protein_per_100g) : "",
+        carbs: data.carbs_per_100g != null ? String(data.carbs_per_100g) : "",
+        fat: data.fat_per_100g != null ? String(data.fat_per_100g) : "",
+      });
+      setScanState("result");
+    } catch {
+      toast.error("Analysis failed, try again.");
+      setScanState("preview");
+    }
   };
 
   const handleApply = () => {
