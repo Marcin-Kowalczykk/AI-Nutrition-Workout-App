@@ -7,4 +7,5 @@ export const TABLE_NAMES = {
   DIET_DAYS: "diet_days",
   DIET_MEALS: "diet_meals",
   DIET_PRODUCTS: "diet_products",
+  DIET_SCAN_USAGE: "diet_scan_usage",
 };

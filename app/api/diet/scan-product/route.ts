@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+
+//libs
 import { createClient } from "@/lib/supabase/server";
+import { TABLE_NAMES } from "@/app/api/tableNames";
 
 const anthropic = new Anthropic();
 
@@ -34,7 +37,7 @@ export async function POST(request: NextRequest) {
       const limit = profile?.scan_daily_limit ?? 5;
 
       const { data: usage } = await supabase
-        .from("diet_scan_usage")
+        .from(TABLE_NAMES.DIET_SCAN_USAGE)
         .select("count")
         .eq("user_id", user.id)
         .eq("date", today)
@@ -112,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isOwner) {
-      await supabase.from("diet_scan_usage").upsert(
+      await supabase.from(TABLE_NAMES.DIET_SCAN_USAGE).upsert(
         { user_id: user.id, date: today, count: currentUsageCount + 1 },
         { onConflict: "user_id,date" }
       );
