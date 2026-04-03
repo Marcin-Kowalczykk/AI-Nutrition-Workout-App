@@ -43,6 +43,7 @@ export const ProductScannerDialog = ({
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setScanState("idle");
     setPreviewUrl(null);
     setPhoto(null);
