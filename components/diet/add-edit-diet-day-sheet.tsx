@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { ProductScannerDialog } from "@/components/diet/product-scanner-dialog";
+import { AiAnalyzeDialog } from "@/components/diet/ai-analyze-dialog";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -106,6 +107,7 @@ const ProductFields = ({
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [aiAnalyzeOpen, setAiAnalyzeOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
@@ -259,6 +261,39 @@ const ProductFields = ({
     recalculate();
   };
 
+  const handleAnalyzeApply = ({
+    kcal,
+    protein,
+    carbs,
+    fat,
+  }: {
+    kcal: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+  }) => {
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.product_kcal`,
+      kcal,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.protein_value`,
+      protein,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.carbs_value`,
+      carbs,
+      { shouldDirty: true }
+    );
+    setValue(
+      `meals.${mealIndex}.products.${productIndex}.fat_value`,
+      fat,
+      { shouldDirty: true }
+    );
+  };
+
   return (
     <div className="flex flex-col gap-1.5 border-t pt-2">
       <ConfirmModal
@@ -354,6 +389,16 @@ const ProductFields = ({
                 </FormItem>
               )}
             />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={productName.trim().length < 3}
+              onClick={() => setAiAnalyzeOpen(true)}
+              className="h-8 px-2 text-xs font-bold shrink-0 mt-5"
+            >
+              AI
+            </Button>
             {!!(productName || productKcal) && (
               <Button
                 type="button"
@@ -595,6 +640,12 @@ const ProductFields = ({
         open={scanDialogOpen}
         onOpenChange={setScanDialogOpen}
         onApply={handleScanApply}
+      />
+      <AiAnalyzeDialog
+        open={aiAnalyzeOpen}
+        onOpenChange={setAiAnalyzeOpen}
+        productName={productName || ""}
+        onApply={handleAnalyzeApply}
       />
     </div>
   );

@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         .select("count")
         .eq("user_id", user.id)
         .eq("date", today)
+        .eq("type", "scan")
         .single();
 
       currentUsageCount = usage?.count ?? 0;
@@ -118,8 +119,8 @@ export async function POST(request: NextRequest) {
 
     if (!isOwner) {
       await supabase.from(TABLE_NAMES.DIET_SCAN_USAGE).upsert(
-        { user_id: user.id, date: today, count: currentUsageCount + 1 },
-        { onConflict: "user_id,date" }
+        { user_id: user.id, date: today, type: "scan", count: currentUsageCount + 1 },
+        { onConflict: "user_id,date,type" }
       );
     }
 
