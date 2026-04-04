@@ -109,6 +109,7 @@ export const AiAnalyzeDialog = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPhoto(file);
     setPreviewUrl(URL.createObjectURL(file));
     setAnalyzeState("photo_preview");
@@ -260,12 +261,13 @@ export const AiAnalyzeDialog = ({
             <div className="grid grid-cols-2 gap-2">
               {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
                 <div key={key} className="flex flex-col gap-1">
-                  <label className="text-xs font-medium">
+                  <label htmlFor={`analyze-${key}`} className="text-xs font-medium">
                     {key === "kcal"
                       ? "Kcal"
                       : `${key.charAt(0).toUpperCase() + key.slice(1)} [g]`}
                   </label>
                   <Input
+                    id={`analyze-${key}`}
                     type="number"
                     step="0.01"
                     min={0}
