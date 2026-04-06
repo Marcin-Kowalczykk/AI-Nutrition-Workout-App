@@ -39,6 +39,12 @@ interface AnalyzeResult {
   fat: string;
 }
 
+interface BreakdownItem {
+  name: string;
+  weight_g: number;
+  kcal: number;
+}
+
 interface AiAnalyzeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -92,6 +98,7 @@ export const AiAnalyzeDialog = ({
     fat: "",
   });
   const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
+  const [breakdown, setBreakdown] = useState<BreakdownItem[] | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isNameExpanded, setIsNameExpanded] = useState(false);
@@ -105,6 +112,7 @@ export const AiAnalyzeDialog = ({
     setPhotos([]);
     setResult({ kcal: "", protein: "", carbs: "", fat: "" });
     setConfidence(null);
+    setBreakdown(null);
     setWarning(null);
     setError(null);
     setIsNameExpanded(false);
@@ -160,8 +168,11 @@ export const AiAnalyzeDialog = ({
         return;
       }
       if (response.status === 422) {
+        const errData = await response.json().catch(() => ({}));
         setError(
-          "This doesn't look like a food or meal. Please enter a valid food description."
+          errData.error === "Could not parse AI response"
+            ? "Analysis failed — please try again."
+            : "This doesn't look like a food or meal. Please enter a valid food description."
         );
         setAnalyzeState("error");
         return;
@@ -180,6 +191,7 @@ export const AiAnalyzeDialog = ({
         fat: data.fat != null ? String(data.fat) : "",
       });
       setConfidence(data.confidence ?? null);
+      setBreakdown(data.breakdown ?? null);
       setWarning(data.warning ?? null);
       setAnalyzeState("result");
     } catch {
@@ -342,6 +354,17 @@ export const AiAnalyzeDialog = ({
                   : confidence === "medium"
                     ? "Medium confidence"
                     : "Low confidence — results may be inaccurate"}
+              </div>
+            )}
+            {breakdown && breakdown.length > 0 && (
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
+                <p className="text-xs font-medium text-muted-foreground mb-0.5">Meal components:</p>
+                {breakdown.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">• {item.name}</span>
+                    <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                  </div>
+                ))}
               </div>
             )}
             {warning && (

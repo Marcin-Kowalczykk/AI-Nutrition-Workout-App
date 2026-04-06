@@ -17,7 +17,7 @@ Look for reference points:
 - Human hand visible in the photo
 
 Use these to estimate the weight and volume of each component.
-If no reference points are visible — assume a standard restaurant portion and note it in "portion_note".
+If no reference points are visible — assume a standard restaurant portion.
 
 ## Analysis rules:
 1. Account for preparation method (fried, boiled, baked) — it significantly affects calories
@@ -25,11 +25,26 @@ If no reference points are visible — assume a standard restaurant portion and 
 3. If the description mentions ingredients not visible in the photo, include them in standard portion amounts
 4. Provide values for the ENTIRE portion visible in the photo
 
-## Response format — JSON only, zero additional text:
-{"calories": number, "protein_g": number, "fat_g": number, "carbs_g": number, "fiber_g": number, "total_weight_g": number, "confidence": "low|medium|high", "portion_note": string or null, "warning": string or null}
+## Response format — return ONLY a raw JSON object, no markdown, no code blocks, no extra text:
+{
+  "calories": <number>,
+  "protein_g": <number>,
+  "fat_g": <number>,
+  "carbs_g": <number>,
+  "fiber_g": <number>,
+  "total_weight_g": <number>,
+  "confidence": <"low"|"medium"|"high">,
+  "breakdown": [
+    {"name": <string>, "weight_g": <number>, "kcal": <number>}
+  ],
+  "warning": <string|null>
+}
 
-confidence guide: high = visible reference points + simple meal; medium = no cutlery but standard plate, or complex dish; low = no reference points at all or meal mostly out of frame
-warning examples: no reference points detected, description differs significantly from photo, meal partially eaten, very poor lighting
+Field notes:
+- breakdown: list every distinct component (ingredients, sides, sauces, cooking fat, breading, etc.) with estimated weight_g and kcal. Always include — minimum 1 item.
+- confidence: "high" = visible reference points + simple meal; "medium" = standard plate or complex dish; "low" = no reference points or meal mostly out of frame
+- warning: short note only for real quality issues (no reference points, partial meal, poor lighting, photo-description mismatch). Use null if none.
+- language: detect the language of the meal description and use that same language for all text fields (breakdown names, warning). If the description is in Polish — respond in Polish. If English — respond in English. Etc.
 
 ## Important:
 If the input is clearly not a food or meal (e.g. random words, objects, animals, places, abstract concepts), return all nutritional values as null.`;
@@ -119,17 +134,19 @@ export async function POST(request: NextRequest) {
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 256,
+      max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     });
 
-    const text =
+    const rawText =
       response.content[0].type === "text"
         ? response.content[0].text.trim()
         : "";
 
-    let parsed: Record<string, number | string | null>;
+    const text = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+
+    let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(text);
     } catch {
@@ -145,6 +162,7 @@ export async function POST(request: NextRequest) {
     const fat = parsed.fat_g as number | null;
     const confidence = parsed.confidence as string | null;
     const warning = parsed.warning as string | null;
+    const breakdown = Array.isArray(parsed.breakdown) ? parsed.breakdown as { name: string; weight_g: number; kcal: number }[] : null;
 
     const allNull = [kcal, protein, carbs, fat].every(
       (v) => v === null || v === undefined
@@ -169,7 +187,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ kcal, protein, carbs, fat, confidence, warning }, { status: 200 });
+    return NextResponse.json({ kcal, protein, carbs, fat, confidence, breakdown, warning }, { status: 200 });
   } catch (error) {
     console.error("Analyze product error:", error);
     return NextResponse.json(
