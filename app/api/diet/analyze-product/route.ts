@@ -7,14 +7,38 @@ import { TABLE_NAMES } from "@/app/api/tableNames";
 
 const anthropic = new Anthropic();
 
-const SYSTEM_PROMPT = `You are a nutrition expert. You only output raw JSON. No explanations, no markdown, no code blocks. Only a valid JSON object.`;
+const SYSTEM_PROMPT = `You are a nutrition and dietetics expert. You analyze meals based on a photo and text description to estimate nutritional values.
 
-const buildAnalyzePrompt = (productName: string) =>
-  `Estimate the total nutritional values for this meal/product: "${productName}".
-Provide your best estimate for the described portion.
-Return exactly: {"kcal": <number|null>, "protein": <number|null>, "carbs": <number|null>, "fat": <number|null>}
-All values must be numbers. kcal is kilocalories. protein, carbs, fat are in grams.
-If you cannot estimate a value, use null.`;
+## How to assess portion size from the photo:
+Look for reference points:
+- Cutlery (fork ≈ 19cm, spoon ≈ 20cm)
+- Plate (dinner plate ≈ 26-28cm, dessert plate ≈ 20cm)
+- Glass / mug (≈ 250ml)
+- Human hand visible in the photo
+
+Use these to estimate the weight and volume of each component.
+If no reference points are visible — assume a standard restaurant portion and note it in "portion_note".
+
+## Analysis rules:
+1. Account for preparation method (fried, boiled, baked) — it significantly affects calories
+2. Include non-visible but obvious ingredients: frying oil, butter, breading
+3. If the description mentions ingredients not visible in the photo, include them in standard portion amounts
+4. Provide values for the ENTIRE portion visible in the photo
+
+## Response format — JSON only, zero additional text:
+{"calories": number, "protein_g": number, "fat_g": number, "carbs_g": number, "fiber_g": number, "total_weight_g": number, "confidence": "low|medium|high", "portion_note": string or null, "warning": string or null}
+
+confidence guide: high = visible reference points + simple meal; medium = no cutlery but standard plate, or complex dish; low = no reference points at all or meal mostly out of frame
+warning examples: no reference points detected, description differs significantly from photo, meal partially eaten, very poor lighting`;
+
+const buildAnalyzePrompt = (productName: string, hasImage: boolean) =>
+  `Analyse the meal and estimate nutritional values for the entire visible portion.
+
+Meal name/description: "${productName}"
+
+${hasImage ? "A photo is attached. Assess portion size based on reference points visible in the photo (plate, cutlery, glass)." : "No photo provided — use the description only to estimate a standard portion."}
+
+Return ONLY JSON, no additional text.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -88,7 +112,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    userContent.push({ type: "text", text: buildAnalyzePrompt(productName) });
+    userContent.push({ type: "text", text: buildAnalyzePrompt(productName, !!image) });
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
@@ -102,7 +126,7 @@ export async function POST(request: NextRequest) {
         ? response.content[0].text.trim()
         : "";
 
-    let parsed: Record<string, number | null>;
+    let parsed: Record<string, number | string | null>;
     try {
       parsed = JSON.parse(text);
     } catch {
@@ -112,7 +136,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { kcal, protein, carbs, fat } = parsed;
+    const kcal = parsed.calories as number | null;
+    const protein = parsed.protein_g as number | null;
+    const carbs = parsed.carbs_g as number | null;
+    const fat = parsed.fat_g as number | null;
+    const confidence = parsed.confidence as string | null;
+    const warning = parsed.warning as string | null;
 
     const allNull = [kcal, protein, carbs, fat].every(
       (v) => v === null || v === undefined
@@ -137,7 +166,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ kcal, protein, carbs, fat }, { status: 200 });
+    return NextResponse.json({ kcal, protein, carbs, fat, confidence, warning }, { status: 200 });
   } catch (error) {
     console.error("Analyze product error:", error);
     return NextResponse.json(

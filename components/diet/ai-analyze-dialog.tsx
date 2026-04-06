@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, RotateCcw } from "lucide-react";
 
 //libs
 import { toast } from "sonner";
@@ -88,6 +88,8 @@ export const AiAnalyzeDialog = ({
     carbs: "",
     fat: "",
   });
+  const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
@@ -96,6 +98,8 @@ export const AiAnalyzeDialog = ({
     setPreviewUrl(null);
     setPhoto(null);
     setResult({ kcal: "", protein: "", carbs: "", fat: "" });
+    setConfidence(null);
+    setWarning(null);
     setError(null);
   };
 
@@ -165,6 +169,8 @@ export const AiAnalyzeDialog = ({
         carbs: data.carbs != null ? String(data.carbs) : "",
         fat: data.fat != null ? String(data.fat) : "",
       });
+      setConfidence(data.confidence ?? null);
+      setWarning(data.warning ?? null);
       setAnalyzeState("result");
     } catch {
       toast.error("Analysis failed, try again.");
@@ -199,10 +205,19 @@ export const AiAnalyzeDialog = ({
               Analysing:{" "}
               <span className="font-medium text-foreground">{productName}</span>
             </p>
-            <p className="text-xs text-muted-foreground">
-              Add a photo of the meal for a more accurate estimate. The photo is
-              optional.
-            </p>
+            <div className="rounded-md border border-border bg-muted/40 p-3 flex flex-col gap-1.5">
+              <p className="text-xs font-medium flex items-center gap-1.5">
+                <Info className="h-3.5 w-3.5 text-primary-element shrink-0" />
+                Tips for a more accurate estimate:
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1 pl-5 list-disc">
+                <li>Place a fork or spoon next to the plate (scale reference)</li>
+                <li>Shoot from directly above (90°)</li>
+                <li>Include the whole meal in the frame</li>
+                <li>Good lighting, no filters</li>
+                <li>Photo before eating</li>
+              </ul>
+            </div>
             <Button onClick={handleAddPhoto} className="w-full gap-2">
               Add photo
             </Button>
@@ -219,6 +234,7 @@ export const AiAnalyzeDialog = ({
         {(analyzeState === "photo_preview" || analyzeState === "analyzing") &&
           previewUrl && (
             <div className="flex flex-col gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt="Meal photo"
@@ -255,6 +271,32 @@ export const AiAnalyzeDialog = ({
 
         {analyzeState === "result" && (
           <div className="flex flex-col gap-3">
+            {confidence && (
+              <div className={`flex items-center gap-1.5 text-xs font-medium ${
+                confidence === "high"
+                  ? "text-green-500"
+                  : confidence === "medium"
+                    ? "text-amber-500"
+                    : "text-destructive"
+              }`}>
+                {confidence === "high" ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                )}
+                {confidence === "high"
+                  ? "High confidence"
+                  : confidence === "medium"
+                    ? "Medium confidence"
+                    : "Low confidence — results may be inaccurate"}
+              </div>
+            )}
+            {warning && (
+              <div className="flex items-start gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                {warning}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               Check and correct if needed:
             </p>
