@@ -18,6 +18,7 @@ type ProductInput = {
   protein_per_100g?: number | null;
   carbs_per_100g?: number | null;
   fat_per_100g?: number | null;
+  ai_breakdown?: { name: string; weight_g: number; kcal: number }[] | null;
 };
 
 type MealInput = {
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
               protein_per_100g: p.protein_per_100g ?? null,
               carbs_per_100g: p.carbs_per_100g ?? null,
               fat_per_100g: p.fat_per_100g ?? null,
+              ai_breakdown: p.ai_breakdown ?? null,
             }))
           )
           .select();

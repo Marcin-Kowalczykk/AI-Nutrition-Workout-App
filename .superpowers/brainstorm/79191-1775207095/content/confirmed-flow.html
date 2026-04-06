@@ -1,0 +1,92 @@
+<h2>Potwierdzenie flow — B + zatwierdzenie jak w C</h2>
+<p class="subtitle">Upewnijmy się że to dokładnie to, czego chcesz</p>
+
+<div class="mockup">
+  <div class="mockup-header">Pełny przepływ — scan etykiety</div>
+  <div class="mockup-body">
+    <div style="font-family:sans-serif;font-size:11px;color:#e5e5e5;display:flex;flex-direction:column;gap:8px;">
+
+      <!-- Step 1 -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:#992BFF;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">1</div>
+        <div style="flex:1;">
+          <div style="color:#aaa;margin-bottom:3px;">Użytkownik otwiera kalkulator w formularzu produktu → baner "Scan label" → klika "Open camera"</div>
+          <div style="background:#1a1a1a;border:1px dashed #333;border-left:2px solid #992BFF;border-radius:4px;padding:6px 8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="color:#888;">📷 Scan label to fill 100g values</span>
+              <button style="background:#992BFF22;border:1px solid #992BFF;border-radius:4px;padding:3px 8px;color:#992BFF;font-size:10px;">Open camera</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:#992BFF;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">2</div>
+        <div style="flex:1;">
+          <div style="color:#aaa;margin-bottom:3px;">Systemowy aparat / galeria → użytkownik robi lub wybiera zdjęcie</div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#888;text-align:center;">📱 input[type=file capture="environment"]</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:#992BFF;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">3</div>
+        <div style="flex:1;">
+          <div style="color:#aaa;margin-bottom:3px;">Podgląd zdjęcia + przyciski Analyze / Retake</div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:8px;">
+            <div style="background:#333;border-radius:4px;height:70px;display:flex;align-items:center;justify-content:center;color:#888;margin-bottom:6px;font-size:10px;">🖼 zdjęcie etykiety</div>
+            <div style="display:flex;gap:6px;">
+              <button style="flex:1;background:#992BFF;border:none;border-radius:4px;padding:5px;color:#fff;font-size:10px;cursor:pointer;">✓ Analyze</button>
+              <button style="flex:1;background:#333;border:none;border-radius:4px;padding:5px;color:#aaa;font-size:10px;cursor:pointer;">↺ Retake</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:#992BFF;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">4</div>
+        <div style="flex:1;">
+          <div style="color:#aaa;margin-bottom:3px;">AI analizuje → wyniki edytowalne przed zatwierdzeniem</div>
+          <div style="background:#1a2a3a;border:1px solid #2a4a6a;border-radius:4px;padding:8px;">
+            <div style="font-size:10px;color:#888;margin-bottom:6px;">Wartości na 100g — sprawdź i popraw jeśli trzeba:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;">
+              <div style="background:#0f0f0f;border:1px solid #333;border-radius:3px;padding:4px 6px;">
+                <div style="font-size:9px;color:#888;">Kcal / 100g</div>
+                <div style="color:#6fcc6f;font-size:11px;">165</div>
+              </div>
+              <div style="background:#0f0f0f;border:1px solid #333;border-radius:3px;padding:4px 6px;">
+                <div style="font-size:9px;color:#888;">Protein / 100g</div>
+                <div style="color:#6fcc6f;font-size:11px;">31g</div>
+              </div>
+              <div style="background:#0f0f0f;border:1px solid #333;border-radius:3px;padding:4px 6px;">
+                <div style="font-size:9px;color:#888;">Carbs / 100g</div>
+                <div style="color:#6fcc6f;font-size:11px;">0g</div>
+              </div>
+              <div style="background:#0f0f0f;border:1px solid #333;border-radius:3px;padding:4px 6px;">
+                <div style="font-size:9px;color:#888;">Fat / 100g</div>
+                <div style="color:#6fcc6f;font-size:11px;">3.6g</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button style="flex:1;background:#992BFF;border:none;border-radius:4px;padding:5px;color:#fff;font-size:10px;cursor:pointer;">✓ Apply to calculator</button>
+              <button style="flex:1;background:#333;border:none;border-radius:4px;padding:5px;color:#aaa;font-size:10px;cursor:pointer;">✕ Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="background:#2a6a2a;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:2px;">✓</div>
+        <div style="flex:1;">
+          <div style="color:#6fcc6f;margin-bottom:3px;">Pola kalkulatora uzupełnione → recalculate() uruchamia się automatycznie</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Czy ten przepływ jest poprawny? Napisz w terminalu jeśli coś chcesz zmienić, albo potwierdź i przejdziemy dalej.</p>

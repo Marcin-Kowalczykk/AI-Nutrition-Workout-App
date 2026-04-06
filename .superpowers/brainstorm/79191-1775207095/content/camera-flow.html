@@ -1,0 +1,80 @@
+<h2>Co się dzieje po naciśnięciu "Open camera"?</h2>
+<p class="subtitle">Pytanie 2 — jaki jest przepływ po otwarciu aparatu?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:11px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#888;text-align:center;">📱 Systemowy aparat / galeria otwiera się</div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ użytkownik robi / wybiera zdjęcie</div>
+          <div style="background:#992BFF22;border:1px solid #992BFF44;border-radius:4px;padding:6px 8px;color:#ccc;text-align:center;">⏳ Analyzing label…</div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ AI zwraca dane</div>
+          <div style="background:#1a4a1a;border:1px solid #2a6a2a;border-radius:4px;padding:6px 8px;color:#6fcc6f;text-align:center;">✓ Pola uzupełnione automatycznie</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Bezpośrednio do AI</h3>
+      <p>Zdjęcie → od razu analiza → wyniki wpadają w pola. Brak podglądu. Najprostszy flow, ale użytkownik nie może ocenić czy zdjęcie jest czytelne przed wysłaniem.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:11px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#888;text-align:center;">📱 Systemowy aparat / galeria otwiera się</div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ użytkownik robi / wybiera zdjęcie</div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:8px;color:#ccc;">
+            <div style="background:#333;border-radius:4px;height:60px;display:flex;align-items:center;justify-content:center;color:#888;margin-bottom:6px;">🖼 Podgląd zdjęcia</div>
+            <div style="display:flex;gap:6px;">
+              <button style="flex:1;background:#992BFF;border:none;border-radius:4px;padding:5px;color:#fff;font-size:10px;cursor:pointer;">Analyze ✓</button>
+              <button style="flex:1;background:#333;border:none;border-radius:4px;padding:5px;color:#aaa;font-size:10px;cursor:pointer;">Retake ↺</button>
+            </div>
+          </div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ po potwierdzeniu → AI → pola uzupełnione</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Podgląd przed analizą</h3>
+      <p>Po zrobieniu zdjęcia pokazuje się podgląd z przyciskami „Analyze" i „Retake". Użytkownik może ocenić jakość zdjęcia przed wysłaniem do AI.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:11px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#888;text-align:center;">📱 Systemowy aparat / galeria otwiera się</div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ użytkownik robi / wybiera zdjęcie</div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:8px;color:#ccc;">
+            <div style="background:#333;border-radius:4px;height:50px;display:flex;align-items:center;justify-content:center;color:#888;margin-bottom:6px;">🖼 Podgląd + ⏳ Analyzing…</div>
+            <div style="text-align:center;color:#555;font-size:10px;">analiza w tle podczas podglądu</div>
+          </div>
+          <div style="text-align:center;color:#555;font-size:10px;">↓ wyniki gotowe</div>
+          <div style="background:#1a2a3a;border:1px solid #2a4a6a;border-radius:4px;padding:6px 8px;color:#ccc;">
+            <div style="font-size:10px;color:#888;margin-bottom:4px;">Znalezione wartości — czy zgadzają się?</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <span style="background:#1a4a1a;border:1px solid #2a6a2a;border-radius:3px;padding:2px 5px;color:#6fcc6f;font-size:9px;">Kcal: 165</span>
+              <span style="background:#1a4a1a;border:1px solid #2a6a2a;border-radius:3px;padding:2px 5px;color:#6fcc6f;font-size:9px;">P: 31g</span>
+              <span style="background:#1a4a1a;border:1px solid #2a6a2a;border-radius:3px;padding:2px 5px;color:#6fcc6f;font-size:9px;">C: 0g</span>
+              <span style="background:#1a4a1a;border:1px solid #2a6a2a;border-radius:3px;padding:2px 5px;color:#6fcc6f;font-size:9px;">F: 3.6g</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button style="flex:1;background:#992BFF;border:none;border-radius:4px;padding:4px;color:#fff;font-size:10px;cursor:pointer;">Apply ✓</button>
+              <button style="flex:1;background:#333;border:none;border-radius:4px;padding:4px;color:#aaa;font-size:10px;cursor:pointer;">Edit manually</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Podgląd + wyniki do zatwierdzenia</h3>
+      <p>Analiza w tle podczas podglądu zdjęcia. Wyniki pokazane do zatwierdzenia przed wpisaniem do formularza — użytkownik może sprawdzić poprawność i ewentualnie odrzucić.</p>
+    </div>
+  </div>
+
+</div>

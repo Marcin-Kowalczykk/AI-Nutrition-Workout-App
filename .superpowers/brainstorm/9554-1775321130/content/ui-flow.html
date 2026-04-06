@@ -1,0 +1,81 @@
+<h2>Design: UI Flow — AiAnalyzeDialog</h2>
+<p class="subtitle">Wzorowany na ProductScannerDialog — te same stany, inny prompt i wynik</p>
+
+<div class="section">
+  <h3>1. Przycisk "AI" przy product_name</h3>
+  <div class="mockup">
+    <div class="mockup-header">ProductFields — tryb edycji</div>
+    <div class="mockup-body" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11px; font-weight:600; color:#888;">Product name</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <div style="flex:1; border:1px solid #333; border-radius:6px; padding:8px 10px; font-size:13px; background:#1a1a1a; color:#eee;">schabowy z ziemniakami</div>
+            <button style="padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; background:#992BFF; color:white; border:none; cursor:pointer; white-space:nowrap;">AI</button>
+          </div>
+        </div>
+        <button style="margin-top:20px; padding:6px; border-radius:6px; background:transparent; border:none; color:#e44;">🗑</button>
+      </div>
+      <p style="font-size:11px; color:#666; margin:0;">Przycisk aktywny gdy wpisano ≥ 3 znaki. Szary + disabled gdy mniej.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. Stany modalu (dialog max-w-sm, jak scan-product)</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Stan: idle</div>
+      <div class="mockup-body" style="padding:16px; display:flex; flex-direction:column; gap:12px; align-items:center; text-align:center;">
+        <p style="font-size:13px; font-weight:600; margin:0;">Analyse: schabowy z ziemniakami</p>
+        <p style="font-size:12px; color:#888; margin:0;">Chcesz dodać zdjęcie posiłku? AI będzie miało więcej informacji do analizy.</p>
+        <button style="width:100%; padding:8px; border-radius:6px; background:#992BFF; color:white; border:none; font-size:13px;">📷 Dodaj zdjęcie</button>
+        <button style="width:100%; padding:8px; border-radius:6px; background:transparent; border:1px solid #444; color:#ccc; font-size:13px;">Analizuj bez zdjęcia</button>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Stan: photo_preview</div>
+      <div class="mockup-body" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#2a2a2a; border-radius:6px; height:120px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">[ podgląd zdjęcia ]</div>
+        <div style="display:flex; gap:8px;">
+          <button style="flex:1; padding:7px; border-radius:6px; background:#992BFF; color:white; border:none; font-size:13px;">Analizuj</button>
+          <button style="padding:7px 12px; border-radius:6px; background:transparent; border:1px solid #444; color:#ccc; font-size:12px;">↺ Zmień</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:12px;">
+    <div class="mockup">
+      <div class="mockup-header">Stan: analyzing</div>
+      <div class="mockup-body" style="padding:24px; display:flex; flex-direction:column; align-items:center; gap:10px;">
+        <div style="width:24px;height:24px;border:3px solid #992BFF;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <p style="font-size:13px; color:#888; margin:0;">Analizuję posiłek…</p>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Stan: result</div>
+      <div class="mockup-body" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <p style="font-size:11px; color:#888; margin:0;">Sprawdź i popraw jeśli potrzeba:</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="display:flex;flex-direction:column;gap:3px;"><label style="font-size:11px;font-weight:600;">Kcal</label><div style="border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px;background:#1a1a1a;color:#eee;">520</div></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><label style="font-size:11px;font-weight:600;">Protein [g]</label><div style="border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px;background:#1a1a1a;color:#eee;">38</div></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><label style="font-size:11px;font-weight:600;">Carbs [g]</label><div style="border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px;background:#1a1a1a;color:#eee;">45</div></div>
+          <div style="display:flex;flex-direction:column;gap:3px;"><label style="font-size:11px;font-weight:600;">Fat [g]</label><div style="border:1px solid #444;border-radius:5px;padding:5px 8px;font-size:13px;background:#1a1a1a;color:#eee;">18</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button style="flex:1;padding:8px;border-radius:6px;background:#992BFF;color:white;border:none;font-size:13px;">Zastosuj</button>
+          <button style="padding:8px 12px;border-radius:6px;background:transparent;border:1px solid #444;color:#ccc;font-size:12px;">Anuluj</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="section" style="padding:12px; background:rgba(153,43,255,0.08); border-radius:8px; border-left:3px solid #992BFF;">
+  <p style="margin:0;font-size:13px;"><strong>Stany: idle → (photo_preview) → analyzing → result | error | limit_reached</strong><br>Identyczna struktura jak ProductScannerDialog. Brak zdjęcia = przeskakuje od razu do analyzing.</p>
+</div>

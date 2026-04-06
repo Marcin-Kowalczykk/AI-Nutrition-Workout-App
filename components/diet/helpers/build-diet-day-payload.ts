@@ -18,6 +18,7 @@ export const buildDietDayPayload = (
       protein_per_100g: p.protein_per_100g ? Number(p.protein_per_100g) : null,
       carbs_per_100g: p.carbs_per_100g ? Number(p.carbs_per_100g) : null,
       fat_per_100g: p.fat_per_100g ? Number(p.fat_per_100g) : null,
+      ai_breakdown: p.ai_breakdown ?? null,
     })),
   })),
 });

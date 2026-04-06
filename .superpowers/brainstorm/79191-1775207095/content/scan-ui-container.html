@@ -1,0 +1,60 @@
+<h2>Gdzie wyświetla się UI skanowania?</h2>
+<p class="subtitle">Pytanie 4 — podgląd zdjęcia i wyniki AI: inline czy w modalu?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:11px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:8px;margin-bottom:6px;">
+          <div style="font-size:10px;color:#888;margin-bottom:4px;">Product name</div>
+          <div style="background:#222;border-radius:3px;padding:4px 6px;color:#ccc;">Chicken breast</div>
+        </div>
+        <div style="background:#1a1a1a;border:1px dashed #333;border-left:2px solid #992BFF;border-radius:4px;padding:8px;">
+          <div style="font-size:10px;color:#888;margin-bottom:4px;">Kalkulator 100g</div>
+          <!-- Scanner inline -->
+          <div style="background:#0f0f0f;border:1px solid #333;border-radius:4px;padding:6px;margin-bottom:6px;">
+            <div style="background:#333;border-radius:3px;height:50px;display:flex;align-items:center;justify-content:center;color:#888;font-size:10px;margin-bottom:4px;">🖼 podgląd zdjęcia</div>
+            <div style="display:flex;gap:4px;">
+              <button style="flex:1;background:#992BFF;border:none;border-radius:3px;padding:3px;color:#fff;font-size:9px;">Analyze</button>
+              <button style="flex:1;background:#333;border:none;border-radius:3px;padding:3px;color:#aaa;font-size:9px;">Retake</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+            <div style="background:#222;border:1px solid #333;border-radius:3px;padding:3px 5px;"><div style="font-size:8px;color:#888;">Kcal/100g</div><div style="color:#ccc;">—</div></div>
+            <div style="background:#222;border:1px solid #333;border-radius:3px;padding:3px 5px;"><div style="font-size:8px;color:#888;">Protein/100g</div><div style="color:#ccc;">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Inline w sekcji kalkulatora</h3>
+      <p>Podgląd i wyniki rozwijają się wewnątrz karty produktu, poniżej banera. Sheet (boczny panel) się nie zmienia — wszystko w miejscu.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:11px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;position:relative;">
+        <div style="opacity:0.3;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px;margin-bottom:4px;font-size:10px;color:#888;">Sheet z formularzem…</div>
+        </div>
+        <!-- Dialog overlay -->
+        <div style="position:absolute;inset:4px;background:#1a1a2a;border:1px solid #992BFF44;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;font-weight:600;color:#e5e5e5;">📷 Scan nutrition label</div>
+          <div style="background:#333;border-radius:4px;height:55px;display:flex;align-items:center;justify-content:center;color:#888;font-size:10px;">🖼 podgląd zdjęcia</div>
+          <div style="display:flex;gap:4px;">
+            <button style="flex:1;background:#992BFF;border:none;border-radius:3px;padding:4px;color:#fff;font-size:9px;">✓ Analyze</button>
+            <button style="flex:1;background:#333;border:none;border-radius:3px;padding:4px;color:#aaa;font-size:9px;">↺ Retake</button>
+          </div>
+          <div style="font-size:9px;color:#888;">po analizie → wyniki edytowalne tu</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Dialog (modal) nad Sheetem</h3>
+      <p>Skanowanie odbywa się w osobnym Dialogu otwartym nad bocznym panelem. Więcej miejsca na podgląd i wyniki, wyraźne oddzielenie od formularza.</p>
+    </div>
+  </div>
+
+</div>

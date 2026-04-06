@@ -1,0 +1,88 @@
+<h2>Gdzie umieścić przycisk aparatu?</h2>
+<p class="subtitle">Pytanie 1 z kilku — gdzie użytkownik uruchamia skanowanie etykiety w formularzu produktu?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:12px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-size:10px;color:#aaa;">Product name</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div style="flex:1;background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#ccc;">Chicken breast</div>
+          <button style="background:#992BFF;border:none;border-radius:4px;padding:6px 8px;cursor:pointer;color:#fff;font-size:11px;display:flex;align-items:center;gap:4px;">
+            📷 Scan label
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Kcal</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Protein</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Carbs</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Fat</div><div style="color:#ccc;">0</div></div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:4px;">
+          <span style="font-size:10px;color:#888;">🧮 Calculate from 100g</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Przycisk obok nazwy produktu</h3>
+      <p>„Scan label" widoczny od razu po wejściu w tryb edycji produktu. Najbardziej widoczne, ale zajmuje miejsce przy polu nazwy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:12px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-size:10px;color:#aaa;">Product name</span>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#ccc;margin-bottom:8px;">Chicken breast</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Kcal</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Protein</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Carbs</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Fat</div><div style="color:#ccc;">0</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:#888;">🧮 Calculate from 100g</span>
+          <span style="font-size:10px;color:#666;">·</span>
+          <span style="font-size:10px;color:#992BFF;cursor:pointer;">📷 Scan label</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Link obok „Calculate from 100g"</h3>
+      <p>Scan label jako drugorzędna akcja obok przycisku kalkulatora. Spójne — oba to sposoby wypełnienia pól makroskładników.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:sans-serif;font-size:12px;padding:10px;background:#0f0f0f;border-radius:6px;color:#e5e5e5;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-size:10px;color:#aaa;">Product name</span>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:6px 8px;color:#ccc;margin-bottom:8px;">Chicken breast</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Kcal</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Protein</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Carbs</div><div style="color:#ccc;">0</div></div>
+          <div style="background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px 6px;"><div style="font-size:9px;color:#888;">Fat</div><div style="color:#ccc;">0</div></div>
+        </div>
+        <div style="background:#1a1a1a;border:1px dashed #333;border-left:2px solid #992BFF;border-radius:4px;padding:8px;margin-top:4px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:10px;color:#888;">📷 Scan label to fill 100g values</span>
+            <button style="background:#992BFF22;border:1px solid #992BFF;border-radius:4px;padding:3px 8px;color:#992BFF;font-size:10px;cursor:pointer;">Open camera</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Banner wewnątrz sekcji kalkulatora</h3>
+      <p>Scan label jako baner/prompt wewnątrz rozwiniętego kalkulatora (Calculate from 100g). Najbardziej kontekstowy — widoczny tylko kiedy kalkulator jest otwarty.</p>
+    </div>
+  </div>
+
+</div>

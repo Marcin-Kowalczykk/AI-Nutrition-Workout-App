@@ -1,0 +1,44 @@
+<h2>3 podejścia architektoniczne</h2>
+<p class="subtitle">Główna różnica: jak traktujemy modal i endpoint względem istniejącego scan-product</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Nowy komponent + nowy endpoint <span style="color:#992BFF">(rekomendowane)</span></h3>
+      <p>Osobny <code>AiAnalyzeDialog</code> wzorowany na <code>ProductScannerDialog</code> (te same stany: idle → preview → analyzing → result). Nowy endpoint <code>/api/diet/analyze-product</code>. Rate limit: nowa kolumna <code>ai_analyze_daily_limit</code> w <code>profiles</code> + rozszerzenie tabeli <code>diet_scan_usage</code> o kolumnę <code>type</code> (wartości: <code>scan</code> | <code>analyze</code>).</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Czyste rozdzielenie odpowiedzialności</li><li>Łatwo rozszerzać niezależnie</li><li>Spójna struktura z obecnym kodem</li><li>Jeden endpoint = jeden cel</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>Trochę duplikacji logiki (resize, states)</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Rozszerzony scan-product (jeden komponent, jeden endpoint)</h3>
+      <p>Dodanie trybu <code>mode="analyze"</code> do istniejącego <code>ProductScannerDialog</code> i endpointu <code>scan-product</code>. Flaga w body requestu decyduje czy zwrócić wartości per-100g czy bezpośrednie makra.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Mniej plików</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>Dwie różne odpowiedzialności w jednym miejscu</li><li>Trudniejsze testowanie i debugging</li><li>Ciężko utrzymać gdy funkcje się rozrosną</li><li>Złamanie zasady single responsibility</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Wspólny hook + osobne komponenty UI</h3>
+      <p>Wyekstrahowanie logiki (resizeImage, callAI, states) do hooka <code>useAiImageAnalysis</code>. Zarówno <code>ProductScannerDialog</code> jak i nowy <code>AiAnalyzeDialog</code> korzystają z tego hooka.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Eliminuje duplikację logiki</li><li>DRY</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>Abstrakcja na potrzeby 2 miejsc — YAGNI</li><li>Więcej plików bez realnej korzyści teraz</li><li>Przedwczesna generalizacja</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px; padding: 12px; background: rgba(153,43,255,0.08); border-radius: 8px; border-left: 3px solid #992BFF;">
+  <p style="margin:0; font-size: 13px;"><strong>Rekomendacja: A</strong> — nowy <code>AiAnalyzeDialog</code> + nowy endpoint. Kilka linii duplikacji (resizeImage) to żaden problem, za to mamy czysty, niezależny kod gotowy na Fazę 2 (caching). Opcja B łamie SRP, opcja C to przedwczesna abstrakcja dla tylko 2 callsites.</p>
+</div>

@@ -7,6 +7,14 @@ const nonNegativeNumberString = z
     message: "Must be a non-negative number",
   });
 
+export const breakdownItemSchema = z.object({
+  name: z.string(),
+  weight_g: z.number(),
+  kcal: z.number(),
+});
+
+export type BreakdownItem = z.infer<typeof breakdownItemSchema>;
+
 export const dietProductSchema = z.object({
   product_name: z.string().min(1, "Product name is required"),
   product_kcal: nonNegativeNumberString,
@@ -18,6 +26,7 @@ export const dietProductSchema = z.object({
   protein_per_100g: z.string().optional(),
   carbs_per_100g: z.string().optional(),
   fat_per_100g: z.string().optional(),
+  ai_breakdown: z.array(breakdownItemSchema).nullish(),
 });
 
 export const dietMealSchema = z.object({
@@ -44,6 +53,7 @@ export const DEFAULT_PRODUCT: DietProductFormValues = {
   protein_per_100g: "",
   carbs_per_100g: "",
   fat_per_100g: "",
+  ai_breakdown: null,
 };
 
 export const DEFAULT_MEAL: DietMealFormValues = {

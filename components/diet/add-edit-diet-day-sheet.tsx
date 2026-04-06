@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera } from "lucide-react";
+import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera, ChevronUp, ChevronDown } from "lucide-react";
 
 //libs
 import { cn } from "@/lib/utils";
@@ -32,6 +32,7 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { ProductScannerDialog } from "@/components/diet/product-scanner-dialog";
 import { AiAnalyzeDialog } from "@/components/diet/ai-analyze-dialog";
+import type { ProductAnalysis } from "@/components/diet/ai-analyze-dialog";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -97,6 +98,7 @@ interface ProductFieldsProps {
   control: Control<DietDayFormValues>;
   onRemove: () => void;
   onSave: () => void;
+  appendProduct: (product: DietProductFormValues) => void;
 }
 
 const ProductFields = ({
@@ -105,6 +107,7 @@ const ProductFields = ({
   control,
   onRemove,
   onSave,
+  appendProduct,
 }: ProductFieldsProps) => {
   const { setValue, getValues, formState: { isDirty }, trigger } = useFormContext<DietDayFormValues>();
 
@@ -127,6 +130,9 @@ const ProductFields = ({
   const proteinValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_value` });
   const carbsValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_value` });
   const fatValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_value` });
+  const aiBreakdown = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.ai_breakdown` });
+
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   const enterEdit = () => {
     snapshotRef.current = getValues(`meals.${mealIndex}.products.${productIndex}`);
@@ -160,6 +166,11 @@ const ProductFields = ({
           { shouldDirty: true }
         );
       });
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.ai_breakdown`,
+        snap.ai_breakdown ?? null,
+        { shouldDirty: true }
+      );
     }
     setCalcOpen(false);
     const name = getValues(`meals.${mealIndex}.products.${productIndex}.product_name`);
@@ -264,37 +275,31 @@ const ProductFields = ({
     recalculate();
   };
 
-  const handleAnalyzeApply = ({
-    kcal,
-    protein,
-    carbs,
-    fat,
-  }: {
-    kcal: string;
-    protein: string;
-    carbs: string;
-    fat: string;
-  }) => {
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.product_kcal`,
-      kcal,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.protein_value`,
-      protein,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.carbs_value`,
-      carbs,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.fat_value`,
-      fat,
-      { shouldDirty: true }
-    );
+  const handleAnalyzeApply = (products: ProductAnalysis[]) => {
+    const first = products[0];
+    setValue(`meals.${mealIndex}.products.${productIndex}.product_name`, first.product_name, { shouldDirty: true });
+    setValue(`meals.${mealIndex}.products.${productIndex}.product_kcal`, first.kcal, { shouldDirty: true });
+    setValue(`meals.${mealIndex}.products.${productIndex}.protein_value`, first.protein, { shouldDirty: true });
+    setValue(`meals.${mealIndex}.products.${productIndex}.carbs_value`, first.carbs, { shouldDirty: true });
+    setValue(`meals.${mealIndex}.products.${productIndex}.fat_value`, first.fat, { shouldDirty: true });
+    setValue(`meals.${mealIndex}.products.${productIndex}.ai_breakdown`, first.breakdown ?? null, { shouldDirty: true });
+    if (first.weight_grams) {
+      setValue(`meals.${mealIndex}.products.${productIndex}.weight_grams`, first.weight_grams, { shouldDirty: true });
+    }
+    for (let i = 1; i < products.length; i++) {
+      appendProduct({
+        ...DEFAULT_PRODUCT,
+        product_name: products[i].product_name,
+        product_kcal: products[i].kcal,
+        protein_value: products[i].protein,
+        carbs_value: products[i].carbs,
+        fat_value: products[i].fat,
+        weight_grams: products[i].weight_grams || "",
+        ai_breakdown: products[i].breakdown ?? null,
+      });
+    }
+    setMode("view");
+    onSave();
   };
 
   return (
@@ -341,6 +346,32 @@ const ProductFields = ({
             <p className="text-xs text-muted-foreground">
               {productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
             </p>
+            {aiBreakdown && aiBreakdown.length > 1 && (
+              <div>
+                <button
+                  type="button"
+                  className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground mt-0.5"
+                  onClick={() => setBreakdownOpen((v) => !v)}
+                >
+                  {breakdownOpen ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                  Components ({aiBreakdown.length})
+                </button>
+                {breakdownOpen && (
+                  <div className="mt-1 flex flex-col gap-0.5">
+                    {aiBreakdown.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-foreground/80">• {item.name}</span>
+                        <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
@@ -752,6 +783,7 @@ const MealSection = ({
             control={control}
             onRemove={() => removeProduct(productIndex)}
             onSave={onSave}
+            appendProduct={appendProduct}
           />
         ))}
 

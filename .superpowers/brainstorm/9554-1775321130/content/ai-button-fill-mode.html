@@ -1,0 +1,44 @@
+<h2>Jakie wartości wypełnia AI?</h2>
+<p class="subtitle">Kluczowa decyzja architektoniczna — wpływa na UX i prompt do Claude'a</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Wypełnia kcal / protein / carbs / fat bezpośrednio</h3>
+      <p>Claude szacuje wartości dla <strong>standardowej porcji</strong> (np. 100g kurczaka = 165 kcal, 31g P, 0g C, 3.6g F). Użytkownik dostaje gotowe liczby w głównych polach — tak jak gdyby ręcznie je wpisał.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Najprostszy flow — 1 krok</li><li>Nie wymaga podania gramów</li><li>Działa bez kalkulatora</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>AI musi zgadywać porcję</li><li>Mniej dokładne przy niestandardowych porcjach</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Wypełnia wartości na 100g (do kalkulatora)</h3>
+      <p>Claude zwraca makra <strong>na 100g</strong>, otwiera kalkulator, użytkownik wpisuje gramaturę. Identyczny output jak istniejący scan-product, ale triggerowany nazwą zamiast zdjęciem etykiety.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Spójne z obecnym scan-product</li><li>Użytkownik kontroluje porcję</li><li>Dokładniejsze wartości</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>Dodatkowy krok (gramatura)</li><li>Kalkulator musi być otwarty</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Wypełnia obie — pyta użytkownika o gramaturę w modalu</h3>
+      <p>Modal AI pyta: "Ile gramów?" → Claude zwraca makra <strong>przeliczone już na podaną porcję</strong>. Działa bez kalkulatora, ale precyzja jest zachowana.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Plusy</h4><ul><li>Najdokładniejsze</li><li>Przeliczone od razu</li><li>Jeden flow bez kalkulatora</li></ul></div>
+        <div class="cons"><h4>Minusy</h4><ul><li>Najbardziej złożony modal</li><li>Gramatura nie zawsze znana</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px; padding: 12px; background: rgba(153,43,255,0.08); border-radius: 8px; border-left: 3px solid #992BFF;">
+  <p style="margin:0; font-size: 13px;"><strong>Moja rekomendacja: A</strong> — najprostszy, najszybszy UX. Przy daniu ze zdjęciem Claude i tak widzi kontekst (np. talerz z ryżem i kurczakiem) i może dość dobrze oszacować porcję. Użytkownik może ręcznie skorygować wartości po wypełnieniu.</p>
+</div>

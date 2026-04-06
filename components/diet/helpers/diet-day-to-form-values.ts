@@ -18,6 +18,7 @@ export const dietDayToFormValues = (day: IDietDay): DietDayFormValues => ({
         protein_per_100g: p.protein_per_100g != null ? String(p.protein_per_100g) : "",
         carbs_per_100g: p.carbs_per_100g != null ? String(p.carbs_per_100g) : "",
         fat_per_100g: p.fat_per_100g != null ? String(p.fat_per_100g) : "",
+        ai_breakdown: p.ai_breakdown ?? null,
       })),
     })),
 });

@@ -11,6 +11,7 @@ export type IDietProduct = {
   protein_per_100g: number | null;
   carbs_per_100g: number | null;
   fat_per_100g: number | null;
+  ai_breakdown: { name: string; weight_g: number; kcal: number }[] | null;
   created_at: string;
 };
 

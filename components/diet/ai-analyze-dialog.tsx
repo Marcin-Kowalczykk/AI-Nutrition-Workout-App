@@ -5,12 +5,13 @@ import { AlertTriangle, Camera, CheckCircle2, ChevronDown, ChevronUp, Info, Plus
 
 //libs
 import { cn } from "@/lib/utils";
-
-//libs
 import { toast } from "sonner";
 
 //hooks
 import { getAccessToken } from "@/lib/supabase/get-access-token";
+
+//types
+import type { BreakdownItem } from "./types";
 
 //components
 import {
@@ -23,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/shared/loader";
 
-//types
 type AnalyzeState =
   | "idle"
   | "photo_preview"
@@ -32,24 +32,21 @@ type AnalyzeState =
   | "error"
   | "limit_reached";
 
-interface AnalyzeResult {
+export interface ProductAnalysis {
+  product_name: string;
   kcal: string;
   protein: string;
   carbs: string;
   fat: string;
-}
-
-interface BreakdownItem {
-  name: string;
-  weight_g: number;
-  kcal: number;
+  weight_grams: string;
+  breakdown: BreakdownItem[] | null;
 }
 
 interface AiAnalyzeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   productName: string;
-  onApply: (values: AnalyzeResult) => void;
+  onApply: (products: ProductAnalysis[]) => void;
 }
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -91,14 +88,11 @@ export const AiAnalyzeDialog = ({
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
-  const [result, setResult] = useState<AnalyzeResult>({
-    kcal: "",
-    protein: "",
-    carbs: "",
-    fat: "",
-  });
+  const [analyzedProducts, setAnalyzedProducts] = useState<ProductAnalysis[]>([]);
+  // editable copy for single-product mode
+  const [editedProduct, setEditedProduct] = useState<ProductAnalysis | null>(null);
+  const [expandedBreakdowns, setExpandedBreakdowns] = useState<Set<number>>(new Set());
   const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
-  const [breakdown, setBreakdown] = useState<BreakdownItem[] | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isNameExpanded, setIsNameExpanded] = useState(false);
@@ -110,9 +104,10 @@ export const AiAnalyzeDialog = ({
     setAnalyzeState("idle");
     setPreviewUrls([]);
     setPhotos([]);
-    setResult({ kcal: "", protein: "", carbs: "", fat: "" });
+    setAnalyzedProducts([]);
+    setEditedProduct(null);
+    setExpandedBreakdowns(new Set());
     setConfidence(null);
-    setBreakdown(null);
     setWarning(null);
     setError(null);
     setIsNameExpanded(false);
@@ -184,14 +179,28 @@ export const AiAnalyzeDialog = ({
       }
 
       const data = await response.json();
-      setResult({
-        kcal: data.kcal != null ? String(data.kcal) : "",
-        protein: data.protein != null ? String(data.protein) : "",
-        carbs: data.carbs != null ? String(data.carbs) : "",
-        fat: data.fat != null ? String(data.fat) : "",
-      });
+      const products: ProductAnalysis[] = (data.products ?? []).map((p: {
+        product_name: string;
+        kcal: number | null;
+        protein: number | null;
+        carbs: number | null;
+        fat: number | null;
+        breakdown: BreakdownItem[] | null;
+      }) => ({
+        product_name: p.product_name ?? "",
+        kcal: p.kcal != null ? String(p.kcal) : "",
+        protein: p.protein != null ? String(p.protein) : "",
+        carbs: p.carbs != null ? String(p.carbs) : "",
+        fat: p.fat != null ? String(p.fat) : "",
+        weight_grams: p.breakdown && p.breakdown.length > 0
+          ? String(p.breakdown.reduce((sum: number, item: BreakdownItem) => sum + item.weight_g, 0))
+          : "",
+        breakdown: p.breakdown ?? null,
+      }));
+
+      setAnalyzedProducts(products);
+      setEditedProduct(products.length === 1 ? { ...products[0] } : null);
       setConfidence(data.confidence ?? null);
-      setBreakdown(data.breakdown ?? null);
       setWarning(data.warning ?? null);
       setAnalyzeState("result");
     } catch {
@@ -200,8 +209,20 @@ export const AiAnalyzeDialog = ({
     }
   };
 
+  const toggleBreakdown = (index: number) => {
+    setExpandedBreakdowns((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) { next.delete(index); } else { next.add(index); }
+      return next;
+    });
+  };
+
   const handleApply = () => {
-    onApply(result);
+    if (analyzedProducts.length === 1 && editedProduct) {
+      onApply([editedProduct]);
+    } else {
+      onApply(analyzedProducts);
+    }
     handleOpenChange(false);
   };
 
@@ -356,51 +377,129 @@ export const AiAnalyzeDialog = ({
                     : "Low confidence — results may be inaccurate"}
               </div>
             )}
-            {breakdown && breakdown.length > 0 && (
-              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">Meal components:</p>
-                {breakdown.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <span className="text-foreground">• {item.name}</span>
-                    <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
-                  </div>
-                ))}
-              </div>
-            )}
             {warning && (
               <div className="flex items-start gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 {warning}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Check and correct if needed:
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
-                <div key={key} className="flex flex-col gap-1">
-                  <label htmlFor={`analyze-${key}`} className="text-xs font-medium">
-                    {key === "kcal"
-                      ? "Kcal"
-                      : `${key.charAt(0).toUpperCase() + key.slice(1)} [g]`}
+
+            {/* Single product — editable */}
+            {analyzedProducts.length === 1 && editedProduct && (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="analyze-product-name" className="text-xs font-medium">
+                    Product name
                   </label>
                   <Input
-                    id={`analyze-${key}`}
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    value={result[key]}
-                    onChange={(e) =>
-                      setResult((prev) => ({ ...prev, [key]: e.target.value }))
-                    }
+                    id="analyze-product-name"
+                    value={editedProduct.product_name}
+                    onChange={(e) => setEditedProduct((p) => p ? { ...p, product_name: e.target.value } : p)}
                     className="h-8"
                   />
                 </div>
-              ))}
-            </div>
+                {editedProduct.weight_grams && (
+                  <p className="text-xs text-muted-foreground">~{editedProduct.weight_grams}g</p>
+                )}
+                <p className="text-xs text-muted-foreground">Check and correct if needed:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
+                    <div key={key} className="flex flex-col gap-1">
+                      <label htmlFor={`analyze-${key}`} className="text-xs font-medium">
+                        {key === "kcal"
+                          ? "Kcal"
+                          : `${key.charAt(0).toUpperCase() + key.slice(1)} [g]`}
+                      </label>
+                      <Input
+                        id={`analyze-${key}`}
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={editedProduct[key]}
+                        onChange={(e) =>
+                          setEditedProduct((p) => p ? { ...p, [key]: e.target.value } : p)
+                        }
+                        className="h-8"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {editedProduct.breakdown && editedProduct.breakdown.length > 1 && (
+                  <div>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => toggleBreakdown(0)}
+                    >
+                      {expandedBreakdowns.has(0) ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )}
+                      Meal components ({editedProduct.breakdown.length})
+                    </button>
+                    {expandedBreakdowns.has(0) && (
+                      <div className="mt-1.5 rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
+                        {editedProduct.breakdown.map((item, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs">
+                            <span className="text-foreground">• {item.name}</span>
+                            <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Multi product — read-only list */}
+            {analyzedProducts.length > 1 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">Found {analyzedProducts.length} products:</p>
+                {analyzedProducts.map((product, i) => (
+                  <div key={i} className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-medium">{product.product_name}</p>
+                      <p className="text-xs text-muted-foreground shrink-0">{product.kcal} kcal</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {product.weight_grams ? `~${product.weight_grams}g · ` : ""}P: {product.protein}g · C: {product.carbs}g · F: {product.fat}g
+                    </p>
+                    {product.breakdown && product.breakdown.length > 1 && (
+                      <div>
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-0.5"
+                          onClick={() => toggleBreakdown(i)}
+                        >
+                          {expandedBreakdowns.has(i) ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                          Components ({product.breakdown.length})
+                        </button>
+                        {expandedBreakdowns.has(i) && (
+                          <div className="mt-1 flex flex-col gap-0.5">
+                            {product.breakdown.map((item, j) => (
+                              <div key={j} className="flex items-center justify-between text-xs">
+                                <span className="text-foreground">• {item.name}</span>
+                                <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="flex gap-2">
               <Button onClick={handleApply} className="flex-1">
-                Apply
+                {analyzedProducts.length > 1 ? `Apply ${analyzedProducts.length} products` : "Apply"}
               </Button>
               <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancel
