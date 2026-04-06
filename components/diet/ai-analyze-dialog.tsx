@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Info, RotateCcw } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, ChevronDown, ChevronUp, Info, Plus, RotateCcw } from "lucide-react";
+
+//libs
+import { cn } from "@/lib/utils";
 
 //libs
 import { toast } from "sonner";
@@ -80,8 +83,8 @@ export const AiAnalyzeDialog = ({
 }: AiAnalyzeDialogProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [result, setResult] = useState<AnalyzeResult>({
     kcal: "",
     protein: "",
@@ -91,16 +94,20 @@ export const AiAnalyzeDialog = ({
   const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isNameExpanded, setIsNameExpanded] = useState(false);
+
+  const isNameLong = productName.length > 60;
 
   const reset = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setAnalyzeState("idle");
-    setPreviewUrl(null);
-    setPhoto(null);
+    setPreviewUrls([]);
+    setPhotos([]);
     setResult({ kcal: "", protein: "", carbs: "", fat: "" });
     setConfidence(null);
     setWarning(null);
     setError(null);
+    setIsNameExpanded(false);
   };
 
   const handleOpenChange = (value: boolean) => {
@@ -112,31 +119,34 @@ export const AiAnalyzeDialog = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPhoto(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    if (!file || photos.length >= 2) return;
+    setPhotos((prev) => [...prev, file]);
+    setPreviewUrls((prev) => [...prev, URL.createObjectURL(file)]);
     setAnalyzeState("photo_preview");
     e.target.value = "";
   };
 
   const handleRetake = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setPhoto(null);
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
+    setPhotos([]);
     setAnalyzeState("idle");
   };
 
-  const handleAnalyze = async (photoFile: File | null) => {
+  const handleAnalyze = async (photoFiles: File[]) => {
     setAnalyzeState("analyzing");
     try {
       const token = await getAccessToken();
       const formData = new FormData();
       formData.append("product_name", productName);
 
-      if (photoFile) {
-        const resized = await resizeImageIfNeeded(photoFile);
+      if (photoFiles.length > 0) {
+        const resized = await resizeImageIfNeeded(photoFiles[0]);
         formData.append("image", resized);
+      }
+      if (photoFiles.length > 1) {
+        const resized2 = await resizeImageIfNeeded(photoFiles[1]);
+        formData.append("image2", resized2);
       }
 
       const response = await fetch("/api/diet/analyze-product", {
@@ -151,14 +161,14 @@ export const AiAnalyzeDialog = ({
       }
       if (response.status === 422) {
         setError(
-          "Couldn't analyse this meal — try a clearer description or a better-lit photo."
+          "This doesn't look like a food or meal. Please enter a valid food description."
         );
         setAnalyzeState("error");
         return;
       }
       if (!response.ok) {
         toast.error("Analysis failed, try again.");
-        setAnalyzeState(photoFile ? "photo_preview" : "idle");
+        setAnalyzeState(photoFiles.length > 0 ? "photo_preview" : "idle");
         return;
       }
 
@@ -174,7 +184,7 @@ export const AiAnalyzeDialog = ({
       setAnalyzeState("result");
     } catch {
       toast.error("Analysis failed, try again.");
-      setAnalyzeState(photoFile ? "photo_preview" : "idle");
+      setAnalyzeState(photoFiles.length > 0 ? "photo_preview" : "idle");
     }
   };
 
@@ -190,6 +200,35 @@ export const AiAnalyzeDialog = ({
           <DialogTitle>Analyse meal</DialogTitle>
         </DialogHeader>
 
+        {productName && (
+          <div className="flex flex-col gap-1 text-sm">
+            <div>
+              <span className="text-muted-foreground">Analysing: </span>
+              <span
+                className={cn(
+                  "font-medium text-foreground",
+                  !isNameExpanded && isNameLong && "line-clamp-2"
+                )}
+              >
+                {productName}
+              </span>
+            </div>
+            {isNameLong && (
+              <button
+                type="button"
+                className="self-start flex items-center gap-0.5 text-xs text-primary-element"
+                onClick={() => setIsNameExpanded((p) => !p)}
+              >
+                {isNameExpanded ? (
+                  <><ChevronUp className="h-3 w-3" /> Show less</>
+                ) : (
+                  <><ChevronDown className="h-3 w-3" /> Show more</>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -201,10 +240,6 @@ export const AiAnalyzeDialog = ({
 
         {analyzeState === "idle" && (
           <div className="flex flex-col gap-3 py-2">
-            <p className="text-sm text-muted-foreground">
-              Analysing:{" "}
-              <span className="font-medium text-foreground">{productName}</span>
-            </p>
             <div className="rounded-md border border-border bg-muted/40 p-3 flex flex-col gap-1.5">
               <p className="text-xs font-medium flex items-center gap-1.5">
                 <Info className="h-3.5 w-3.5 text-primary-element shrink-0" />
@@ -223,7 +258,7 @@ export const AiAnalyzeDialog = ({
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleAnalyze(null)}
+              onClick={() => handleAnalyze([])}
               className="w-full"
             >
               Analyse without photo
@@ -232,17 +267,35 @@ export const AiAnalyzeDialog = ({
         )}
 
         {(analyzeState === "photo_preview" || analyzeState === "analyzing") &&
-          previewUrl && (
+          previewUrls.length > 0 && (
             <div className="flex flex-col gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt="Meal photo"
-                className="rounded-md w-full object-contain max-h-48"
-              />
+              <div className="grid grid-cols-2 gap-2">
+                {previewUrls.map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Meal photo ${i + 1}`}
+                    className="rounded-md w-full object-contain max-h-40"
+                  />
+                ))}
+                {photos.length < 2 && analyzeState !== "analyzing" && (
+                  <button
+                    type="button"
+                    onClick={handleAddPhoto}
+                    className="rounded-md border-2 border-dashed border-border flex flex-col items-center justify-center gap-1.5 max-h-40 min-h-24 text-muted-foreground hover:border-primary-element hover:text-primary-element transition-colors"
+                  >
+                    <div className="relative">
+                      <Camera className="h-6 w-6" />
+                      <Plus className="h-3 w-3 absolute -top-0.5 -right-1.5" strokeWidth={3} />
+                    </div>
+                    <span className="text-xs">Add 2nd photo</span>
+                  </button>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => handleAnalyze(photo)}
+                  onClick={() => handleAnalyze(photos)}
                   disabled={analyzeState === "analyzing"}
                   className="flex-1 gap-2"
                 >
@@ -262,7 +315,7 @@ export const AiAnalyzeDialog = ({
             </div>
           )}
 
-        {analyzeState === "analyzing" && !previewUrl && (
+        {analyzeState === "analyzing" && previewUrls.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-6">
             <Loader size={24} />
             <p className="text-sm text-muted-foreground">Analysing meal…</p>

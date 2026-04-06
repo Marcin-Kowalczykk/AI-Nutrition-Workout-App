@@ -29,14 +29,21 @@ If no reference points are visible — assume a standard restaurant portion and 
 {"calories": number, "protein_g": number, "fat_g": number, "carbs_g": number, "fiber_g": number, "total_weight_g": number, "confidence": "low|medium|high", "portion_note": string or null, "warning": string or null}
 
 confidence guide: high = visible reference points + simple meal; medium = no cutlery but standard plate, or complex dish; low = no reference points at all or meal mostly out of frame
-warning examples: no reference points detected, description differs significantly from photo, meal partially eaten, very poor lighting`;
+warning examples: no reference points detected, description differs significantly from photo, meal partially eaten, very poor lighting
 
-const buildAnalyzePrompt = (productName: string, hasImage: boolean) =>
+## Important:
+If the input is clearly not a food or meal (e.g. random words, objects, animals, places, abstract concepts), return all nutritional values as null.`;
+
+const buildAnalyzePrompt = (productName: string, imageCount: number) =>
   `Analyse the meal and estimate nutritional values for the entire visible portion.
 
 Meal name/description: "${productName}"
 
-${hasImage ? "A photo is attached. Assess portion size based on reference points visible in the photo (plate, cutlery, glass)." : "No photo provided — use the description only to estimate a standard portion."}
+${imageCount === 0
+    ? "No photo provided — use the description only to estimate a standard portion."
+    : imageCount === 1
+      ? "A photo is attached. Assess portion size based on reference points visible in the photo (plate, cutlery, glass)."
+      : "Two photos are attached. Use both to better assess the meal and portion size based on reference points (plate, cutlery, glass)."}
 
 Return ONLY JSON, no additional text.`;
 
@@ -85,6 +92,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const productName = formData.get("product_name") as string | null;
     const image = formData.get("image") as File | null;
+    const image2 = formData.get("image2") as File | null;
 
     if (!productName || productName.trim().length === 0) {
       return NextResponse.json(
@@ -93,26 +101,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userContent: Anthropic.MessageParam["content"] = [];
-
-    if (image) {
-      const buffer = await image.arrayBuffer();
+    const validMediaTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const toImageBlock = async (file: File): Promise<Anthropic.ImageBlockParam> => {
+      const buffer = await file.arrayBuffer();
       const base64 = Buffer.from(buffer).toString("base64");
-      const mediaType = (
-        ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
-          image.type
-        )
-          ? image.type
-          : "image/jpeg"
-      ) as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      const mediaType = (validMediaTypes.includes(file.type) ? file.type : "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      return { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } };
+    };
 
-      userContent.push({
-        type: "image",
-        source: { type: "base64", media_type: mediaType, data: base64 },
-      });
-    }
+    const userContent: Anthropic.MessageParam["content"] = [];
+    const imageCount = (image ? 1 : 0) + (image2 ? 1 : 0);
 
-    userContent.push({ type: "text", text: buildAnalyzePrompt(productName, !!image) });
+    if (image) userContent.push(await toImageBlock(image));
+    if (image2) userContent.push(await toImageBlock(image2));
+
+    userContent.push({ type: "text", text: buildAnalyzePrompt(productName, imageCount) });
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",

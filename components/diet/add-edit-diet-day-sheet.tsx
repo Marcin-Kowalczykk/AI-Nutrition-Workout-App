@@ -5,6 +5,9 @@ import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera } from "lucide-react";
 
+//libs
+import { cn } from "@/lib/utils";
+
 //components
 import {
   Sheet,
@@ -366,7 +369,7 @@ const ProductFields = ({
         </div>
       ) : (
         <div className="flex flex-col gap-1.5 border-l-2 border-primary-element pl-2">
-          <div className="flex items-start justify-between gap-1">
+          <div className="flex items-end justify-between gap-1">
             <FormField
               control={control}
               name={`meals.${mealIndex}.products.${productIndex}.product_name`}
@@ -389,23 +392,31 @@ const ProductFields = ({
                 </FormItem>
               )}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={productName.trim().length < 3}
-              onClick={() => setAiAnalyzeOpen(true)}
-              className="h-8 px-2 text-xs font-bold shrink-0 mt-5"
+            <div
+              className={cn(
+                "shrink-0 rounded-md p-[1.5px]",
+                productName.trim().length < 3
+                  ? "bg-muted"
+                  : "bg-gradient-to-r from-violet-500 via-pink-500 to-amber-400"
+              )}
             >
-              AI
-            </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={productName.trim().length < 3}
+                onClick={() => setAiAnalyzeOpen(true)}
+                className="h-8 px-2 text-xs font-bold bg-background hover:bg-muted/80 rounded-[4px] border-0"
+              >
+                AI
+              </Button>
+            </div>
             {!!(productName || productKcal) && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={handleRemoveClick}
-                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive mt-5"
+                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
                 aria-label={`Remove product ${productIndex + 1}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
