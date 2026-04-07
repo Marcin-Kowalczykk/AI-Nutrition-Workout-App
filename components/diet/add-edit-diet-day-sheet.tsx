@@ -130,6 +130,7 @@ const ProductFields = ({
   const proteinValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.protein_value` });
   const carbsValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.carbs_value` });
   const fatValue = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.fat_value` });
+  const weightGrams = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.weight_grams` });
   const aiBreakdown = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.ai_breakdown` });
 
   const [breakdownOpen, setBreakdownOpen] = useState(false);
@@ -344,7 +345,7 @@ const ProductFields = ({
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{productName}</p>
             <p className="text-xs text-muted-foreground">
-              {productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
+              {weightGrams ? `~${weightGrams}g · ` : ""}{productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
             </p>
             {aiBreakdown && aiBreakdown.length > 1 && (
               <div>

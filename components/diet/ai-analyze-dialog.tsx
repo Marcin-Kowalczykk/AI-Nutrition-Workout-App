@@ -532,7 +532,7 @@ export const AiAnalyzeDialog = ({
                       <>
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-medium">{product.product_name}</p>
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
                             <button
                               type="button"
                               onClick={() => handleStartEdit(i)}
@@ -544,7 +544,7 @@ export const AiAnalyzeDialog = ({
                             <button
                               type="button"
                               onClick={() => handleDeleteProduct(i)}
-                              className="text-muted-foreground hover:text-destructive"
+                              className="text-destructive hover:text-destructive/80"
                               aria-label={`Delete product ${i + 1}`}
                             >
                               <Trash2 className="h-3 w-3" />
