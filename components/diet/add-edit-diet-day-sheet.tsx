@@ -777,7 +777,7 @@ const MealSection = ({
             <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
             <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
             <p className="text-xs text-muted-foreground truncate">
-              {Math.round(mealTotals.kcal)} kcal · P: {fmtNum(mealTotals.protein)}g · C: {fmtNum(mealTotals.carbs)}g · F: {fmtNum(mealTotals.fat)}g
+              {mealTotals.kcal > 0 && `${Math.round(mealTotals.kcal)} kcal · P: ${fmtNum(mealTotals.protein)}g · C: ${fmtNum(mealTotals.carbs)}g · F: ${fmtNum(mealTotals.fat)}g`}
             </p>
           </button>
           {(mealProducts ?? []).some((p) => p.product_name || p.product_kcal) && (
