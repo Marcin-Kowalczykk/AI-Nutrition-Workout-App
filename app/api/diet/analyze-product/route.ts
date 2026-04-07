@@ -37,7 +37,7 @@ Look for reference points:
       "fat_g": <number>,
       "carbs_g": <number>,
       "breakdown": [
-        {"name": <string>, "weight_g": <number>, "kcal": <number>}
+        {"name": <string>, "weight_g": <number>, "kcal": <number>, "protein_g": <number>, "carbs_g": <number>, "fat_g": <number>}
       ]
     }
   ],
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
       protein_g: number | null;
       fat_g: number | null;
       carbs_g: number | null;
-      breakdown: { name: string; weight_g: number; kcal: number }[] | null;
+      breakdown: { name: string; weight_g: number; kcal: number; protein_g?: number; carbs_g?: number; fat_g?: number }[] | null;
     }> | null;
 
     if (!rawProducts || rawProducts.length === 0) {
@@ -187,7 +187,16 @@ export async function POST(request: NextRequest) {
       protein: p.protein_g,
       carbs: p.carbs_g,
       fat: p.fat_g,
-      breakdown: Array.isArray(p.breakdown) ? p.breakdown : null,
+      breakdown: Array.isArray(p.breakdown)
+        ? p.breakdown.map((b) => ({
+            name: b.name,
+            weight_g: b.weight_g,
+            kcal: b.kcal,
+            ...(b.protein_g != null && { protein: b.protein_g }),
+            ...(b.carbs_g != null && { carbs: b.carbs_g }),
+            ...(b.fat_g != null && { fat: b.fat_g }),
+          }))
+        : null,
     }));
 
     if (!isOwner) {

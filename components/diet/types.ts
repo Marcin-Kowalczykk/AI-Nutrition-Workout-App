@@ -11,6 +11,9 @@ export const breakdownItemSchema = z.object({
   name: z.string(),
   weight_g: z.number(),
   kcal: z.number(),
+  protein: z.number().optional(),
+  carbs: z.number().optional(),
+  fat: z.number().optional(),
 });
 
 export type BreakdownItem = z.infer<typeof breakdownItemSchema>;

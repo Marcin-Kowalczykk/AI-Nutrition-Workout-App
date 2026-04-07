@@ -476,7 +476,12 @@ export const AiAnalyzeDialog = ({
                         {editedProduct.breakdown.map((item, i) => (
                           <div key={i} className="flex items-center justify-between text-xs">
                             <span className="text-foreground">• {item.name}</span>
-                            <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                            <span className="text-muted-foreground shrink-0 ml-2">
+                              {item.weight_g}g · {item.kcal} kcal
+                              {(item.protein != null || item.carbs != null || item.fat != null) && (
+                                <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>
+                              )}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -574,7 +579,12 @@ export const AiAnalyzeDialog = ({
                                 {product.breakdown.map((item, j) => (
                                   <div key={j} className="flex items-center justify-between text-xs">
                                     <span className="text-foreground">• {item.name}</span>
-                                    <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                                    <span className="text-muted-foreground shrink-0 ml-2">
+                              {item.weight_g}g · {item.kcal} kcal
+                              {(item.protein != null || item.carbs != null || item.fat != null) && (
+                                <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>
+                              )}
+                            </span>
                                   </div>
                                 ))}
                               </div>
