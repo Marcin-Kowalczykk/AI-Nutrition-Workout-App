@@ -84,6 +84,20 @@ export const DietDayCard = ({
             </span>
           </div>
         </div>
+        {day.diet_meals.map((meal) => (
+          <div key={meal.id} className="flex flex-col gap-0.5 mt-1">
+            <p className="text-xs text-muted-foreground font-medium">Meal {meal.meal_number}</p>
+            {meal.diet_products.map((product) => (
+              <div key={product.id} className="flex items-baseline justify-between gap-1 pl-2">
+                <p className="text-xs text-foreground truncate">{product.product_name}</p>
+                <p className="text-xs text-muted-foreground shrink-0">
+                  {product.weight_grams != null ? `~${Math.round(product.weight_grams)}g · ` : ""}
+                  {Math.round(product.product_kcal)} kcal · P: {product.protein_value.toFixed(1)}g · C: {product.carbs_value.toFixed(1)}g · F: {product.fat_value.toFixed(1)}g
+                </p>
+              </div>
+            ))}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
