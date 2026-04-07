@@ -8,6 +8,8 @@ import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera, ChevronUp, Ch
 //libs
 import { cn } from "@/lib/utils";
 
+const fmtNum = (v: number) => parseFloat(v.toFixed(1)).toString();
+
 //components
 import {
   Sheet,
@@ -85,8 +87,8 @@ const DaySummary = ({ control }: DaySummaryProps) => {
   return (
     <div className="border rounded-md px-3 py-2 bg-muted/30">
       <p className="text-xs text-muted-foreground">
-        <span className="font-semibold text-sm text-foreground">{totals.kcal.toFixed(0)} kcal</span>
-        {" · "}P: {totals.protein.toFixed(1)}g · C: {totals.carbs.toFixed(1)}g · F: {totals.fat.toFixed(1)}g
+        <span className="font-semibold text-sm text-foreground">{Math.round(totals.kcal)} kcal</span>
+        {" · "}P: {fmtNum(totals.protein)}g · C: {fmtNum(totals.carbs)}g · F: {fmtNum(totals.fat)}g
       </p>
     </div>
   );
@@ -704,6 +706,7 @@ interface MealSectionProps {
   control: Control<DietDayFormValues>;
   onRemoveMeal: () => void;
   onSave: () => void;
+  initiallyCollapsed?: boolean;
 }
 
 const MealSection = ({
@@ -711,6 +714,7 @@ const MealSection = ({
   control,
   onRemoveMeal,
   onSave,
+  initiallyCollapsed = true,
 }: MealSectionProps) => {
   const {
     fields: productFields,
@@ -722,7 +726,7 @@ const MealSection = ({
   });
 
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(initiallyCollapsed);
   const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
   const mealTotals = useMemo(
     () =>
@@ -773,8 +777,7 @@ const MealSection = ({
             <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
             <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
             <p className="text-xs text-muted-foreground truncate">
-              {mealTotals.kcal.toFixed(0)} kcal · P: {mealTotals.protein.toFixed(1)}g · C:{" "}
-              {mealTotals.carbs.toFixed(1)}g · F: {mealTotals.fat.toFixed(1)}g
+              {Math.round(mealTotals.kcal)} kcal · P: {fmtNum(mealTotals.protein)}g · C: {fmtNum(mealTotals.carbs)}g · F: {fmtNum(mealTotals.fat)}g
             </p>
           </button>
           {(mealProducts ?? []).some((p) => p.product_name || p.product_kcal) && (
@@ -853,6 +856,8 @@ export const AddEditDietDaySheet = ({
     control: form.control,
     name: "meals",
   });
+
+  const [lastAddedMealIndex, setLastAddedMealIndex] = useState<number | null>(null);
 
   const { mutate: createDay, isPending: isCreating } = useCreateDietDay({
     onSuccess: () => {
@@ -946,6 +951,7 @@ export const AddEditDietDaySheet = ({
                     control={form.control}
                     onRemoveMeal={() => removeMeal(mealIndex)}
                     onSave={handleProductSave}
+                    initiallyCollapsed={mealIndex !== lastAddedMealIndex}
                   />
                 ))}
 
@@ -953,7 +959,10 @@ export const AddEditDietDaySheet = ({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => appendMeal({ ...DEFAULT_MEAL })}
+                  onClick={() => {
+                    setLastAddedMealIndex(mealFields.length);
+                    appendMeal({ ...DEFAULT_MEAL });
+                  }}
                   className="w-full h-8 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" />
