@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera, ChevronUp, ChevronDown, Mic } from "lucide-react";
 
 //libs
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { ProductScannerDialog } from "@/components/diet/product-scanner-dialog";
 import { AiAnalyzeDialog } from "@/components/diet/ai-analyze-dialog";
 import type { ProductAnalysis } from "@/components/diet/ai-analyze-dialog";
+import { VoiceInputDialog } from "@/components/diet/voice-input-dialog";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -116,6 +117,7 @@ const ProductFields = ({
   const [calcOpen, setCalcOpen] = useState(false);
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
   const [aiAnalyzeOpen, setAiAnalyzeOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
@@ -431,6 +433,16 @@ const ProductFields = ({
                 </FormItem>
               )}
             />
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setVoiceOpen(true)}
+              className="h-8 w-8 shrink-0 border border-input hover:border-primary-element hover:text-primary-element"
+              aria-label="Voice input"
+            >
+              <Mic className="h-3.5 w-3.5" />
+            </Button>
             <div
               className={cn(
                 "shrink-0 rounded-md p-[1.5px]",
@@ -696,6 +708,17 @@ const ProductFields = ({
         onOpenChange={setAiAnalyzeOpen}
         productName={productName || ""}
         onApply={handleAnalyzeApply}
+      />
+      <VoiceInputDialog
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onApply={(text) =>
+          setValue(
+            `meals.${mealIndex}.products.${productIndex}.product_name`,
+            text,
+            { shouldDirty: true }
+          )
+        }
       />
     </div>
   );
