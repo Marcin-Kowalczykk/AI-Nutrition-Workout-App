@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared/loader";
 
 //types
-import type { IDietDay } from "@/app/api/diet/types";
+import type { IDietDay, IDietMeal } from "@/app/api/diet/types";
 
 interface DietDayCardProps {
   day: IDietDay;
@@ -22,15 +22,21 @@ interface DietDayCardProps {
 
 const fmtNum = (v: number) => parseFloat(v.toFixed(1)).toString();
 
+const getMealSummary = (meal: IDietMeal) => {
+  const kcal = Math.round(meal.diet_products.reduce((s, p) => s + p.product_kcal, 0));
+  const protein = fmtNum(meal.diet_products.reduce((s, p) => s + p.protein_value, 0));
+  const carbs = fmtNum(meal.diet_products.reduce((s, p) => s + p.carbs_value, 0));
+  const fat = fmtNum(meal.diet_products.reduce((s, p) => s + p.fat_value, 0));
+  return { kcal, protein, carbs, fat };
+};
+
 export const DietDayCard = ({
   day,
   onEdit,
   onDelete,
   isDeleting,
 }: DietDayCardProps) => {
-  const [expandedMeals, setExpandedMeals] = useState<Set<string>>(
-    () => new Set(day.diet_meals.map((m) => m.id))
-  );
+  const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set());
 
   const formattedDate = format(
     new Date(day.date + "T00:00:00"),
@@ -99,31 +105,42 @@ export const DietDayCard = ({
             </span>
           </div>
         </div>
-        {day.diet_meals.map((meal) => (
-          <div key={meal.id} className="flex flex-col gap-0.5 mt-1">
-            <button
-              type="button"
-              className="flex items-center gap-1 text-xs text-muted-foreground font-medium hover:text-foreground"
-              onClick={() => toggleMeal(meal.id)}
-            >
-              {expandedMeals.has(meal.id) ? (
-                <ChevronUp className="h-3 w-3 shrink-0" />
-              ) : (
-                <ChevronDown className="h-3 w-3 shrink-0" />
-              )}
-              Meal {meal.meal_number}
-            </button>
-            {expandedMeals.has(meal.id) && meal.diet_products.map((product) => (
-              <div key={product.id} className="flex items-baseline justify-between gap-1 pl-3">
-                <p className="text-xs text-foreground truncate">{product.product_name}</p>
-                <p className="text-xs text-muted-foreground shrink-0">
-                  {product.weight_grams != null ? `~${Math.round(product.weight_grams)}g · ` : ""}
-                  {Math.round(product.product_kcal)} kcal · P: {fmtNum(product.protein_value)}g · C: {fmtNum(product.carbs_value)}g · F: {fmtNum(product.fat_value)}g
-                </p>
-              </div>
-            ))}
-          </div>
-        ))}
+        {day.diet_meals.map((meal) => {
+          const isExpanded = expandedMeals.has(meal.id);
+          const summary = getMealSummary(meal);
+          return (
+            <div key={meal.id} className="flex flex-col gap-0.5 mt-1">
+              <button
+                type="button"
+                className="flex items-center justify-between gap-2 w-full text-xs text-muted-foreground font-medium hover:text-foreground"
+                onClick={() => toggleMeal(meal.id)}
+              >
+                <div className="flex items-center gap-1">
+                  {isExpanded ? (
+                    <ChevronUp className="h-3 w-3 shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 shrink-0" />
+                  )}
+                  Meal {meal.meal_number}
+                </div>
+                {!isExpanded && (
+                  <span className="text-xs text-muted-foreground font-normal truncate">
+                    {summary.kcal} kcal · P: {summary.protein}g · C: {summary.carbs}g · F: {summary.fat}g
+                  </span>
+                )}
+              </button>
+              {isExpanded && meal.diet_products.map((product) => (
+                <div key={product.id} className="flex flex-col pl-4 py-0.5">
+                  <p className="text-xs text-foreground">{product.product_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {product.weight_grams != null ? `~${Math.round(product.weight_grams)}g · ` : ""}
+                    {Math.round(product.product_kcal)} kcal · P: {fmtNum(product.protein_value)}g · C: {fmtNum(product.carbs_value)}g · F: {fmtNum(product.fat_value)}g
+                  </p>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
