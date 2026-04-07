@@ -703,6 +703,7 @@ const ProductFields = ({
 
 interface MealSectionProps {
   mealIndex: number;
+  totalMeals: number;
   control: Control<DietDayFormValues>;
   onRemoveMeal: () => void;
   onSave: () => void;
@@ -711,6 +712,7 @@ interface MealSectionProps {
 
 const MealSection = ({
   mealIndex,
+  totalMeals,
   control,
   onRemoveMeal,
   onSave,
@@ -780,7 +782,7 @@ const MealSection = ({
               {mealTotals.kcal > 0 && `${Math.round(mealTotals.kcal)} kcal · P: ${fmtNum(mealTotals.protein)}g · C: ${fmtNum(mealTotals.carbs)}g · F: ${fmtNum(mealTotals.fat)}g`}
             </p>
           </button>
-          {(mealProducts ?? []).some((p) => p.product_name || p.product_kcal) && (
+          {totalMeals > 1 && (
             <Button
               type="button"
               variant="ghost"
@@ -948,10 +950,15 @@ export const AddEditDietDaySheet = ({
                   <MealSection
                     key={mealField.id}
                     mealIndex={mealIndex}
+                    totalMeals={mealFields.length}
                     control={form.control}
                     onRemoveMeal={() => removeMeal(mealIndex)}
                     onSave={handleProductSave}
-                    initiallyCollapsed={mealIndex !== lastAddedMealIndex}
+                    initiallyCollapsed={
+                      mealIndex === lastAddedMealIndex
+                        ? false
+                        : isEditing || mealIndex > 0
+                    }
                   />
                 ))}
 
