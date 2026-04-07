@@ -122,6 +122,7 @@ const ProductFields = ({
   const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
   const snapshotRef = useRef<DietProductFormValues | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [mode, setMode] = useState<"view" | "edit">(() => {
     const name = getValues(`meals.${mealIndex}.products.${productIndex}.product_name`);
@@ -138,6 +139,14 @@ const ProductFields = ({
   const aiBreakdown = useWatch({ control, name: `meals.${mealIndex}.products.${productIndex}.ai_breakdown` });
 
   const [breakdownOpen, setBreakdownOpen] = useState(false);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [productName]);
 
   const enterEdit = () => {
     snapshotRef.current = getValues(`meals.${mealIndex}.products.${productIndex}`);
@@ -420,6 +429,10 @@ const ProductFields = ({
                   <FormControl>
                     <textarea
                       {...field}
+                      ref={(el) => {
+                        field.ref(el);
+                        textareaRef.current = el;
+                      }}
                       rows={1}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                       onInput={(e) => {

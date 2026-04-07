@@ -194,7 +194,7 @@ export const VoiceInputDialog = ({
         )}
 
         {(voiceState === "idle" || voiceState === "listening") && (
-          <div className="flex flex-col items-center gap-4 py-2">
+          <div className="flex flex-col items-center gap-4 py-2 select-none">
             {voiceState === "listening" && (
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-primary-element animate-pulse" />
@@ -223,7 +223,7 @@ export const VoiceInputDialog = ({
             <button
               type="button"
               className={cn(
-                "flex h-16 w-16 items-center justify-center rounded-full transition-all select-none",
+                "flex h-16 w-16 items-center justify-center rounded-full transition-all select-none touch-manipulation",
                 voiceState === "listening"
                   ? "bg-primary-element shadow-[0_0_0_12px_rgba(153,43,255,0.15),0_0_0_24px_rgba(153,43,255,0.07)]"
                   : "border-2 border-input bg-background hover:border-primary-element"
@@ -231,6 +231,7 @@ export const VoiceInputDialog = ({
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
+              onContextMenu={(e) => e.preventDefault()}
             >
               <Mic
                 className={cn(
@@ -259,10 +260,10 @@ export const VoiceInputDialog = ({
         )}
 
         {voiceState === "done" && (
-          <div className="flex flex-col gap-3 py-2">
+          <div className="flex flex-col gap-3 py-2 select-none">
             <p className="text-xs text-muted-foreground">Correct if needed:</p>
             <textarea
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y select-text"
               value={transcript}
               onChange={(e) => setTranscript(e.target.value)}
             />
