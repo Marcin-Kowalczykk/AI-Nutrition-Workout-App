@@ -932,6 +932,18 @@ export const AddEditDietDaySheet = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleViewportResize = () => {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    };
+    window.visualViewport?.addEventListener("resize", handleViewportResize);
+    return () => window.visualViewport?.removeEventListener("resize", handleViewportResize);
+  }, [open]);
+
   const onSubmit = (values: DietDayFormValues) => {
     const payload = buildDietDayPayload(values);
     if (isEditing && dayToEdit) {
