@@ -433,16 +433,18 @@ const ProductFields = ({
                 </FormItem>
               )}
             />
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setVoiceOpen(true)}
-              className="h-8 w-8 shrink-0 border border-input hover:border-primary-element hover:text-primary-element"
-              aria-label="Voice input"
-            >
-              <Mic className="h-3.5 w-3.5" />
-            </Button>
+            <div className="shrink-0 p-[1.5px]">
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setVoiceOpen(true)}
+                className="h-8 w-8 border border-input hover:border-primary-element hover:text-primary-element"
+                aria-label="Voice input"
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            </div>
             <div
               className={cn(
                 "shrink-0 rounded-md p-[1.5px]",

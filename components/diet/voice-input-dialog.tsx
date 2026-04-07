@@ -49,6 +49,8 @@ export const VoiceInputDialog = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const holdStartTimeRef = useRef<number>(0);
+  // tracks latest interim text so onend can salvage it if no isFinal result arrives (mobile quirk)
+  const interimRef = useRef("");
 
   const startListening = () => {
     const SpeechRecognitionClass = getSpeechRecognition();
@@ -73,15 +75,23 @@ export const VoiceInputDialog = ({
         }
       }
       if (final) {
+        interimRef.current = "";
         setTranscript((prev) => prev + final);
         setInterimTranscript("");
       } else {
+        interimRef.current = interim;
         setInterimTranscript(interim);
       }
     };
 
     recognition.onend = () => {
+      // on mobile, onend can fire before the final isFinal result — salvage interim if needed
+      const salvaged = interimRef.current;
+      interimRef.current = "";
       setInterimTranscript("");
+      if (salvaged) {
+        setTranscript((prev) => prev + salvaged);
+      }
       setVoiceState((prev) => (prev === "listening" ? "done" : prev));
     };
 
@@ -102,6 +112,7 @@ export const VoiceInputDialog = ({
     };
 
     recognitionRef.current = recognition;
+    interimRef.current = "";
     recognition.start();
     setTranscript("");
     setInterimTranscript("");
@@ -146,6 +157,7 @@ export const VoiceInputDialog = ({
     if (!value) {
       recognitionRef.current?.abort();
       recognitionRef.current = null;
+      interimRef.current = "";
       setVoiceState("idle");
       setTranscript("");
       setInterimTranscript("");
@@ -164,7 +176,7 @@ export const VoiceInputDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Voice input</DialogTitle>
         </DialogHeader>
