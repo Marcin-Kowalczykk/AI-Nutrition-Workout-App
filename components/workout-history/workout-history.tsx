@@ -7,7 +7,7 @@ import { pl } from "date-fns/locale";
 // components
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Edit, Trash2, Plus } from "lucide-react";
+import { Eye, Edit, Trash2, Plus, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
@@ -21,6 +21,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useGetWorkoutHistory } from "./api/use-get-workout-history";
 import { useDeleteWorkout } from "@/components/workout-form/api/use-delete-workout";
 import { useWorkoutHistorySearch } from "./hooks/use-workout-history-search";
+import { useCopyWorkout } from "./hooks/use-copy-workout";
 
 // types
 import { IWorkoutItem } from "@/app/api/workouts/types";
@@ -70,6 +71,19 @@ const WorkoutHistory = () => {
   });
 
   const workouts = useMemo(() => data?.workouts || [], [data?.workouts]);
+
+  const resetFilters = () => {
+    setStartDate(subMonths(new Date(), 6));
+    setEndDate(new Date());
+  };
+
+  const {
+    workoutIdToCopy,
+    copyingWorkoutId,
+    setCopyCandidate,
+    cancelCopy,
+    confirmCopy,
+  } = useCopyWorkout({ workouts, onResetFilters: resetFilters });
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -154,7 +168,7 @@ const WorkoutHistory = () => {
         {(paginatedWorkouts) => (
           <ul className="flex flex-col gap-2">
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
-              <li key={workout.id} data-testid="workout-history-item" className={deletingWorkoutId === workout.id ? "opacity-50 pointer-events-none" : ""}>
+              <li key={workout.id} data-testid="workout-history-item" className={deletingWorkoutId === workout.id || copyingWorkoutId === workout.id ? "opacity-50 pointer-events-none" : ""}>
                 <Card className="w-full">
                   <CardContent className="p-2">
                     <div className="flex items-start justify-between gap-2">
@@ -180,6 +194,20 @@ const WorkoutHistory = () => {
                           aria-label="Edit workout"
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setCopyCandidate(workout.id)}
+                          className="h-9 w-9 text-foreground"
+                          aria-label="Copy workout"
+                          disabled={copyingWorkoutId === workout.id}
+                        >
+                          {copyingWorkoutId === workout.id ? (
+                            <Loader size={16} />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           variant="outline"
@@ -249,6 +277,16 @@ const WorkoutHistory = () => {
         cancelLabel="Cancel"
         onConfirm={handleConfirmDelete}
         isPending={isDeleting}
+      />
+
+      <ConfirmModal
+        open={workoutIdToCopy !== null}
+        onOpenChange={(open) => !open && cancelCopy()}
+        title="Copy workout?"
+        description="A new identical workout will be created with today's date. All checkboxes will be reset."
+        confirmLabel="Copy"
+        cancelLabel="Cancel"
+        onConfirm={confirmCopy}
       />
     </div>
   );
