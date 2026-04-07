@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, Camera, CheckCircle2, ChevronDown, ChevronUp, Info, Plus, RotateCcw } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, ChevronDown, ChevronUp, Info, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 
 //libs
 import { cn } from "@/lib/utils";
@@ -96,6 +96,8 @@ export const AiAnalyzeDialog = ({
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isNameExpanded, setIsNameExpanded] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingDraft, setEditingDraft] = useState<ProductAnalysis | null>(null);
 
   const isNameLong = productName.length > 60;
 
@@ -111,6 +113,8 @@ export const AiAnalyzeDialog = ({
     setWarning(null);
     setError(null);
     setIsNameExpanded(false);
+    setEditingIndex(null);
+    setEditingDraft(null);
   };
 
   const handleOpenChange = (value: boolean) => {
@@ -215,6 +219,35 @@ export const AiAnalyzeDialog = ({
       if (next.has(index)) { next.delete(index); } else { next.add(index); }
       return next;
     });
+  };
+
+  const handleDeleteProduct = (index: number) => {
+    const next = analyzedProducts.filter((_, i) => i !== index);
+    setAnalyzedProducts(next);
+    if (next.length === 1) {
+      setEditedProduct({ ...next[0] });
+    }
+    setEditingIndex(null);
+    setEditingDraft(null);
+  };
+
+  const handleStartEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditingDraft({ ...analyzedProducts[index] });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingIndex === null || !editingDraft) return;
+    setAnalyzedProducts((prev) =>
+      prev.map((p, i) => (i === editingIndex ? editingDraft : p))
+    );
+    setEditingIndex(null);
+    setEditingDraft(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditingDraft(null);
   };
 
   const handleApply = () => {
@@ -453,44 +486,102 @@ export const AiAnalyzeDialog = ({
               </div>
             )}
 
-            {/* Multi product — read-only list */}
+            {/* Multi product — editable list */}
             {analyzedProducts.length > 1 && (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-muted-foreground">Found {analyzedProducts.length} products:</p>
                 {analyzedProducts.map((product, i) => (
                   <div key={i} className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs font-medium">{product.product_name}</p>
-                      <p className="text-xs text-muted-foreground shrink-0">{product.kcal} kcal</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {product.weight_grams ? `~${product.weight_grams}g · ` : ""}P: {product.protein}g · C: {product.carbs}g · F: {product.fat}g
-                    </p>
-                    {product.breakdown && product.breakdown.length > 1 && (
-                      <div>
-                        <button
-                          type="button"
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-0.5"
-                          onClick={() => toggleBreakdown(i)}
-                        >
-                          {expandedBreakdowns.has(i) ? (
-                            <ChevronUp className="h-3 w-3" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3" />
-                          )}
-                          Components ({product.breakdown.length})
-                        </button>
-                        {expandedBreakdowns.has(i) && (
-                          <div className="mt-1 flex flex-col gap-0.5">
-                            {product.breakdown.map((item, j) => (
-                              <div key={j} className="flex items-center justify-between text-xs">
-                                <span className="text-foreground">• {item.name}</span>
-                                <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                    {editingIndex === i && editingDraft ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium">Product name</label>
+                          <Input
+                            value={editingDraft.product_name}
+                            onChange={(e) => setEditingDraft((d) => d ? { ...d, product_name: e.target.value } : d)}
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
+                            <div key={key} className="flex flex-col gap-1">
+                              <label className="text-xs font-medium">
+                                {key === "kcal" ? "Kcal" : `${key.charAt(0).toUpperCase() + key.slice(1)} [g]`}
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min={0}
+                                value={editingDraft[key]}
+                                onChange={(e) => setEditingDraft((d) => d ? { ...d, [key]: e.target.value } : d)}
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-1.5">
+                          <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSaveEdit}>
+                            Save
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleCancelEdit}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-medium">{product.product_name}</p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(i)}
+                              className="text-muted-foreground hover:text-foreground"
+                              aria-label={`Edit product ${i + 1}`}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProduct(i)}
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label={`Delete product ${i + 1}`}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {product.weight_grams ? `~${product.weight_grams}g · ` : ""}
+                          {product.kcal} kcal · P: {product.protein}g · C: {product.carbs}g · F: {product.fat}g
+                        </p>
+                        {product.breakdown && product.breakdown.length > 1 && (
+                          <div>
+                            <button
+                              type="button"
+                              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-0.5"
+                              onClick={() => toggleBreakdown(i)}
+                            >
+                              {expandedBreakdowns.has(i) ? (
+                                <ChevronUp className="h-3 w-3" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3" />
+                              )}
+                              Components ({product.breakdown.length})
+                            </button>
+                            {expandedBreakdowns.has(i) && (
+                              <div className="mt-1 flex flex-col gap-0.5">
+                                {product.breakdown.map((item, j) => (
+                                  <div key={j} className="flex items-center justify-between text-xs">
+                                    <span className="text-foreground">• {item.name}</span>
+                                    <span className="text-muted-foreground shrink-0 ml-2">{item.weight_g}g · {item.kcal} kcal</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
                 ))}
