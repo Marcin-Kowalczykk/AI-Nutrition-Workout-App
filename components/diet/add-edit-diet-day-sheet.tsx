@@ -722,6 +722,7 @@ const MealSection = ({
   });
 
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
   const mealTotals = useMemo(
     () =>
@@ -759,14 +760,23 @@ const MealSection = ({
           onConfirm={() => { setRemoveConfirmOpen(false); onRemoveMeal(); }}
         />
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+          <button
+            type="button"
+            className="flex items-center gap-2 min-w-0 flex-1"
+            onClick={() => setIsCollapsed((v) => !v)}
+          >
+            {isCollapsed ? (
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            )}
             <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
             <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
             <p className="text-xs text-muted-foreground truncate">
               {mealTotals.kcal.toFixed(0)} kcal · P: {mealTotals.protein.toFixed(1)}g · C:{" "}
               {mealTotals.carbs.toFixed(1)}g · F: {mealTotals.fat.toFixed(1)}g
             </p>
-          </div>
+          </button>
           {(mealProducts ?? []).some((p) => p.product_name || p.product_kcal) && (
             <Button
               type="button"
@@ -781,28 +791,32 @@ const MealSection = ({
           )}
         </div>
 
-        {productFields.map((productField, productIndex) => (
-          <ProductFields
-            key={productField.id}
-            mealIndex={mealIndex}
-            productIndex={productIndex}
-            control={control}
-            onRemove={() => removeProduct(productIndex)}
-            onSave={onSave}
-            appendProduct={appendProduct}
-          />
-        ))}
+        {!isCollapsed && (
+          <>
+            {productFields.map((productField, productIndex) => (
+              <ProductFields
+                key={productField.id}
+                mealIndex={mealIndex}
+                productIndex={productIndex}
+                control={control}
+                onRemove={() => removeProduct(productIndex)}
+                onSave={onSave}
+                appendProduct={appendProduct}
+              />
+            ))}
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => appendProduct({ ...DEFAULT_PRODUCT })}
-          className="w-full h-7 text-xs mt-1"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add product
-        </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendProduct({ ...DEFAULT_PRODUCT })}
+              className="w-full h-7 text-xs mt-1"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Add product
+            </Button>
+          </>
+        )}
       </CardContent>
     </Card>
   );
