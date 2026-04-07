@@ -364,9 +364,9 @@ const ProductFields = ({
                 {breakdownOpen && (
                   <div className="mt-1 flex flex-col gap-0.5">
                     {aiBreakdown.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs">
+                      <div key={i} className="flex flex-col gap-0.5 text-xs">
                         <span className="text-foreground/80">• {item.name}</span>
-                        <span className="text-muted-foreground shrink-0 ml-2">
+                        <span className="text-muted-foreground pl-3">
                           {item.weight_g}g · {item.kcal} kcal
                           {(item.protein != null || item.carbs != null || item.fat != null) && (
                             <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>

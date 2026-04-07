@@ -474,9 +474,9 @@ export const AiAnalyzeDialog = ({
                     {expandedBreakdowns.has(0) && (
                       <div className="mt-1.5 rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
                         {editedProduct.breakdown.map((item, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs">
+                          <div key={i} className="flex flex-col gap-0.5 text-xs">
                             <span className="text-foreground">• {item.name}</span>
-                            <span className="text-muted-foreground shrink-0 ml-2">
+                            <span className="text-muted-foreground pl-3">
                               {item.weight_g}g · {item.kcal} kcal
                               {(item.protein != null || item.carbs != null || item.fat != null) && (
                                 <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>
@@ -577,14 +577,14 @@ export const AiAnalyzeDialog = ({
                             {expandedBreakdowns.has(i) && (
                               <div className="mt-1 flex flex-col gap-0.5">
                                 {product.breakdown.map((item, j) => (
-                                  <div key={j} className="flex items-center justify-between text-xs">
+                                  <div key={j} className="flex flex-col gap-0.5 text-xs">
                                     <span className="text-foreground">• {item.name}</span>
-                                    <span className="text-muted-foreground shrink-0 ml-2">
-                              {item.weight_g}g · {item.kcal} kcal
-                              {(item.protein != null || item.carbs != null || item.fat != null) && (
-                                <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>
-                              )}
-                            </span>
+                                    <span className="text-muted-foreground pl-3">
+                                      {item.weight_g}g · {item.kcal} kcal
+                                      {(item.protein != null || item.carbs != null || item.fat != null) && (
+                                        <> · P: {item.protein ?? 0}g · C: {item.carbs ?? 0}g · F: {item.fat ?? 0}g</>
+                                      )}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
