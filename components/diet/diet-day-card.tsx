@@ -112,10 +112,10 @@ export const DietDayCard = ({
             <div key={meal.id} className="flex flex-col gap-0.5 mt-1">
               <button
                 type="button"
-                className="flex items-center justify-between gap-2 w-full text-xs text-muted-foreground font-medium hover:text-foreground"
+                className="flex items-center gap-2 w-full text-xs hover:text-foreground"
                 onClick={() => toggleMeal(meal.id)}
               >
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-15 shrink-0 text-foreground font-semibold">
                   {isExpanded ? (
                     <ChevronUp className="h-3 w-3 shrink-0" />
                   ) : (

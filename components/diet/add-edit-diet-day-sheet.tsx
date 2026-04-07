@@ -815,10 +815,14 @@ const MealSection = ({
               <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             )}
             <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
-            <p className="font-medium text-sm">Meal {mealIndex + 1}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {mealTotals.kcal > 0 && `${Math.round(mealTotals.kcal)} kcal · P: ${fmtNum(mealTotals.protein)}g · C: ${fmtNum(mealTotals.carbs)}g · F: ${fmtNum(mealTotals.fat)}g`}
-            </p>
+            <div className="flex flex-col items-start min-w-0">
+              <p className="font-medium text-sm leading-tight">Meal {mealIndex + 1}</p>
+              {mealTotals.kcal > 0 && (
+                <p className="text-xs text-muted-foreground tabular-nums truncate">
+                  {Math.round(mealTotals.kcal)} kcal · P: {fmtNum(mealTotals.protein)}g · C: {fmtNum(mealTotals.carbs)}g · F: {fmtNum(mealTotals.fat)}g
+                </p>
+              )}
+            </div>
           </button>
           {totalMeals > 1 && (
             <Button
