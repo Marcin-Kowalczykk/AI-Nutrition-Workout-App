@@ -354,7 +354,7 @@ const ProductFields = ({
       </Dialog>
 
       {mode === "view" ? (
-        <div className="flex items-center justify-between gap-2 py-0.5">
+        <div className="flex items-start justify-between gap-2 py-0.5">
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{productName}</p>
             <p className="text-xs text-muted-foreground">
