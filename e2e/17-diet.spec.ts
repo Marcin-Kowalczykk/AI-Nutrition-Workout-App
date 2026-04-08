@@ -83,6 +83,9 @@ test.describe('Diet history', () => {
     await page.getByRole('button', { name: /edit diet day/i }).first().click()
     await expect(page.getByRole('dialog')).toBeVisible()
 
+    // Meals are collapsed by default when editing — expand Meal 1 first
+    await page.getByRole('button', { name: /meal 1/i }).click()
+
     // Existing products start in view mode — click the pencil to enter edit mode
     await page.getByRole('button', { name: /edit product 1/i }).click()
 
@@ -91,10 +94,10 @@ test.describe('Diet history', () => {
     await kcalInput.fill('200')
     await expect(kcalInput).toHaveValue('200')
 
-    // Use .last() — product-level Save is also visible when product is in edit mode
+    // Footer button says "Update" (not "Save") when editing — click it directly
     const [response] = await Promise.all([
       page.waitForResponse(r => r.url().includes('/api/diet/update')),
-      page.getByRole('button', { name: /^save$/i }).last().click(),
+      page.getByRole('button', { name: /^update$/i }).click(),
     ])
     expect(response.status()).toBe(200)
 
