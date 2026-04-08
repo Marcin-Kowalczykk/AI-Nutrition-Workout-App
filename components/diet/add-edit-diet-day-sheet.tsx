@@ -358,7 +358,7 @@ const ProductFields = ({
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{productName}</p>
             <p className="text-xs text-muted-foreground">
-              {weightGrams ? `~${weightGrams}g · ` : ""}{productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
+              {weightGrams ? `${weightGrams}g · ` : ""}{productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
             </p>
             {aiBreakdown && aiBreakdown.length > 1 && (
               <div>
