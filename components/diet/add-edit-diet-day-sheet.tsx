@@ -903,18 +903,20 @@ const MealSection = ({
 
         {!isCollapsed && (
           <>
-            {productFields.map((productField, productIndex) => (
-              <ProductFields
-                key={productField.id}
-                mealIndex={mealIndex}
-                productIndex={productIndex}
-                control={control}
-                onRemove={() => removeProduct(productIndex)}
-                onSave={onSave}
-                appendProduct={appendProduct}
-                isEditing={isEditing}
-              />
-            ))}
+            <div className="border-l-2 border-primary-element pl-3 flex flex-col gap-1">
+              {productFields.map((productField, productIndex) => (
+                <ProductFields
+                  key={productField.id}
+                  mealIndex={mealIndex}
+                  productIndex={productIndex}
+                  control={control}
+                  onRemove={() => removeProduct(productIndex)}
+                  onSave={onSave}
+                  appendProduct={appendProduct}
+                  isEditing={isEditing}
+                />
+              ))}
+            </div>
 
             <Button
               type="button"
