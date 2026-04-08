@@ -133,15 +133,17 @@ export const DietDayCard = ({
                       </span>
                     )}
                   </button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
-                    onClick={() => setMealToCopy(meal)}
-                    aria-label={`Copy Meal ${meal.meal_number}`}
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
+                  {meal.diet_products.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                      onClick={() => setMealToCopy(meal)}
+                      aria-label={`Copy Meal ${meal.meal_number}`}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
                 {isExpanded && (
                   <div className="border-l-2 border-primary-element pl-3 flex flex-col gap-0.5 mt-0.5">
