@@ -32,10 +32,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
-import { ProductScannerDialog } from "@/components/diet/product-scanner-dialog";
-import { AiAnalyzeDialog } from "@/components/diet/ai-analyze-dialog";
-import type { ProductAnalysis } from "@/components/diet/ai-analyze-dialog";
-import { VoiceInputDialog } from "@/components/diet/voice-input-dialog";
+import { ProductScannerDialog } from "@/components/diet-history/product-scanner-dialog";
+import { AiAnalyzeDialog } from "@/components/diet-history/ai-analyze-dialog";
+import type { ProductAnalysis } from "@/components/diet-history/ai-analyze-dialog";
+import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
 import { toast } from "sonner";
 import {
   Dialog,
