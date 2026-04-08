@@ -102,6 +102,7 @@ interface ProductFieldsProps {
   onRemove: () => void;
   onSave: () => void;
   appendProduct: (product: DietProductFormValues) => void;
+  isEditing: boolean;
 }
 
 const ProductFields = ({
@@ -111,6 +112,7 @@ const ProductFields = ({
   onRemove,
   onSave,
   appendProduct,
+  isEditing,
 }: ProductFieldsProps) => {
   const { setValue, getValues, formState: { isDirty }, trigger } = useFormContext<DietDayFormValues>();
 
@@ -339,6 +341,7 @@ const ProductFields = ({
         onConfirm={() => {
           setRemoveConfirmOpen(false);
           onRemove();
+          if (isEditing) onSave();
         }}
       />
 
@@ -804,6 +807,7 @@ interface MealSectionProps {
   onRemoveMeal: () => void;
   onSave: () => void;
   initiallyCollapsed?: boolean;
+  isEditing: boolean;
 }
 
 const MealSection = ({
@@ -813,6 +817,7 @@ const MealSection = ({
   onRemoveMeal,
   onSave,
   initiallyCollapsed = true,
+  isEditing,
 }: MealSectionProps) => {
   const {
     fields: productFields,
@@ -907,6 +912,7 @@ const MealSection = ({
                 onRemove={() => removeProduct(productIndex)}
                 onSave={onSave}
                 appendProduct={appendProduct}
+                isEditing={isEditing}
               />
             ))}
 
@@ -1071,6 +1077,7 @@ export const AddEditDietDaySheet = ({
                         ? false
                         : isEditing || mealIndex > 0
                     }
+                    isEditing={isEditing}
                   />
                 ))}
 
