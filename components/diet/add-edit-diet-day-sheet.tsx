@@ -121,6 +121,7 @@ const ProductFields = ({
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
+  const [productNameInfoOpen, setProductNameInfoOpen] = useState(false);
   const snapshotRef = useRef<DietProductFormValues | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -353,6 +354,25 @@ const ProductFields = ({
         </DialogContent>
       </Dialog>
 
+      <Dialog open={productNameInfoOpen} onOpenChange={setProductNameInfoOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Multiple products</DialogTitle>
+            <DialogDescription>
+              You can enter multiple products at once — the app will split them into separate entries automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">Example:</p>
+            <p>chicken breast 200g, rice 100g, olive oil 10g</p>
+            <p className="mt-1">or one per line:</p>
+            <p>chicken breast 200g</p>
+            <p>rice 100g</p>
+            <p>olive oil 10g</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {mode === "view" ? (
         <div className="flex items-start justify-between gap-2 py-0.5">
           <div className="flex flex-col gap-0.5 min-w-0">
@@ -425,7 +445,17 @@ const ProductFields = ({
               name={`meals.${mealIndex}.products.${productIndex}.product_name`}
               render={({ field }) => (
                 <FormItem className="space-y-1 flex-1">
-                  <FormLabel className="text-xs">Product name</FormLabel>
+                  <div className="flex items-center gap-1">
+                    <FormLabel className="text-xs">Product name</FormLabel>
+                    <button
+                      type="button"
+                      onClick={() => setProductNameInfoOpen(true)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Product name info"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   <FormControl>
                     <textarea
                       {...field}
