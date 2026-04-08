@@ -262,6 +262,7 @@ export const AiMealAnalyzer = ({
     } else {
       onApply(analyzedProducts);
     }
+    reset();
     onClose?.();
   };
 
