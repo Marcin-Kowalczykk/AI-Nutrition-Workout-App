@@ -5,7 +5,21 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { TABLE_NAMES } from "@/app/api/tableNames";
 
-const anthropic = new Anthropic();
+const anthropic = new Anthropic({ maxRetries: 1 });
+
+const PRIMARY_MODEL = "claude-sonnet-4-6";
+const FALLBACK_MODEL = "claude-haiku-4-5-20251001";
+
+const createMessageWithFallback = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
+  try {
+    return await anthropic.messages.create(params);
+  } catch (error) {
+    if (error instanceof Error && "status" in error && (error as { status: number }).status === 529) {
+      return await anthropic.messages.create({ ...params, model: FALLBACK_MODEL });
+    }
+    throw error;
+  }
+};
 
 const SYSTEM_PROMPT = `You are a nutrition label parser. You only output raw JSON. No explanations, no markdown, no code blocks. Only a valid JSON object.`;
 
@@ -69,8 +83,8 @@ export async function POST(request: NextRequest) {
         : "image/jpeg"
     ) as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+    const response = await createMessageWithFallback({
+      model: PRIMARY_MODEL,
       max_tokens: 256,
       system: SYSTEM_PROMPT,
       messages: [

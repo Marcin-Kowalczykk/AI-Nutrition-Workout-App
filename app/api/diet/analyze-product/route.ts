@@ -5,7 +5,21 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { TABLE_NAMES } from "@/app/api/tableNames";
 
-const anthropic = new Anthropic();
+const anthropic = new Anthropic({ maxRetries: 1 });
+
+const PRIMARY_MODEL = "claude-sonnet-4-6";
+const FALLBACK_MODEL = "claude-sonnet-4-5";
+
+const createMessageWithFallback = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
+  try {
+    return await anthropic.messages.create(params);
+  } catch (error) {
+    if (error instanceof Error && "status" in error && (error as { status: number }).status === 529) {
+      return await anthropic.messages.create({ ...params, model: FALLBACK_MODEL });
+    }
+    throw error;
+  }
+};
 
 const SYSTEM_PROMPT = `You are a nutrition and dietetics expert. Analyze meals from a photo and/or text description.
 
@@ -138,8 +152,8 @@ export async function POST(request: NextRequest) {
 
     userContent.push({ type: "text", text: buildAnalyzePrompt(productName, imageCount) });
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+    const response = await createMessageWithFallback({
+      model: PRIMARY_MODEL,
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
