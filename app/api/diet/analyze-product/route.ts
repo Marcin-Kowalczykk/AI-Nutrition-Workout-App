@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     const response = await createMessageWithFallback({
       model: PRIMARY_MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     });
@@ -170,6 +170,12 @@ export async function POST(request: NextRequest) {
     try {
       parsed = JSON.parse(text);
     } catch {
+      console.error("Analyze product — JSON parse failed", {
+        imageCount,
+        rawTextLength: rawText.length,
+        stopReason: response.stop_reason,
+        rawTextPreview: rawText.slice(0, 200),
+      });
       return NextResponse.json(
         { error: "Could not parse AI response" },
         { status: 422 }

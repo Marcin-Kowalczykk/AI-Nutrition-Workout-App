@@ -108,6 +108,10 @@ export async function POST(request: NextRequest) {
     try {
       parsed = JSON.parse(text);
     } catch {
+      console.error("Scan product — JSON parse failed", {
+        stopReason: response.stop_reason,
+        rawTextPreview: text.slice(0, 200),
+      });
       return NextResponse.json(
         { error: "Could not parse AI response" },
         { status: 422 }
