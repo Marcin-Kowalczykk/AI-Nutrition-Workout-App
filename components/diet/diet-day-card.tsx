@@ -89,7 +89,7 @@ export const DietDayCard = ({
             </Button>
           </div>
         </div>
-        <div className="flex flex-col gap-0.5 text-xs">
+        <div className="flex flex-col gap-0.5 text-sm">
           <span>
             <strong>Kcal:</strong> {Math.round(day.total_kcal)}
           </span>
@@ -112,7 +112,7 @@ export const DietDayCard = ({
             <div key={meal.id} className="flex flex-col gap-0.5 mt-1">
               <button
                 type="button"
-                className="flex items-center gap-2 w-full text-xs hover:text-foreground"
+                className="flex items-center gap-2 w-full text-sm hover:text-foreground"
                 onClick={() => toggleMeal(meal.id)}
               >
                 <div className="flex items-center gap-1 w-15 shrink-0 text-foreground font-semibold">
@@ -124,20 +124,24 @@ export const DietDayCard = ({
                   Meal {meal.meal_number}
                 </div>
                 {!isExpanded && (
-                  <span className="text-xs text-muted-foreground font-normal truncate">
+                  <span className="text-sm text-muted-foreground font-normal truncate">
                     {summary.kcal} kcal · P: {summary.protein}g · C: {summary.carbs}g · F: {summary.fat}g
                   </span>
                 )}
               </button>
-              {isExpanded && meal.diet_products.map((product) => (
-                <div key={product.id} className="flex flex-col pl-4 py-0.5">
-                  <p className="text-xs text-foreground">{product.product_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {product.weight_grams != null ? `~${Math.round(product.weight_grams)}g · ` : ""}
-                    {Math.round(product.product_kcal)} kcal · P: {fmtNum(product.protein_value)}g · C: {fmtNum(product.carbs_value)}g · F: {fmtNum(product.fat_value)}g
-                  </p>
+              {isExpanded && (
+                <div className="border-l-2 border-primary-element pl-3 flex flex-col gap-0.5 mt-0.5">
+                  {meal.diet_products.map((product) => (
+                    <div key={product.id} className="flex flex-col py-0.5">
+                      <p className="text-sm text-foreground">{product.product_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {product.weight_grams != null ? `${Math.round(product.weight_grams)}g · ` : ""}
+                        {Math.round(product.product_kcal)} kcal · P: {fmtNum(product.protein_value)}g · C: {fmtNum(product.carbs_value)}g · F: {fmtNum(product.fat_value)}g
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           );
         })}
