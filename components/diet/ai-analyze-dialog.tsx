@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Camera, CheckCircle2, ChevronDown, ChevronUp, Info, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 
 //libs
@@ -85,6 +85,7 @@ export const AiAnalyzeDialog = ({
   onApply,
 }: AiAnalyzeDialogProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const productNameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
@@ -100,6 +101,14 @@ export const AiAnalyzeDialog = ({
   const [editingDraft, setEditingDraft] = useState<ProductAnalysis | null>(null);
 
   const isNameLong = productName.length > 60;
+
+  useEffect(() => {
+    if (analyzeState === "result" && productNameTextareaRef.current) {
+      const el = productNameTextareaRef.current;
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [analyzeState]);
 
   const reset = () => {
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -268,8 +277,8 @@ export const AiAnalyzeDialog = ({
 
         {productName && (
           <div className="flex flex-col gap-1 text-sm">
-            <div>
-              <span className="text-muted-foreground">Analysing: </span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground">Analysing:</span>
               <span
                 className={cn(
                   "font-medium text-foreground",
@@ -389,7 +398,7 @@ export const AiAnalyzeDialog = ({
         )}
 
         {analyzeState === "result" && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 overflow-y-auto max-h-[60vh]">
             {confidence && (
               <div className={`flex items-center gap-1.5 text-xs font-medium ${
                 confidence === "high"
@@ -424,15 +433,22 @@ export const AiAnalyzeDialog = ({
                   <label htmlFor="analyze-product-name" className="text-xs font-medium">
                     Product name
                   </label>
-                  <Input
+                  <textarea
                     id="analyze-product-name"
+                    ref={productNameTextareaRef}
                     value={editedProduct.product_name}
-                    onChange={(e) => setEditedProduct((p) => p ? { ...p, product_name: e.target.value } : p)}
-                    className="h-8"
+                    rows={1}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                    onChange={(e) => {
+                      setEditedProduct((p) => p ? { ...p, product_name: e.target.value } : p);
+                      const el = e.currentTarget;
+                      el.style.height = "auto";
+                      el.style.height = `${el.scrollHeight}px`;
+                    }}
                   />
                 </div>
                 {editedProduct.weight_grams && (
-                  <p className="text-xs text-muted-foreground">~{editedProduct.weight_grams}g</p>
+                  <p className="text-xs text-muted-foreground">{editedProduct.weight_grams}g</p>
                 )}
                 <p className="text-xs text-muted-foreground">Check and correct if needed:</p>
                 <div className="grid grid-cols-2 gap-2">
@@ -501,10 +517,16 @@ export const AiAnalyzeDialog = ({
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-col gap-1">
                           <label className="text-xs font-medium">Product name</label>
-                          <Input
+                          <textarea
                             value={editingDraft.product_name}
-                            onChange={(e) => setEditingDraft((d) => d ? { ...d, product_name: e.target.value } : d)}
-                            className="h-7 text-xs"
+                            rows={1}
+                            className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                            onChange={(e) => {
+                              setEditingDraft((d) => d ? { ...d, product_name: e.target.value } : d);
+                              const el = e.currentTarget;
+                              el.style.height = "auto";
+                              el.style.height = `${el.scrollHeight}px`;
+                            }}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
@@ -557,7 +579,7 @@ export const AiAnalyzeDialog = ({
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {product.weight_grams ? `~${product.weight_grams}g · ` : ""}
+                          {product.weight_grams ? `${product.weight_grams}g · ` : ""}
                           {product.kcal} kcal · P: {product.protein}g · C: {product.carbs}g · F: {product.fat}g
                         </p>
                         {product.breakdown && product.breakdown.length > 1 && (
