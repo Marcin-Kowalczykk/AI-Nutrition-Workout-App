@@ -851,8 +851,11 @@ const MealSection = ({
             <div className="flex flex-col items-start min-w-0">
               <p className="font-medium text-sm leading-tight">Meal {mealIndex + 1}</p>
               {mealTotals.kcal > 0 && (
-                <p className="text-xs text-muted-foreground tabular-nums truncate">
-                  {Math.round(mealTotals.kcal)} kcal · P: {fmtNum(mealTotals.protein)}g · C: {fmtNum(mealTotals.carbs)}g · F: {fmtNum(mealTotals.fat)}g
+                <p className="text-xs text-muted-foreground tabular-nums truncate flex items-center gap-1.5 flex-wrap">
+                  <span>{Math.round(mealTotals.kcal)} kcal</span>
+                  <span className="text-green-500 font-semibold">P {fmtNum(mealTotals.protein)}g</span>
+                  <span className="text-amber-500 font-semibold">C {fmtNum(mealTotals.carbs)}g</span>
+                  <span className="text-orange-500 font-semibold">F {fmtNum(mealTotals.fat)}g</span>
                 </p>
               )}
             </div>
