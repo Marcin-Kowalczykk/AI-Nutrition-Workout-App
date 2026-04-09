@@ -30,7 +30,7 @@ export const AiAnalyzeDialog = ({
   onApply,
 }: AiAnalyzeDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-sm">
+    <DialogContent className="max-w-md">
       <DialogHeader>
         <DialogTitle>Analyse meal</DialogTitle>
       </DialogHeader>

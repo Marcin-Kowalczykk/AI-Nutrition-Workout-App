@@ -43,22 +43,17 @@ export const AiMealAnalyzerPage = () => {
   };
 
   return (
-    <div className="w-full xl:w-1/2 flex flex-col gap-4">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-bold">AI Meal Analyzer</h1>
-        <span className="bg-primary-element/10 text-primary-element border border-primary-element/30 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">
+    <div className="w-full xl:w-1/2 flex flex-col gap-2">
+        <span className="text-center bg-primary-element/10 text-primary-element border border-primary-element/30 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">
           Powered by Claude AI
         </span>
-      </div>
 
       <Card>
-        <CardContent className="flex flex-col gap-4 pt-4">
+        <CardContent className="flex flex-col gap-4">
 
-          {/* Label + textarea */}
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Opisz posiłek
+              Describe your meal
             </span>
             <div className="relative">
               <textarea
@@ -70,13 +65,8 @@ export const AiMealAnalyzerPage = () => {
                   el.style.height = `${el.scrollHeight}px`;
                 }}
                 rows={3}
-                placeholder="np. kurczak z ryżem i brokułami, porcja ok. 300g…"
-                className={cn(
-                  "flex w-full rounded-md border bg-background px-3 py-2 pr-8 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 resize-none transition-colors",
-                  mealName
-                    ? "border-primary-element focus-visible:ring-primary-element"
-                    : "border-input focus-visible:ring-ring"
-                )}
+                placeholder="e.g. grilled chicken with rice and broccoli, approx. 300g…"
+                className="flex w-full rounded-md border border-primary-element bg-background px-3 py-2 pr-8 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-element/60 resize-none transition-colors"
               />
               {mealName && (
                 <button
@@ -91,7 +81,6 @@ export const AiMealAnalyzerPage = () => {
             </div>
           </div>
 
-          {/* Controls: mic + AI button */}
           <div className="grid grid-cols-[44px_1fr] gap-2.5">
             <Button
               type="button"
@@ -114,7 +103,6 @@ export const AiMealAnalyzerPage = () => {
             </Button>
           </div>
 
-          {/* Inline AI analyzer */}
           {showAnalyzer && (
             <AiMealAnalyzer
               key={analyzerKey}

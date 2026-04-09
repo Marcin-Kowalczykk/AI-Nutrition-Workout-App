@@ -108,7 +108,15 @@ export const AiMealAnalyzer = ({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDraft, setEditingDraft] = useState<ProductAnalysis | null>(null);
 
-  const isNameLong = productName.length > 60;
+  const nameRef = useRef<HTMLSpanElement>(null);
+  const [isNameTruncated, setIsNameTruncated] = useState(false);
+
+  useEffect(() => {
+    if (isNameExpanded) return;
+    const el = nameRef.current;
+    if (!el) return;
+    setIsNameTruncated(el.scrollHeight > el.clientHeight);
+  }, [productName, isNameExpanded]);
 
   useEffect(() => {
     if (analyzeState === "result" && productNameTextareaRef.current) {
@@ -293,15 +301,16 @@ export const AiMealAnalyzer = ({
           <div className="flex flex-col gap-0.5">
             <span className="text-muted-foreground">Analysing:</span>
             <span
+              ref={nameRef}
               className={cn(
                 "font-medium text-foreground",
-                !isNameExpanded && isNameLong && "line-clamp-2"
+                !isNameExpanded && "line-clamp-2"
               )}
             >
               {productName}
             </span>
           </div>
-          {isNameLong && (
+          {isNameTruncated && (
             <button
               type="button"
               className="self-start flex items-center gap-0.5 text-xs text-primary-element"
@@ -600,7 +609,12 @@ export const AiMealAnalyzer = ({
                   ) : (
                     <>
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-medium">{product.product_name}</p>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium">{product.product_name}</span>
+                          {product.weight_grams && (
+                            <span className="text-xs text-muted-foreground ml-1.5">{product.weight_grams}g</span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <button
                             type="button"
@@ -620,7 +634,6 @@ export const AiMealAnalyzer = ({
                           </button>
                         </div>
                       </div>
-                      {/* Per-card macro tiles */}
                       <div className="grid grid-cols-4 gap-1.5">
                         {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
                           <div
@@ -675,17 +688,13 @@ export const AiMealAnalyzer = ({
                           )}
                         </div>
                       )}
-                      {product.weight_grams && (
-                        <p className="text-xs text-muted-foreground">{product.weight_grams}g</p>
-                      )}
                     </>
                   )}
                 </div>
               ))}
 
-              {/* Łącznie summary */}
               <div className="rounded-lg border border-primary-element/30 bg-primary-element/5 p-3">
-                <p className="text-[10px] font-bold text-primary-element uppercase tracking-wider mb-2">Łącznie</p>
+                <p className="text-[10px] font-bold text-primary-element uppercase tracking-wider mb-2">Total</p>
                 <div className="grid grid-cols-4 gap-1.5">
                   {totalItems.map(({ key, label, value }) => (
                     <div key={key} className="text-center">
