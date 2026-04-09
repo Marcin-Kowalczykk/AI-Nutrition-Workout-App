@@ -622,7 +622,7 @@ const ProductFields = ({
                   name={`meals.${mealIndex}.products.${productIndex}.weight_grams`}
                   render={({ field }) => (
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium">Grams</label>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Grams</label>
                       <Input
                         type="number"
                         step="1"
@@ -642,7 +642,7 @@ const ProductFields = ({
                   name={`meals.${mealIndex}.products.${productIndex}.kcal_per_100g`}
                   render={({ field }) => (
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium">Kcal / 100g</label>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Kcal/100g</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -664,7 +664,7 @@ const ProductFields = ({
                   name={`meals.${mealIndex}.products.${productIndex}.protein_per_100g`}
                   render={({ field }) => (
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium">Protein / 100g</label>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Protein/100g</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -684,7 +684,7 @@ const ProductFields = ({
                   name={`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`}
                   render={({ field }) => (
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium">Carbs / 100g</label>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Carbs/100g</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -704,7 +704,7 @@ const ProductFields = ({
                   name={`meals.${mealIndex}.products.${productIndex}.fat_per_100g`}
                   render={({ field }) => (
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium">Fat / 100g</label>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Fat/100g</label>
                       <Input
                         type="number"
                         step="0.01"
