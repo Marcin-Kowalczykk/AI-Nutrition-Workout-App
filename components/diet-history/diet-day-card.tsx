@@ -57,7 +57,6 @@ export const DietDayCard = ({
       <Card className={`w-full${isDeleting ? " opacity-50 pointer-events-none" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-3">
 
-          {/* Header: date + actions */}
           <div className="flex items-center justify-between gap-2">
             <div className="text-sm font-bold border-b-2 border-primary-element pb-1 w-fit">
               {formattedDate}
@@ -86,7 +85,6 @@ export const DietDayCard = ({
             </div>
           </div>
 
-          {/* Total kcal */}
           <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-black leading-none">
               {Math.round(day.total_kcal).toLocaleString()}
@@ -94,7 +92,6 @@ export const DietDayCard = ({
             <span className="text-sm text-muted-foreground font-medium">kcal</span>
           </div>
 
-          {/* Macro tiles */}
           <div className="grid grid-cols-3 gap-1.5">
             <div className="bg-muted/40 rounded-lg px-2 py-1.5 border border-border">
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
@@ -122,7 +119,6 @@ export const DietDayCard = ({
             </div>
           </div>
 
-          {/* Meals */}
           {day.diet_meals.length > 0 && (
             <div className="flex flex-col gap-1">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
@@ -134,7 +130,6 @@ export const DietDayCard = ({
                 return (
                   <div key={meal.id} className="rounded-lg bg-muted/30 overflow-hidden">
 
-                    {/* Meal header — always visible */}
                     <div className="flex items-center gap-2 px-2.5 py-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary-element shrink-0" />
                       <span className="text-xs font-bold text-foreground shrink-0">
@@ -167,11 +162,9 @@ export const DietDayCard = ({
                       </button>
                     </div>
 
-                    {/* Expanded content */}
                     {isExpanded && (
                       <div className="border-t border-border px-2.5 pt-2 pb-2.5 flex flex-col gap-2">
 
-                        {/* Mini macro row */}
                         <div className="flex gap-3 text-[11px]">
                           <span className="flex items-center gap-1">
                             <span className="font-bold text-green-400">P</span>
@@ -187,7 +180,6 @@ export const DietDayCard = ({
                           </span>
                         </div>
 
-                        {/* Product list */}
                         <div className="flex flex-col gap-0.5">
                           {meal.diet_products.map((product) => (
                             <div
