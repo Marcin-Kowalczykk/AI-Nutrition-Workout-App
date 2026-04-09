@@ -358,8 +358,12 @@ const ProductFields = ({
         <div className="flex items-start justify-between gap-2 py-0.5">
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{productName}</p>
-            <p className="text-xs text-muted-foreground">
-              {weightGrams ? `${weightGrams}g · ` : ""}{productKcal} kcal · P: {proteinValue}g · C: {carbsValue}g · F: {fatValue}g
+            <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
+              {weightGrams ? <span>{weightGrams}g ·</span> : null}
+              <span>{productKcal} kcal</span>
+              <span className="text-green-500 font-medium">P:{proteinValue}g</span>
+              <span className="text-amber-500 font-medium">C:{carbsValue}g</span>
+              <span className="text-orange-500 font-medium">F:{fatValue}g</span>
             </p>
             {aiBreakdown && aiBreakdown.length > 1 && (
               <div>
