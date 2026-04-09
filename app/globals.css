@@ -62,6 +62,9 @@ body,
   --color-exercise-badge-time-based-bg: var(--exercise-badge-time-based-bg);
   --color-exercise-badge-reps-based: var(--exercise-badge-reps-based);
   --color-exercise-badge-reps-based-bg: var(--exercise-badge-reps-based-bg);
+  --color-macro-protein: var(--macro-protein);
+  --color-macro-carbs: var(--macro-carbs);
+  --color-macro-fat: var(--macro-fat);
 }
 
 :root {
@@ -79,6 +82,9 @@ body,
   --exercise-badge-time-based-bg: #111822;
   --exercise-badge-reps-based: #22c55e;
   --exercise-badge-reps-based-bg: #052e16;
+  --macro-protein: #4ade80;
+  --macro-carbs: #facc15;
+  --macro-fat: #fb923c;
 }
 
 :root,
