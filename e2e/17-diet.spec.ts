@@ -41,9 +41,9 @@ test.describe('Diet history', () => {
     // New product starts in edit mode (empty product_name)
     await page.getByLabel('Product name').fill('Chicken breast')
     await page.getByLabel('Kcal').fill('165')
-    await page.getByLabel('Protein [g]').fill('31')
-    await page.getByLabel('Carbs [g]').fill('0')
-    await page.getByLabel('Fat [g]').fill('3.6')
+    await page.getByLabel('Protein').fill('31')
+    await page.getByLabel('Carbs').fill('0')
+    await page.getByLabel('Fat').fill('3.6')
 
     // Use the main Save button (SheetFooter, type="submit") — .last() avoids the
     // product-level Save button that is also visible when a product is in edit mode
