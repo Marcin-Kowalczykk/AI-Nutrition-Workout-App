@@ -80,11 +80,17 @@ const DaySummary = ({ control }: DaySummaryProps) => {
   );
 
   return (
-    <div className="border rounded-md px-3 py-2 bg-muted/30">
-      <p className="text-xs text-muted-foreground">
-        <span className="font-semibold text-sm text-foreground">{Math.round(totals.kcal)} kcal</span>
-        {" · "}P: {fmtNum(totals.protein)}g · C: {fmtNum(totals.carbs)}g · F: {fmtNum(totals.fat)}g
-      </p>
+    <div className="border rounded-md px-3 py-2 bg-muted/30 flex items-center gap-2 flex-wrap">
+      <span className="font-semibold text-sm text-foreground">{Math.round(totals.kcal)} kcal</span>
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-green-500/10 text-green-500">
+        P {fmtNum(totals.protein)}g
+      </span>
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500">
+        C {fmtNum(totals.carbs)}g
+      </span>
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500">
+        F {fmtNum(totals.fat)}g
+      </span>
     </div>
   );
 };
