@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
 import { AiMealAnalyzer } from "@/components/shared/diet/ai-meal-analyzer";
 import { SaveMealDialog } from "./save-meal-dialog";
+import { InfoButton } from "@/components/shared/info-button";
 
 //types
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";
@@ -52,9 +53,16 @@ export const AiMealAnalyzerPage = () => {
         <CardContent className="flex flex-col gap-4">
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Describe your meal
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Describe your meal
+              </span>
+              <InfoButton
+                title="Describe your meal"
+                description="Be as specific as possible — include ingredients, weights, and cooking method. You can describe multiple dishes at once."
+                ariaLabel="Describe your meal info"
+              />
+            </div>
             <div className="relative">
               <textarea
                 value={mealName}

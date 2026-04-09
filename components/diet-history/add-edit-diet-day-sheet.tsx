@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator, Pencil, Check, X, Info, Camera, ChevronUp, ChevronDown, Mic } from "lucide-react";
+import { Plus, Trash2, Calculator, Pencil, Check, X, Camera, ChevronUp, ChevronDown, Mic } from "lucide-react";
 
 //libs
 import { cn } from "@/lib/utils";
@@ -36,14 +36,8 @@ import { ProductScannerDialog } from "@/components/diet-history/product-scanner-
 import { AiAnalyzeDialog } from "@/components/diet-history/ai-analyze-dialog";
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";
 import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
+import { InfoButton } from "@/components/shared/info-button";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 //hooks
 import { useCreateDietDay } from "./api/use-create-diet-day";
@@ -121,9 +115,7 @@ const ProductFields = ({
   const [aiAnalyzeOpen, setAiAnalyzeOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [clearCalcConfirmOpen, setClearCalcConfirmOpen] = useState(false);
-  const [productNameInfoOpen, setProductNameInfoOpen] = useState(false);
   const snapshotRef = useRef<DietProductFormValues | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -355,36 +347,6 @@ const ProductFields = ({
         onConfirm={handleClearCalcConfirm}
       />
 
-      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Calculator</DialogTitle>
-            <DialogDescription>
-              Enter portion weight and macros per 100 g — values above will be
-              filled automatically.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={productNameInfoOpen} onOpenChange={setProductNameInfoOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Multiple products</DialogTitle>
-            <DialogDescription>
-              You can enter multiple products at once — the app will split them into separate entries automatically.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">Example:</p>
-            <p>chicken breast 200g, rice 100g, olive oil 10g</p>
-            <p className="mt-1">or one per line:</p>
-            <p>chicken breast 200g</p>
-            <p>rice 100g</p>
-            <p>olive oil 10g</p>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {mode === "view" ? (
         <div className="flex items-start justify-between gap-2 py-0.5">
@@ -460,14 +422,20 @@ const ProductFields = ({
                 <FormItem className="space-y-1 flex-1">
                   <div className="flex items-center gap-1">
                     <FormLabel className="text-xs">Product name</FormLabel>
-                    <button
-                      type="button"
-                      onClick={() => setProductNameInfoOpen(true)}
-                      className="text-muted-foreground hover:text-foreground"
-                      aria-label="Product name info"
+                    <InfoButton
+                      title="Multiple products"
+                      description="You can enter multiple products at once — the app will split them into separate entries automatically."
+                      ariaLabel="Product name info"
                     >
-                      <Info className="h-3.5 w-3.5" />
-                    </button>
+                      <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                        <p className="font-medium text-foreground mb-1">Example:</p>
+                        <p>chicken breast 200g, rice 100g, olive oil 10g</p>
+                        <p className="mt-1">or one per line:</p>
+                        <p>chicken breast 200g</p>
+                        <p>rice 100g</p>
+                        <p>olive oil 10g</p>
+                      </div>
+                    </InfoButton>
                   </div>
                   <FormControl>
                     <div className="relative">
@@ -617,16 +585,12 @@ const ProductFields = ({
               <Calculator className="h-3 w-3 mr-1" />
               {calcOpen ? "Hide calculator" : "Calculate from 100g"}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setInfoOpen(true)}
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-              aria-label="Calculator info"
-            >
-              <Info className="h-3.5 w-3.5" />
-            </Button>
+            <InfoButton
+              title="Calculator"
+              description="Enter portion weight and macros per 100 g — values above will be filled automatically."
+              ariaLabel="Calculator info"
+              className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+            />
           </div>
 
           {calcOpen && (
