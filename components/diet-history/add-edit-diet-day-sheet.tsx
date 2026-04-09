@@ -82,13 +82,13 @@ const DaySummary = ({ control }: DaySummaryProps) => {
   return (
     <div className="border rounded-md px-3 py-2 bg-muted/30 flex items-center gap-2 flex-wrap">
       <span className="font-semibold text-sm text-foreground">{Math.round(totals.kcal)} kcal</span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-protein/10 text-macro-protein">
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-green-400/10 text-green-400">
         P {fmtNum(totals.protein)}g
       </span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-carbs/10 text-macro-carbs">
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400">
         C {fmtNum(totals.carbs)}g
       </span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-fat/10 text-macro-fat">
+      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400">
         F {fmtNum(totals.fat)}g
       </span>
     </div>
@@ -361,9 +361,9 @@ const ProductFields = ({
             <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
               {weightGrams ? <span>{weightGrams}g ·</span> : null}
               <span>{productKcal} kcal</span>
-              <span className="text-macro-protein font-medium">P:{proteinValue}g</span>
-              <span className="text-macro-carbs font-medium">C:{carbsValue}g</span>
-              <span className="text-macro-fat font-medium">F:{fatValue}g</span>
+              <span className="text-green-400 font-medium">P:{proteinValue}g</span>
+              <span className="text-yellow-400 font-medium">C:{carbsValue}g</span>
+              <span className="text-orange-400 font-medium">F:{fatValue}g</span>
             </p>
             {aiBreakdown && aiBreakdown.length > 1 && (
               <div>
@@ -550,7 +550,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Protein</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-protein font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-green-400 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -563,7 +563,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Carbs</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-carbs font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-yellow-400 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -576,7 +576,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Fat</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-fat font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-orange-400 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -604,7 +604,7 @@ const ProductFields = ({
           </div>
 
           {calcOpen && (
-            <div className="flex flex-col gap-1.5 border border-dashed [border-left-style:solid] border-l-2 border-l-primary-element p-2">
+            <div className="flex flex-col gap-1.5 border border-dashed border-border/50 p-2 rounded-sm">
               <Button
                 type="button"
                 variant="outline"
@@ -857,9 +857,9 @@ const MealSection = ({
               {mealTotals.kcal > 0 && (
                 <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap min-w-0">
                   <span>{Math.round(mealTotals.kcal)} kcal</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-protein/10 text-macro-protein">P {fmtNum(mealTotals.protein)}g</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-carbs/10 text-macro-carbs">C {fmtNum(mealTotals.carbs)}g</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-macro-fat/10 text-macro-fat">F {fmtNum(mealTotals.fat)}g</span>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-green-400/10 text-green-400">P {fmtNum(mealTotals.protein)}g</span>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400">C {fmtNum(mealTotals.carbs)}g</span>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400">F {fmtNum(mealTotals.fat)}g</span>
                 </p>
               )}
             </div>
