@@ -51,6 +51,9 @@ interface AiMealAnalyzerProps {
   productName: string;
   onApply: (products: ProductAnalysis[]) => void;
   onClose?: () => void;
+  ctaLabel?: string;
+  ctaLabelMulti?: string;
+  ctaVariant?: "default" | "gradient";
 }
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -86,6 +89,9 @@ export const AiMealAnalyzer = ({
   productName,
   onApply,
   onClose,
+  ctaLabel = "Apply",
+  ctaLabelMulti,
+  ctaVariant = "default",
 }: AiMealAnalyzerProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const productNameTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -266,6 +272,20 @@ export const AiMealAnalyzer = ({
     onClose?.();
   };
 
+  const ctaText =
+    analyzedProducts.length > 1
+      ? ctaLabelMulti
+        ? ctaLabelMulti.replace("{N}", String(analyzedProducts.length))
+        : `Apply ${analyzedProducts.length} products`
+      : ctaLabel;
+
+  const totalItems = [
+    { key: "kcal", label: "kcal", value: String(Math.round(analyzedProducts.reduce((s, p) => s + (parseFloat(p.kcal) || 0), 0))) },
+    { key: "protein", label: "białko", value: `${Math.round(analyzedProducts.reduce((s, p) => s + (parseFloat(p.protein) || 0), 0))}g` },
+    { key: "carbs", label: "węgle", value: `${Math.round(analyzedProducts.reduce((s, p) => s + (parseFloat(p.carbs) || 0), 0))}g` },
+    { key: "fat", label: "tłuszcz", value: `${Math.round(analyzedProducts.reduce((s, p) => s + (parseFloat(p.fat) || 0), 0))}g` },
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       {productName && (
@@ -392,6 +412,7 @@ export const AiMealAnalyzer = ({
 
       {analyzeState === "result" && (
         <div className="flex flex-col gap-3 overflow-y-auto max-h-[60vh]">
+          {/* Confidence badge — above macro tiles */}
           {confidence && (
             <div className={`flex items-center gap-1.5 text-xs font-medium ${
               confidence === "high"
@@ -412,6 +433,7 @@ export const AiMealAnalyzer = ({
                   : "Low confidence — results may be inaccurate"}
             </div>
           )}
+
           {warning && (
             <div className="flex items-start gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
@@ -419,8 +441,35 @@ export const AiMealAnalyzer = ({
             </div>
           )}
 
+          {/* Single product */}
           {analyzedProducts.length === 1 && editedProduct && (
             <div className="flex flex-col gap-3">
+              {/* Macro tiles */}
+              <div className="grid grid-cols-4 gap-2">
+                {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
+                  <div
+                    key={key}
+                    className={cn(
+                      "rounded-lg p-2.5 text-center",
+                      key === "kcal"
+                        ? "bg-primary-element/10 border border-primary-element/30"
+                        : "bg-muted/40"
+                    )}
+                  >
+                    <div className={cn(
+                      "text-xl font-extrabold leading-tight",
+                      key === "kcal" && "text-primary-element"
+                    )}>
+                      {editedProduct[key] || "—"}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1">
+                      {key === "kcal" ? "kcal" : key === "protein" ? "białko" : key === "carbs" ? "węgle" : "tłuszcz"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Editable product name */}
               <div className="flex flex-col gap-1">
                 <label htmlFor="analyze-product-name" className="text-xs font-medium">
                   Product name
@@ -439,6 +488,7 @@ export const AiMealAnalyzer = ({
                   }}
                 />
               </div>
+
               {editedProduct.weight_grams && (
                 <p className="text-xs text-muted-foreground">{editedProduct.weight_grams}g</p>
               )}
@@ -499,11 +549,12 @@ export const AiMealAnalyzer = ({
             </div>
           )}
 
+          {/* Multi product */}
           {analyzedProducts.length > 1 && (
             <div className="flex flex-col gap-2">
               <p className="text-xs text-muted-foreground">Found {analyzedProducts.length} products:</p>
               {analyzedProducts.map((product, i) => (
-                <div key={i} className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-1">
+                <div key={i} className="rounded-lg border border-border bg-muted/40 px-3 py-3 flex flex-col gap-2">
                   {editingIndex === i && editingDraft ? (
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-col gap-1">
@@ -569,10 +620,30 @@ export const AiMealAnalyzer = ({
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {product.weight_grams ? `${product.weight_grams}g · ` : ""}
-                        {product.kcal} kcal · P: {product.protein}g · C: {product.carbs}g · F: {product.fat}g
-                      </p>
+                      {/* Per-card macro tiles */}
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
+                          <div
+                            key={key}
+                            className={cn(
+                              "rounded-md p-1.5 text-center",
+                              key === "kcal"
+                                ? "bg-primary-element/10 border border-primary-element/30"
+                                : "bg-background"
+                            )}
+                          >
+                            <div className={cn(
+                              "text-sm font-bold leading-tight",
+                              key === "kcal" && "text-primary-element"
+                            )}>
+                              {product[key]}{key !== "kcal" && <span className="text-[9px] font-normal">g</span>}
+                            </div>
+                            <div className="text-[8px] uppercase tracking-wide text-muted-foreground">
+                              {key === "kcal" ? "kcal" : key === "protein" ? "białko" : key === "carbs" ? "węgle" : "tłuszcz"}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                       {product.breakdown && product.breakdown.length > 1 && (
                         <div>
                           <button
@@ -604,16 +675,40 @@ export const AiMealAnalyzer = ({
                           )}
                         </div>
                       )}
+                      {product.weight_grams && (
+                        <p className="text-xs text-muted-foreground">{product.weight_grams}g</p>
+                      )}
                     </>
                   )}
                 </div>
               ))}
+
+              {/* Łącznie summary */}
+              <div className="rounded-lg border border-primary-element/30 bg-primary-element/5 p-3">
+                <p className="text-[10px] font-bold text-primary-element uppercase tracking-wider mb-2">Łącznie</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {totalItems.map(({ key, label, value }) => (
+                    <div key={key} className="text-center">
+                      <div className={cn(
+                        "text-lg font-extrabold leading-tight",
+                        key === "kcal" && "text-primary-element"
+                      )}>
+                        {value}
+                      </div>
+                      <div className="text-[9px] uppercase tracking-wide text-muted-foreground">
+                        {label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
+          {/* CTA */}
           <div className="flex gap-2">
-            <Button onClick={handleApply} className="flex-1">
-              {analyzedProducts.length > 1 ? `Apply ${analyzedProducts.length} products` : "Apply"}
+            <Button variant={ctaVariant} onClick={handleApply} className="flex-1">
+              {ctaText}
             </Button>
             {onClose && (
               <Button variant="outline" onClick={onClose}>

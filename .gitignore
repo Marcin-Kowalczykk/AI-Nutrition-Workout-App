@@ -68,3 +68,6 @@ docs/
 
 # vscode
 .vscode
+
+# superpowers
+.superpowers/

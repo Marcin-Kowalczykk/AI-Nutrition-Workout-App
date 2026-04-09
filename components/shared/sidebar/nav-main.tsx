@@ -29,7 +29,7 @@ export enum EnableRoutes {
   Records = "/records",
   Comparisons = "/comparisons",
   DietHistory = "/diet-history",
-  KcalCalculator = "/kcal-calculator",
+  AiMealAnalyzer = "/ai-meal-analyzer",
   BodyMeasurements = "/body-measurements",
   ProfileSettings = "/profile-settings",
 }
@@ -45,7 +45,7 @@ export enum NavMainTitles {
   Records = "Records",
   Comparisons = "Comparisons",
   DietHistory = "Diet history",
-  KcalCalculator = "Kcal calculator",
+  AiMealAnalyzer = "AI Meal Analyzer",
   BodyMeasurements = "Body measurements",
   ProfileSettings = "Profile settings",
 }
@@ -93,8 +93,8 @@ export function NavMain() {
       icon: FilesIcon,
     },
     {
-      title: NavMainTitles.KcalCalculator,
-      url: EnableRoutes.KcalCalculator,
+      title: NavMainTitles.AiMealAnalyzer,
+      url: EnableRoutes.AiMealAnalyzer,
       icon: CalculatorIcon,
     },
     {

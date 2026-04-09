@@ -56,8 +56,8 @@ const getTitleForPath = (pathname: string): string | null => {
     return NavMainTitles.DietHistory;
   }
 
-  if (pathname === EnableRoutes.KcalCalculator) {
-    return NavMainTitles.KcalCalculator;
+  if (pathname === EnableRoutes.AiMealAnalyzer) {
+    return NavMainTitles.AiMealAnalyzer;
   }
 
   if (pathname === EnableRoutes.BodyMeasurements) {
