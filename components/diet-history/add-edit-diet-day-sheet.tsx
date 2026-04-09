@@ -535,9 +535,9 @@ const ProductFields = ({
               name={`meals.${mealIndex}.products.${productIndex}.product_kcal`}
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Kcal</FormLabel>
+                  <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Kcal</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-primary-element font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -548,9 +548,9 @@ const ProductFields = ({
               name={`meals.${mealIndex}.products.${productIndex}.protein_value`}
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Protein [g]</FormLabel>
+                  <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Protein</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-green-500 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -561,9 +561,9 @@ const ProductFields = ({
               name={`meals.${mealIndex}.products.${productIndex}.carbs_value`}
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Carbs [g]</FormLabel>
+                  <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Carbs</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-amber-500 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -574,9 +574,9 @@ const ProductFields = ({
               name={`meals.${mealIndex}.products.${productIndex}.fat_value`}
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Fat [g]</FormLabel>
+                  <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Fat</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-orange-500 font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
