@@ -425,9 +425,9 @@ export const AiMealAnalyzer = ({
           {confidence && (
             <div className={`flex items-center gap-1.5 text-xs font-medium ${
               confidence === "high"
-                ? "text-green-500"
+                ? "text-success"
                 : confidence === "medium"
-                  ? "text-amber-500"
+                  ? "text-warning"
                   : "text-destructive"
             }`}>
               {confidence === "high" ? (
@@ -444,16 +444,14 @@ export const AiMealAnalyzer = ({
           )}
 
           {warning && (
-            <div className="flex items-start gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+            <div className="flex items-start gap-1.5 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
               {warning}
             </div>
           )}
 
-          {/* Single product */}
           {analyzedProducts.length === 1 && editedProduct && (
             <div className="flex flex-col gap-3">
-              {/* Macro tiles */}
               <div className="grid grid-cols-4 gap-2">
                 {(["kcal", "protein", "carbs", "fat"] as const).map((key) => (
                   <div
@@ -478,7 +476,6 @@ export const AiMealAnalyzer = ({
                 ))}
               </div>
 
-              {/* Editable product name */}
               <div className="flex flex-col gap-1">
                 <label htmlFor="analyze-product-name" className="text-xs font-medium">
                   Product name
@@ -558,7 +555,6 @@ export const AiMealAnalyzer = ({
             </div>
           )}
 
-          {/* Multi product */}
           {analyzedProducts.length > 1 && (
             <div className="flex flex-col gap-2">
               <p className="text-xs text-muted-foreground">Found {analyzedProducts.length} products:</p>
@@ -714,7 +710,6 @@ export const AiMealAnalyzer = ({
             </div>
           )}
 
-          {/* CTA */}
           <div className="flex gap-2">
             <Button variant={ctaVariant} onClick={handleApply} className="flex-1">
               {ctaText}
