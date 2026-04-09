@@ -726,7 +726,7 @@ const ProductFields = ({
           <div className="flex items-center gap-2 pt-1">
             <Button
               type="button"
-              variant="default"
+              variant="gradient"
               size="sm"
               onClick={saveEdit}
               disabled={!productName}
