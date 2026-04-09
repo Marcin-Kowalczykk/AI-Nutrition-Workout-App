@@ -100,7 +100,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Protein
               </p>
-              <p className="text-sm font-extrabold text-macro-protein">
+              <p className="text-sm font-extrabold text-green-400">
                 {Math.round(day.total_protein_value)}g
               </p>
             </div>
@@ -108,7 +108,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Carbs
               </p>
-              <p className="text-sm font-extrabold text-macro-carbs">
+              <p className="text-sm font-extrabold text-yellow-400">
                 {Math.round(day.total_carbs_value)}g
               </p>
             </div>
@@ -116,7 +116,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Fat
               </p>
-              <p className="text-sm font-extrabold text-macro-fat">
+              <p className="text-sm font-extrabold text-orange-400">
                 {Math.round(day.total_fat_value)}g
               </p>
             </div>
@@ -134,46 +134,61 @@ export const DietDayCard = ({
                 return (
                   <div key={meal.id} className="rounded-lg bg-muted/30 overflow-hidden">
 
-                    {/* Meal header — always visible, click to toggle */}
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-muted/50 transition-colors"
-                      onClick={() => toggleMeal(meal.id)}
-                    >
+                    {/* Meal header — always visible */}
+                    <div className="flex items-center gap-2 px-2.5 py-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary-element shrink-0" />
-                      <span className="text-xs font-bold text-foreground shrink-0 min-w-[46px]">
+                      <span className="text-xs font-bold text-foreground shrink-0">
                         Meal {meal.meal_number}
                       </span>
-                      <span className="text-[11px] text-muted-foreground flex-1 truncate">
-                        {summary.kcal} kcal · P:{summary.protein}g C:{summary.carbs}g F:{summary.fat}g
-                      </span>
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 text-muted-foreground/50 shrink-0 transition-transform duration-200${
-                          isExpanded ? " rotate-180" : ""
-                        }`}
-                      />
-                    </button>
+                      {isExpanded && meal.diet_products.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 text-[10px] text-muted-foreground/60 hover:text-foreground gap-1 px-1.5 shrink-0"
+                          onClick={() => setMealToCopy(meal)}
+                        >
+                          <Copy className="h-2.5 w-2.5" />
+                          Copy meal
+                        </Button>
+                      )}
+                      <button
+                        type="button"
+                        className="flex flex-1 items-center justify-end gap-2 min-w-0"
+                        onClick={() => toggleMeal(meal.id)}
+                      >
+                        <span className="text-[11px] text-muted-foreground">
+                          {summary.kcal} kcal
+                        </span>
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 text-muted-foreground/50 shrink-0 transition-transform duration-200${
+                            isExpanded ? " rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                    </div>
 
                     {/* Expanded content */}
                     {isExpanded && (
-                      <div className="border-t border-border">
-                        {/* Copy meal button */}
-                        {meal.diet_products.length > 0 && (
-                          <div className="flex justify-end px-2.5 pt-2 pb-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-[11px] text-muted-foreground hover:text-foreground gap-1.5 px-2"
-                              onClick={() => setMealToCopy(meal)}
-                            >
-                              <Copy className="h-3 w-3" />
-                              Copy meal
-                            </Button>
-                          </div>
-                        )}
+                      <div className="border-t border-border px-2.5 pt-2 pb-2.5 flex flex-col gap-2">
+
+                        {/* Mini macro row */}
+                        <div className="flex gap-3 text-[11px]">
+                          <span className="flex items-center gap-1">
+                            <span className="font-bold text-green-400">P</span>
+                            <span className="text-muted-foreground">{summary.protein}g</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="font-bold text-yellow-400">C</span>
+                            <span className="text-muted-foreground">{summary.carbs}g</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="font-bold text-orange-400">F</span>
+                            <span className="text-muted-foreground">{summary.fat}g</span>
+                          </span>
+                        </div>
 
                         {/* Product list */}
-                        <div className="flex flex-col gap-0.5 px-2.5 pb-2.5">
+                        <div className="flex flex-col gap-0.5">
                           {meal.diet_products.map((product) => (
                             <div
                               key={product.id}
