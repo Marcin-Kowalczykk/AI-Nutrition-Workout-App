@@ -28,6 +28,9 @@ import { IWorkoutItem } from "@/app/api/workouts/types";
 import { EnableRoutes } from "@/components/shared/sidebar/nav-main";
 import CenterWrapper from "../shared/center-wrapper";
 
+// libs
+import { cn } from "@/lib/utils";
+
 const WorkoutHistory = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -89,6 +92,12 @@ const WorkoutHistory = () => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     return format(date, "d MMMM yyyy", { locale: pl });
+  };
+
+  const formatDay = (dateString?: string) => {
+    if (!dateString) return "";
+    const raw = format(new Date(dateString), "EEE", { locale: pl }).replace(".", "");
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
   };
 
   const handleView = (workoutId: string) => {
@@ -166,26 +175,34 @@ const WorkoutHistory = () => {
         className="xl:w-1/2 w-full flex flex-col gap-2"
       >
         {(paginatedWorkouts) => (
-          <ul className="flex flex-col gap-2">
+          <ul className="relative flex flex-col gap-2 pl-5">
+            <div className="pointer-events-none absolute bottom-3 left-2 top-3 w-0.5 rounded-full bg-gradient-to-b from-primary-element via-primary-element/40 to-transparent" />
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
-              <li key={workout.id} data-testid="workout-history-item" className={deletingWorkoutId === workout.id || copyingWorkoutId === workout.id ? "opacity-50 pointer-events-none" : ""}>
+              <li
+                key={workout.id}
+                data-testid="workout-history-item"
+                className={cn(
+                  "relative",
+                  deletingWorkoutId === workout.id || copyingWorkoutId === workout.id
+                    ? "opacity-50 pointer-events-none"
+                    : ""
+                )}
+              >
+                <div className="absolute -left-3 top-3.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-primary-element" />
                 <Card className="w-full">
                   <CardContent className="p-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <div className="text-sm text-muted-foreground border-b-2 border-primary-element pb-2 w-fit">
-                          {formatDate(workout.created_at)}
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="flex flex-1 min-w-0 flex-col gap-1">
+                        <div className="flex w-fit items-center gap-1.5 border-b-2 border-primary-element pb-1.5">
+                          <span className="text-sm font-semibold">{formatDate(workout.created_at)}</span>
+                          <span className="text-xs font-bold text-primary-element">{formatDay(workout.created_at)}</span>
                         </div>
-                        <div className="font-semibold text-lg">
-                          {workout.name}
-                        </div>
+                        <div className="text-lg font-bold">{workout.name}</div>
                         {workout.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {workout.description}
-                          </div>
+                          <div className="line-clamp-2 text-sm text-muted-foreground">{workout.description}</div>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex shrink-0 items-center gap-1">
                         <Button
                           variant="outline"
                           size="icon"
@@ -227,6 +244,24 @@ const WorkoutHistory = () => {
                         >
                           {deletingWorkoutId === workout.id ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
                         </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <div className="flex-1 rounded-lg border border-border bg-background py-1.5 text-center">
+                        <span className="block text-xl font-black leading-none text-primary-element">
+                          {workout.exercises?.length ?? 0}
+                        </span>
+                        <span className="mt-1 block text-[9px] uppercase tracking-widest text-muted-foreground">
+                          Ćwiczenia
+                        </span>
+                      </div>
+                      <div className="flex-1 rounded-lg border border-border bg-background py-1.5 text-center">
+                        <span className="block text-xl font-black leading-none text-primary-element">
+                          {workout.exercises?.reduce((sum, ex) => sum + (ex.sets?.length ?? 0), 0) ?? 0}
+                        </span>
+                        <span className="mt-1 block text-[9px] uppercase tracking-widest text-muted-foreground">
+                          Serie
+                        </span>
                       </div>
                     </div>
                   </CardContent>
