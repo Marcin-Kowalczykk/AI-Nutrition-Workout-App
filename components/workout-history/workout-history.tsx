@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { format, startOfDay, endOfDay, subMonths } from "date-fns";
-import { pl } from "date-fns/locale";
+import { enUS, pl } from "date-fns/locale";
 
 // components
 import { Loader } from "@/components/shared/loader";
@@ -14,6 +14,7 @@ import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { toast } from "sonner";
 import { PaginatedSection } from "../shared/pagination/paginated-section";
 import { WorkoutHistorySearchInput } from "./workout-history-search";
+import { WorkoutHistoryStats } from "./workout-history-stats";
 
 // hooks
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -44,7 +45,9 @@ const WorkoutHistory = () => {
   const [workoutIdToDelete, setWorkoutIdToDelete] = useState<string | null>(
     null
   );
-  const [deletingWorkoutId, setDeletingWorkoutId] = useState<string | null>(null);
+  const [deletingWorkoutId, setDeletingWorkoutId] = useState<string | null>(
+    null
+  );
 
   const startDateString = useMemo(() => {
     if (!startDate) return undefined;
@@ -96,7 +99,10 @@ const WorkoutHistory = () => {
 
   const formatDay = (dateString?: string) => {
     if (!dateString) return "";
-    const raw = format(new Date(dateString), "EEE", { locale: pl }).replace(".", "");
+    const raw = format(new Date(dateString), "EEE", { locale: enUS }).replace(
+      ".",
+      ""
+    );
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   };
 
@@ -176,30 +182,36 @@ const WorkoutHistory = () => {
       >
         {(paginatedWorkouts) => (
           <ul className="relative flex flex-col gap-2 pl-5">
-            <div className="pointer-events-none absolute bottom-3 left-2 top-3 w-0.5 rounded-full bg-gradient-to-b from-primary-element via-primary-element/40 to-transparent" />
+            <div className="pointer-events-none absolute bottom-3 left-2 top-3 w-0.5 rounded-full bg-linear-to-b from-primary-element via-primary-element/40 to-transparent" />
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
               <li
                 key={workout.id}
                 data-testid="workout-history-item"
                 className={cn(
                   "relative",
-                  deletingWorkoutId === workout.id || copyingWorkoutId === workout.id
+                  deletingWorkoutId === workout.id ||
+                    copyingWorkoutId === workout.id
                     ? "opacity-50 pointer-events-none"
                     : ""
                 )}
               >
-                <div className="absolute -left-3 top-3.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-primary-element" />
                 <Card className="w-full">
                   <CardContent className="p-2">
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="flex flex-1 min-w-0 flex-col gap-1">
                         <div className="flex w-fit items-center gap-1.5 border-b-2 border-primary-element pb-1.5">
-                          <span className="text-sm font-semibold">{formatDate(workout.created_at)}</span>
-                          <span className="text-xs font-bold text-primary-element">{formatDay(workout.created_at)}</span>
+                          <span className="text-sm font-semibold">
+                            {formatDate(workout.created_at)}
+                          </span>
+                          <span className="text-xs font-bold text-primary-element">
+                            {formatDay(workout.created_at)}
+                          </span>
                         </div>
                         <div className="text-lg font-bold">{workout.name}</div>
                         {workout.description && (
-                          <div className="line-clamp-2 text-sm text-muted-foreground">{workout.description}</div>
+                          <div className="line-clamp-2 text-sm text-muted-foreground">
+                            {workout.description}
+                          </div>
                         )}
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
@@ -242,28 +254,23 @@ const WorkoutHistory = () => {
                           aria-label="Delete workout"
                           disabled={deletingWorkoutId === workout.id}
                         >
-                          {deletingWorkoutId === workout.id ? <Loader size={16} /> : <Trash2 className="h-4 w-4" />}
+                          {deletingWorkoutId === workout.id ? (
+                            <Loader size={16} />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </div>
-                    <div className="flex gap-1.5">
-                      <div className="flex-1 rounded-lg border border-border bg-background py-1.5 text-center">
-                        <span className="block text-xl font-black leading-none text-primary-element">
-                          {workout.exercises?.length ?? 0}
-                        </span>
-                        <span className="mt-1 block text-[9px] uppercase tracking-widest text-muted-foreground">
-                          Ćwiczenia
-                        </span>
-                      </div>
-                      <div className="flex-1 rounded-lg border border-border bg-background py-1.5 text-center">
-                        <span className="block text-xl font-black leading-none text-primary-element">
-                          {workout.exercises?.reduce((sum, ex) => sum + (ex.sets?.length ?? 0), 0) ?? 0}
-                        </span>
-                        <span className="mt-1 block text-[9px] uppercase tracking-widest text-muted-foreground">
-                          Serie
-                        </span>
-                      </div>
-                    </div>
+                    <WorkoutHistoryStats
+                      exercisesCount={workout.exercises?.length ?? 0}
+                      setsCount={
+                        workout.exercises?.reduce(
+                          (sum, ex) => sum + (ex.sets?.length ?? 0),
+                          0
+                        ) ?? 0
+                      }
+                    />
                   </CardContent>
                 </Card>
               </li>
