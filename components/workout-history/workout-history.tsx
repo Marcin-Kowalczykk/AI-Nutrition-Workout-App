@@ -182,7 +182,7 @@ const WorkoutHistory = () => {
       >
         {(paginatedWorkouts) => (
           <ul className="relative flex flex-col gap-2 pl-5">
-            <div className="pointer-events-none absolute bottom-3 left-2 top-3 w-0.5 rounded-full bg-linear-to-b from-primary-element via-primary-element/40 to-transparent" />
+            <div className="pointer-events-none absolute bottom-3 left-2 top-1 w-[2.5px] rounded-full bg-linear-to-b from-primary-element via-primary-element/20 to-transparent" />
             {paginatedWorkouts.map((workout: IWorkoutItem) => (
               <li
                 key={workout.id}
