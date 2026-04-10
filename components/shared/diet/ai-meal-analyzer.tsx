@@ -17,6 +17,10 @@ import {
 //libs
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  getAnalyzeErrorMessage,
+  normalizeImageForUpload,
+} from "@/components/shared/diet/helpers/ai-meal-analyzer.helpers";
 
 //hooks
 import { getAccessToken } from "@/lib/supabase/get-access-token";
@@ -55,35 +59,6 @@ interface AiMealAnalyzerProps {
   ctaLabelMulti?: string;
   ctaVariant?: "default" | "gradient";
 }
-
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-const resizeImageIfNeeded = (file: File): Promise<File> => {
-  if (file.size <= MAX_IMAGE_BYTES) return Promise.resolve(file);
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const ratio = Math.sqrt(MAX_IMAGE_BYTES / file.size);
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.floor(img.width * ratio);
-      canvas.height = Math.floor(img.height * ratio);
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (blob) => {
-          URL.revokeObjectURL(url);
-          if (!blob) { resolve(file); return; }
-          resolve(new File([blob], file.name, { type: "image/jpeg" }));
-        },
-        "image/jpeg",
-        0.85
-      );
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
-    img.src = url;
-  });
-};
 
 export const AiMealAnalyzer = ({
   productName,
@@ -168,12 +143,12 @@ export const AiMealAnalyzer = ({
       formData.append("product_name", productName);
 
       if (photoFiles.length > 0) {
-        const resized = await resizeImageIfNeeded(photoFiles[0]);
-        formData.append("image", resized);
+        const normalized = await normalizeImageForUpload(photoFiles[0]);
+        formData.append("image", normalized);
       }
       if (photoFiles.length > 1) {
-        const resized2 = await resizeImageIfNeeded(photoFiles[1]);
-        formData.append("image2", resized2);
+        const normalized2 = await normalizeImageForUpload(photoFiles[1]);
+        formData.append("image2", normalized2);
       }
 
       const response = await fetch("/api/diet/analyze-product", {
@@ -182,22 +157,26 @@ export const AiMealAnalyzer = ({
         body: formData,
       });
 
+      const errData = response.ok ? null : await response.json().catch(() => ({}));
+      const apiError = typeof errData?.error === "string" ? errData.error : undefined;
+
       if (response.status === 429) {
-        setAnalyzeState("limit_reached");
+        if (apiError === "Daily AI analysis limit reached") {
+          setAnalyzeState("limit_reached");
+        } else {
+          setError(getAnalyzeErrorMessage(response.status, apiError));
+          setAnalyzeState("error");
+        }
         return;
       }
       if (response.status === 422) {
-        const errData = await response.json().catch(() => ({}));
-        setError(
-          errData.error === "Could not parse AI response"
-            ? "Analysis failed — please try again."
-            : "This doesn't look like a food or meal. Please enter a valid food description."
-        );
+        setError(getAnalyzeErrorMessage(response.status, apiError));
         setAnalyzeState("error");
         return;
       }
       if (!response.ok) {
-        toast.error("Analysis failed, try again.");
+        const errorMessage = getAnalyzeErrorMessage(response.status, apiError);
+        toast.error(errorMessage);
         setAnalyzeState(photoFiles.length > 0 ? "photo_preview" : "idle");
         return;
       }

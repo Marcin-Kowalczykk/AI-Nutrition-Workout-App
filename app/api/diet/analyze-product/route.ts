@@ -5,6 +5,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { TABLE_NAMES } from "@/app/api/tableNames";
 
+//helpers
+import { getAnalyzeApiErrorResponse } from "@/app/api/diet/analyze-product/helpers/get-analyze-api-error-response";
+
 const anthropic = new Anthropic({ maxRetries: 1 });
 
 const PRIMARY_MODEL = "claude-sonnet-4-6";
@@ -136,11 +139,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validMediaTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const validMediaTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
+    const unsupportedImage = [image, image2]
+      .filter((file): file is File => file !== null)
+      .find((file) => !validMediaTypes.includes(file.type as (typeof validMediaTypes)[number]));
+
+    if (unsupportedImage) {
+      return NextResponse.json(
+        { error: "Unsupported image type. Use JPEG, PNG, GIF, or WEBP." },
+        { status: 400 }
+      );
+    }
+
     const toImageBlock = async (file: File): Promise<Anthropic.ImageBlockParam> => {
       const buffer = await file.arrayBuffer();
       const base64 = Buffer.from(buffer).toString("base64");
-      const mediaType = (validMediaTypes.includes(file.type) ? file.type : "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
       return { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } };
     };
 
@@ -234,9 +248,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ products, confidence, warning }, { status: 200 });
   } catch (error) {
     console.error("Analyze product error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return getAnalyzeApiErrorResponse(error);
   }
 }
