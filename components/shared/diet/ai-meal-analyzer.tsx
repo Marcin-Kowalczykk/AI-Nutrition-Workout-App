@@ -457,15 +457,25 @@ export const AiMealAnalyzer = ({
                   <div
                     key={key}
                     className={cn(
-                      "rounded-lg p-2.5 text-center",
+                      "rounded-lg p-2.5 text-center border",
                       key === "kcal"
-                        ? "bg-primary-element/10 border border-primary-element/30"
-                        : "bg-muted/40"
+                        ? "bg-primary-element/10 border-primary-element/30"
+                        : key === "protein"
+                          ? "bg-macro-protein border-macro-protein"
+                          : key === "carbs"
+                            ? "bg-macro-carbs border-macro-carbs"
+                            : "bg-macro-fat border-macro-fat"
                     )}
                   >
                     <div className={cn(
                       "text-xl font-extrabold leading-tight",
-                      key === "kcal" && "text-primary-element"
+                      key === "kcal"
+                        ? "text-primary-element"
+                        : key === "protein"
+                          ? "text-macro-protein"
+                          : key === "carbs"
+                            ? "text-macro-carbs"
+                            : "text-macro-fat"
                     )}>
                       {editedProduct[key] || "—"}
                     </div>
@@ -635,15 +645,25 @@ export const AiMealAnalyzer = ({
                           <div
                             key={key}
                             className={cn(
-                              "rounded-md p-1.5 text-center",
+                              "rounded-md p-1.5 text-center border",
                               key === "kcal"
-                                ? "bg-primary-element/10 border border-primary-element/30"
-                                : "bg-background"
+                                ? "bg-primary-element/10 border-primary-element/30"
+                                : key === "protein"
+                                  ? "bg-macro-protein border-macro-protein"
+                                  : key === "carbs"
+                                    ? "bg-macro-carbs border-macro-carbs"
+                                    : "bg-macro-fat border-macro-fat"
                             )}
                           >
                             <div className={cn(
                               "text-sm font-bold leading-tight",
-                              key === "kcal" && "text-primary-element"
+                              key === "kcal"
+                                ? "text-primary-element"
+                                : key === "protein"
+                                  ? "text-macro-protein"
+                                  : key === "carbs"
+                                    ? "text-macro-carbs"
+                                    : "text-macro-fat"
                             )}>
                               {product[key]}{key !== "kcal" && <span className="text-[9px] font-normal">g</span>}
                             </div>
@@ -696,7 +716,13 @@ export const AiMealAnalyzer = ({
                     <div key={key} className="text-center">
                       <div className={cn(
                         "text-lg font-extrabold leading-tight",
-                        key === "kcal" && "text-primary-element"
+                        key === "kcal"
+                          ? "text-primary-element"
+                          : key === "protein"
+                            ? "text-macro-protein"
+                            : key === "carbs"
+                              ? "text-macro-carbs"
+                              : "text-macro-fat"
                       )}>
                         {value}
                       </div>

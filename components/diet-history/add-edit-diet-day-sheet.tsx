@@ -545,7 +545,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Protein</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-green-400 font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-protein font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -558,7 +558,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Carbs</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-yellow-400 font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-carbs font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>
@@ -571,7 +571,7 @@ const ProductFields = ({
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">Fat</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-orange-400 font-semibold" />
+                    <Input type="number" step="0.01" min={0} {...field} onFocus={handleMainInputFocus} className="h-8 text-macro-fat font-semibold" />
                   </FormControl>
                   <FormMessage className="text-destructive" />
                 </FormItem>

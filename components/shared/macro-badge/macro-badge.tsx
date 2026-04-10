@@ -3,16 +3,15 @@ import { cn } from "@/lib/utils";
 type Macro = "protein" | "carbs" | "fat" | "kcal";
 
 const MACRO_CONFIG: Record<Macro, { label: string; color: string; bg: string }> = {
-  protein: { label: "P",    color: "text-green-400",       bg: "bg-green-400/10" },
-  carbs:   { label: "C",    color: "text-yellow-400",      bg: "bg-yellow-400/10" },
-  fat:     { label: "F",    color: "text-orange-400",      bg: "bg-orange-400/10" },
+  protein: { label: "P",    color: "text-macro-protein", bg: "bg-macro-protein" },
+  carbs:   { label: "C",    color: "text-macro-carbs",   bg: "bg-macro-carbs" },
+  fat:     { label: "F",    color: "text-macro-fat",     bg: "bg-macro-fat" },
   kcal:    { label: "kcal", color: "text-primary-element", bg: "bg-primary-element/10" },
 };
 
 interface MacroBadgeProps {
   macro: Macro;
   value: string | number;
-  /** badge — colored chip with background (default); inline — only the letter is colored */
   variant?: "badge" | "inline";
   className?: string;
 }

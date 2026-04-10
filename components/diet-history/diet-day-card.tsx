@@ -97,7 +97,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Protein
               </p>
-              <p className="text-sm font-extrabold text-green-400">
+              <p className="text-sm font-extrabold text-macro-protein">
                 {Math.round(day.total_protein_value)}g
               </p>
             </div>
@@ -105,7 +105,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Carbs
               </p>
-              <p className="text-sm font-extrabold text-yellow-400">
+              <p className="text-sm font-extrabold text-macro-carbs">
                 {Math.round(day.total_carbs_value)}g
               </p>
             </div>
@@ -113,7 +113,7 @@ export const DietDayCard = ({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                 Fat
               </p>
-              <p className="text-sm font-extrabold text-orange-400">
+              <p className="text-sm font-extrabold text-macro-fat">
                 {Math.round(day.total_fat_value)}g
               </p>
             </div>
@@ -167,15 +167,15 @@ export const DietDayCard = ({
 
                         <div className="flex gap-3 text-[11px]">
                           <span className="flex items-center gap-1">
-                            <span className="font-bold text-green-400">P</span>
+                            <span className="font-bold text-macro-protein">P</span>
                             <span className="text-muted-foreground">{summary.protein}g</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="font-bold text-yellow-400">C</span>
+                            <span className="font-bold text-macro-carbs">C</span>
                             <span className="text-muted-foreground">{summary.carbs}g</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="font-bold text-orange-400">F</span>
+                            <span className="font-bold text-macro-fat">F</span>
                             <span className="text-muted-foreground">{summary.fat}g</span>
                           </span>
                         </div>

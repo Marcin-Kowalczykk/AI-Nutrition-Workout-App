@@ -65,6 +65,9 @@ body,
   --color-macro-protein: var(--macro-protein);
   --color-macro-carbs: var(--macro-carbs);
   --color-macro-fat: var(--macro-fat);
+  --color-macro-protein-subtle: var(--macro-protein-subtle);
+  --color-macro-carbs-subtle: var(--macro-carbs-subtle);
+  --color-macro-fat-subtle: var(--macro-fat-subtle);
 }
 
 :root {
@@ -85,6 +88,13 @@ body,
   --macro-protein: #4ade80;
   --macro-carbs: #facc15;
   --macro-fat: #fb923c;
+  --macro-protein-subtle: color-mix(in srgb, var(--macro-protein) 10%, transparent);
+  --macro-carbs-subtle: color-mix(in srgb, var(--macro-carbs) 10%, transparent);
+  --macro-fat-subtle: color-mix(in srgb, var(--macro-fat) 10%, transparent);
+  --macro-protein-border: color-mix(in srgb, var(--macro-protein) 30%, transparent);
+  --macro-carbs-border: color-mix(in srgb, var(--macro-carbs) 30%, transparent);
+  --macro-fat-border: color-mix(in srgb, var(--macro-fat) 30%, transparent);
+  --trophy: #facc15;
 }
 
 :root,
@@ -172,7 +182,6 @@ body,
   --chart-6: #fae156d4; /* yellow */
 }
 
-/* RPE slider — sets CSS variables consumed by the Slider component */
 .rpe-slider {
   --slider-track-color: #a3a3a37b;
   --slider-range-color: #992bff8f;
@@ -202,5 +211,15 @@ body,
   * {
     @apply border-border outline-ring/50;
   }
-
 }
+
+.text-macro-protein  { color: var(--macro-protein); }
+.text-macro-carbs    { color: var(--macro-carbs); }
+.text-macro-fat      { color: var(--macro-fat); }
+.bg-macro-protein    { background-color: var(--macro-protein-subtle); }
+.bg-macro-carbs      { background-color: var(--macro-carbs-subtle); }
+.bg-macro-fat        { background-color: var(--macro-fat-subtle); }
+.border-macro-protein { border-color: var(--macro-protein-border); }
+.border-macro-carbs   { border-color: var(--macro-carbs-border); }
+.border-macro-fat     { border-color: var(--macro-fat-border); }
+.text-trophy          { color: var(--trophy); }

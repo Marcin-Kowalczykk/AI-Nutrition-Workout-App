@@ -323,7 +323,7 @@ export const Records = () => {
               second: (
                 <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
                   {record.weight} kg
-                  {isBest && <Trophy className="h-4 w-4 text-yellow-400" />}
+                  {isBest && <Trophy className="h-4 w-4 text-trophy" />}
                 </span>
               ),
               date: format(new Date(record.date), "d MMMM yyyy", {
