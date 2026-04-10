@@ -123,7 +123,7 @@ export const PaginationControls = ({
 
   return (
     <div className="flex w-full items-center justify-end gap-2">
-      <div className="flex items-center justify-between gap-2 rounded-md border border-muted-foreground/40 bg-background/60 px-2 py-1 w-full">
+      <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-card px-2 py-1 w-full">
         <Field orientation="horizontal" className="w-fit ml-[-4px]">
           <Select
             value={String(pageSize)}

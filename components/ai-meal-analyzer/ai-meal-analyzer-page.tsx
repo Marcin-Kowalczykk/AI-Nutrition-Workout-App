@@ -74,7 +74,7 @@ export const AiMealAnalyzerPage = () => {
                 }}
                 rows={3}
                 placeholder="e.g. grilled chicken with rice and broccoli, approx. 300g…"
-                className="flex w-full rounded-md border border-primary-element bg-background px-3 py-2 pr-8 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-element/60 resize-none transition-colors"
+                className="flex w-full rounded-md border border-primary-element bg-background px-3 py-2 pr-8 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-element/60 resize-none transition-colors"
               />
               {mealName && (
                 <button

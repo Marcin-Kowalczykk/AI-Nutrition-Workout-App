@@ -37,6 +37,7 @@ import { AiAnalyzeDialog } from "@/components/diet-history/ai-analyze-dialog";
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";
 import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
 import { InfoButton } from "@/components/shared/info-button";
+import { MacroBadge } from "@/components/shared/macro-badge";
 import { toast } from "sonner";
 
 //hooks
@@ -81,16 +82,10 @@ const DaySummary = ({ control }: DaySummaryProps) => {
 
   return (
     <div className="border rounded-md px-3 py-2 bg-muted/30 flex items-center gap-2 flex-wrap">
-      <span className="font-semibold text-sm text-foreground">{Math.round(totals.kcal)} kcal</span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-green-400/10 text-green-400">
-        P {fmtNum(totals.protein)}g
-      </span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400">
-        C {fmtNum(totals.carbs)}g
-      </span>
-      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400">
-        F {fmtNum(totals.fat)}g
-      </span>
+      <MacroBadge macro="kcal" value={Math.round(totals.kcal)} className="text-[13px] px-2 py-1" />
+      <MacroBadge macro="protein" value={fmtNum(totals.protein)} />
+      <MacroBadge macro="carbs" value={fmtNum(totals.carbs)} />
+      <MacroBadge macro="fat" value={fmtNum(totals.fat)} />
     </div>
   );
 };
@@ -361,9 +356,9 @@ const ProductFields = ({
             <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
               {weightGrams ? <span>{weightGrams}g ·</span> : null}
               <span>{productKcal} kcal</span>
-              <span className="text-green-400 font-medium">P:{proteinValue}g</span>
-              <span className="text-yellow-400 font-medium">C:{carbsValue}g</span>
-              <span className="text-orange-400 font-medium">F:{fatValue}g</span>
+              <MacroBadge macro="protein" value={proteinValue} variant="inline" />
+              <MacroBadge macro="carbs" value={carbsValue} variant="inline" />
+              <MacroBadge macro="fat" value={fatValue} variant="inline" />
             </p>
             {aiBreakdown && aiBreakdown.length > 1 && (
               <div>
@@ -423,7 +418,7 @@ const ProductFields = ({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5 border-l-2 border-primary-element pl-2">
+        <div className="flex flex-col gap-1.5 border-l-2 border-primary-element pl-2 bg-muted/50 pr-2 py-1.5">
           <div className="flex items-end justify-between gap-1">
             <FormField
               control={control}
@@ -456,7 +451,7 @@ const ProductFields = ({
                           textareaRef.current = el;
                         }}
                         rows={1}
-                        className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 pr-8 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                        className="flex w-full rounded-md border border-input bg-card px-3 py-1.5 pr-8 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                         onInput={(e) => {
                           const el = e.currentTarget;
                           el.style.height = "auto";
@@ -604,7 +599,7 @@ const ProductFields = ({
           </div>
 
           {calcOpen && (
-            <div className="flex flex-col gap-1.5 border border-dashed border-border/50 p-2 rounded-sm">
+            <div className="flex flex-col gap-1.5 border-dashed border-primary-element py-1 pl-3 rounded-sm border-l-2">
               <Button
                 type="button"
                 variant="outline"
@@ -723,14 +718,14 @@ const ProductFields = ({
             </div>
           )}
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="gradient"
               size="sm"
               onClick={saveEdit}
               disabled={!productName}
-              className="h-8 px-3 text-xs gap-1"
+              className="h-8 flex-1 text-xs gap-1"
             >
               <Check className="h-3.5 w-3.5" />
               Save
@@ -740,7 +735,7 @@ const ProductFields = ({
               variant="outline"
               size="sm"
               onClick={cancelEdit}
-              className="h-8 px-3 text-xs gap-1 text-muted-foreground"
+              className="h-9 flex-1 text-xs gap-1 text-muted-foreground"
             >
               <X className="h-3.5 w-3.5" />
               Cancel
@@ -843,7 +838,7 @@ const MealSection = ({
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            className="flex items-center gap-2 min-w-0 flex-1"
+            className="flex items-center gap-2 min-w-0 flex-1 focus-visible:outline-none"
             onClick={() => setIsCollapsed((v) => !v)}
           >
             {isCollapsed ? (
@@ -855,11 +850,11 @@ const MealSection = ({
             <div className="flex flex-col items-start min-w-0">
               <p className="font-medium text-sm leading-tight">Meal {mealIndex + 1}</p>
               {mealTotals.kcal > 0 && (
-                <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap min-w-0">
-                  <span>{Math.round(mealTotals.kcal)} kcal</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-green-400/10 text-green-400">P {fmtNum(mealTotals.protein)}g</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400">C {fmtNum(mealTotals.carbs)}g</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400">F {fmtNum(mealTotals.fat)}g</span>
+                <p className="text-xs tabular-nums flex items-center gap-1.5 flex-wrap min-w-0">
+                  <MacroBadge macro="kcal" value={Math.round(mealTotals.kcal)} />
+                  <MacroBadge macro="protein" value={fmtNum(mealTotals.protein)} />
+                  <MacroBadge macro="carbs" value={fmtNum(mealTotals.carbs)} />
+                  <MacroBadge macro="fat" value={fmtNum(mealTotals.fat)} />
                 </p>
               )}
             </div>
@@ -1042,37 +1037,41 @@ export const AddEditDietDaySheet = ({
 
               <DaySummary control={form.control} />
 
-              <div className="flex flex-col gap-2">
-                {mealFields.map((mealField, mealIndex) => (
-                  <MealSection
-                    key={mealField.id}
-                    mealIndex={mealIndex}
-                    totalMeals={mealFields.length}
-                    control={form.control}
-                    onRemoveMeal={() => removeMeal(mealIndex)}
-                    onSave={handleProductSave}
-                    initiallyCollapsed={
-                      mealIndex === lastAddedMealIndex
-                        ? false
-                        : isEditing || mealIndex > 0
-                    }
-                    isEditing={isEditing}
-                  />
-                ))}
+              <div className="border rounded-md overflow-hidden">
+                <div className="flex flex-col divide-y divide-border">
+                  {mealFields.map((mealField, mealIndex) => (
+                    <MealSection
+                      key={mealField.id}
+                      mealIndex={mealIndex}
+                      totalMeals={mealFields.length}
+                      control={form.control}
+                      onRemoveMeal={() => removeMeal(mealIndex)}
+                      onSave={handleProductSave}
+                      initiallyCollapsed={
+                        mealIndex === lastAddedMealIndex
+                          ? false
+                          : isEditing || mealIndex > 0
+                      }
+                      isEditing={isEditing}
+                    />
+                  ))}
+                </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setLastAddedMealIndex(mealFields.length);
-                    appendMeal({ ...DEFAULT_MEAL });
-                  }}
-                  className="w-full h-8 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Add meal
-                </Button>
+                <div className="border-t">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setLastAddedMealIndex(mealFields.length);
+                      appendMeal({ ...DEFAULT_MEAL });
+                    }}
+                    className="w-full h-9 text-xs text-muted-foreground hover:text-foreground rounded-none"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Add meal
+                  </Button>
+                </div>
               </div>
             </div>
 
