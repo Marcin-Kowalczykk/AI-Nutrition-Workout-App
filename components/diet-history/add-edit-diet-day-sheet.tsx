@@ -380,8 +380,8 @@ const ProductFields = ({
       {mode === "view" ? (
         <div className="flex items-start justify-between gap-2 py-0.5">
           <div className="flex flex-col gap-0.5 min-w-0">
-            <p className="text-sm font-medium truncate">{productName}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
+            <p className="text-sm font-medium truncate select-none">{productName}</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap select-none">
               {weightGrams ? <span>{weightGrams}g ·</span> : null}
               <span>{productKcal} kcal</span>
               <MacroBadge macro="protein" value={proteinValue} variant="inline" />
@@ -405,7 +405,7 @@ const ProductFields = ({
                 {breakdownOpen && (
                   <div className="mt-1 flex flex-col gap-0.5">
                     {aiBreakdown.map((item, i) => (
-                      <div key={i} className="flex flex-col gap-0.5 text-xs">
+                      <div key={i} className="flex flex-col gap-0.5 text-xs select-none">
                         <span className="text-foreground/80">• {item.name}</span>
                         <span className="text-muted-foreground pl-3">
                           {item.weight_g}g · {item.kcal} kcal
@@ -802,6 +802,7 @@ interface SortableProductRowProps {
   mealIndex: number;
   productIndex: number;
   withTopRule: boolean;
+  isViewMode: boolean;
   children: ReactNode;
 }
 
@@ -810,6 +811,7 @@ const SortableProductRow = ({
   mealIndex,
   productIndex,
   withTopRule,
+  isViewMode,
   children,
 }: SortableProductRowProps) => {
   const {
@@ -838,13 +840,15 @@ const SortableProductRow = ({
         "flex gap-1.5 items-start",
         withTopRule && "border-t border-border pt-2"
       )}
+      {...(isViewMode ? listeners : {})}
+      {...(isViewMode ? attributes : {})}
     >
       <button
         type="button"
         className="mt-0.5 shrink-0 touch-none cursor-grab active:cursor-grabbing rounded-sm p-0.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         aria-label="Hold and drag to move product or reorder"
-        {...listeners}
-        {...attributes}
+        {...(!isViewMode ? listeners : {})}
+        {...(!isViewMode ? attributes : {})}
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -1014,7 +1018,7 @@ const MealSection = ({
             role="button"
             tabIndex={0}
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring user-select-none",
+              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring select-none",
               mergeOver && "bg-primary-element/15 ring-1 ring-primary-element/40"
             )}
             onClick={() => onExpandedChange(!expanded)}
@@ -1069,6 +1073,7 @@ const MealSection = ({
                     mealIndex={mealIndex}
                     productIndex={productIndex}
                     withTopRule={productIndex > 0}
+                    isViewMode={!!mealProducts[productIndex]?.product_name}
                   >
                     <ProductFields
                       mealIndex={mealIndex}
