@@ -22,6 +22,8 @@ import {
   DndContext,
   PointerSensor,
   pointerWithin,
+  useDndContext,
+  useDraggable,
   useDroppable,
   useSensor,
   useSensors,
@@ -814,6 +816,8 @@ const SortableProductRow = ({
   isViewMode,
   children,
 }: SortableProductRowProps) => {
+  const { active } = useDndContext();
+  const isDraggingMeal = active?.data?.current?.type === "meal";
   const {
     attributes,
     listeners,
@@ -824,6 +828,7 @@ const SortableProductRow = ({
   } = useSortable({
     id: sortableId,
     data: { type: "product", mealIndex, productIndex },
+    disabled: isDraggingMeal,
   });
 
   const style = {
@@ -929,7 +934,7 @@ const MealSection = ({
     transform: mealTransform,
     transition: mealTransition,
     isDragging: mealDragging,
-  } = useSortable({
+  } = useDraggable({
     id: mealFieldId,
     data: { type: "meal", mealIndex },
   });
@@ -1176,11 +1181,6 @@ export const AddEditDietDaySheet = ({
         }
         return;
       }
-      const targetIdx = mealFields.findIndex((f) => f.id === over.id);
-      if (targetIdx >= 0 && sourceIdx !== targetIdx) {
-        moveMeal(sourceIdx, targetIdx);
-        setOpenMealsAfterDrag(true);
-      }
       return;
     }
 
@@ -1332,11 +1332,7 @@ export const AddEditDietDaySheet = ({
                   collisionDetection={pointerWithin}
                   onDragEnd={handleDietDragEnd}
                 >
-                  <SortableContext
-                    items={mealFields.map((f) => f.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="flex flex-col divide-y divide-border">
+                      <div className="flex flex-col divide-y divide-border">
                       {mealFields.map((mealField, mealIndex) => {
                         const defaultExpanded =
                           mealIndex === lastAddedMealIndex ||
@@ -1366,7 +1362,6 @@ export const AddEditDietDaySheet = ({
                         );
                       })}
                     </div>
-                  </SortableContext>
                 </DndContext>
 
                 <div className="border-t">
