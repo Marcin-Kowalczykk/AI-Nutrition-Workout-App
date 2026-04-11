@@ -10,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared/loader";
 import { CopyMealDialog } from "./copy-meal-dialog";
+import { CopyProductDialog } from "./copy-product-dialog";
 
 //types
-import type { IDietDay, IDietMeal } from "@/app/api/diet/types";
+import type { IDietDay, IDietMeal, IDietProduct } from "@/app/api/diet/types";
 
 interface DietDayCardProps {
   day: IDietDay;
@@ -24,9 +25,15 @@ interface DietDayCardProps {
 const fmtNum = (v: number) => parseFloat(v.toFixed(1)).toString();
 
 const getMealSummary = (meal: IDietMeal) => {
-  const kcal = Math.round(meal.diet_products.reduce((s, p) => s + p.product_kcal, 0));
-  const protein = fmtNum(meal.diet_products.reduce((s, p) => s + p.protein_value, 0));
-  const carbs = fmtNum(meal.diet_products.reduce((s, p) => s + p.carbs_value, 0));
+  const kcal = Math.round(
+    meal.diet_products.reduce((s, p) => s + p.product_kcal, 0)
+  );
+  const protein = fmtNum(
+    meal.diet_products.reduce((s, p) => s + p.protein_value, 0)
+  );
+  const carbs = fmtNum(
+    meal.diet_products.reduce((s, p) => s + p.carbs_value, 0)
+  );
   const fat = fmtNum(meal.diet_products.reduce((s, p) => s + p.fat_value, 0));
   return { kcal, protein, carbs, fat };
 };
@@ -39,6 +46,7 @@ export const DietDayCard = ({
 }: DietDayCardProps) => {
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set());
   const [mealToCopy, setMealToCopy] = useState<IDietMeal | null>(null);
+  const [productToCopy, setProductToCopy] = useState<IDietProduct | null>(null);
 
   const date = new Date(day.date + "T00:00:00");
   const formattedDate = format(date, "d MMMM yyyy", { locale: pl });
@@ -47,20 +55,29 @@ export const DietDayCard = ({
   const toggleMeal = (id: string) => {
     setExpandedMeals((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
 
   return (
     <>
-      <Card className={`w-full${isDeleting ? " opacity-50 pointer-events-none" : ""}`}>
+      <Card
+        className={`w-full${
+          isDeleting ? " opacity-50 pointer-events-none" : ""
+        }`}
+      >
         <CardContent className="p-3 flex flex-col gap-3">
-
           <div className="flex items-center justify-between gap-2">
             <div className="text-sm font-bold border-b-2 border-primary-element pb-1 w-fit">
               {formattedDate}
-              <span className="text-xs text-primary-element font-medium ml-1.5">{weekday}</span>
+              <span className="text-xs text-primary-element font-medium ml-1.5">
+                {weekday}
+              </span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <Button
@@ -80,7 +97,11 @@ export const DietDayCard = ({
                 aria-label="Delete diet day"
                 disabled={isDeleting}
               >
-                {isDeleting ? <Loader size={16} /> : <Trash2 className="h-3.5 w-3.5" />}
+                {isDeleting ? (
+                  <Loader size={16} />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
               </Button>
             </div>
           </div>
@@ -89,7 +110,9 @@ export const DietDayCard = ({
             <span className="text-3xl font-black leading-none">
               {Math.round(day.total_kcal).toLocaleString()}
             </span>
-            <span className="text-sm text-muted-foreground font-medium">kcal</span>
+            <span className="text-sm text-muted-foreground font-medium">
+              kcal
+            </span>
           </div>
 
           <div className="grid grid-cols-3 gap-1.5">
@@ -128,8 +151,10 @@ export const DietDayCard = ({
                 const isExpanded = expandedMeals.has(meal.id);
                 const summary = getMealSummary(meal);
                 return (
-                  <div key={meal.id} className="rounded-lg bg-muted/30 overflow-hidden">
-
+                  <div
+                    key={meal.id}
+                    className="rounded-lg bg-muted/30 overflow-hidden"
+                  >
                     <div className="flex items-center gap-2 px-2.5 py-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary-element shrink-0" />
                       <span className="text-xs font-bold text-foreground shrink-0">
@@ -143,7 +168,7 @@ export const DietDayCard = ({
                           onClick={() => setMealToCopy(meal)}
                         >
                           <Copy className="h-2.5 w-2.5" />
-                          Copy meal
+                          Copy
                         </Button>
                       )}
                       <button
@@ -164,19 +189,28 @@ export const DietDayCard = ({
 
                     {isExpanded && (
                       <div className="border-t border-border px-2.5 pt-2 pb-2.5 flex flex-col gap-2">
-
                         <div className="flex gap-3 text-[11px]">
                           <span className="flex items-center gap-1">
-                            <span className="font-bold text-macro-protein">P</span>
-                            <span className="text-muted-foreground">{summary.protein}g</span>
+                            <span className="font-bold text-macro-protein">
+                              P
+                            </span>
+                            <span className="text-muted-foreground">
+                              {summary.protein}g
+                            </span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="font-bold text-macro-carbs">C</span>
-                            <span className="text-muted-foreground">{summary.carbs}g</span>
+                            <span className="font-bold text-macro-carbs">
+                              C
+                            </span>
+                            <span className="text-muted-foreground">
+                              {summary.carbs}g
+                            </span>
                           </span>
                           <span className="flex items-center gap-1">
                             <span className="font-bold text-macro-fat">F</span>
-                            <span className="text-muted-foreground">{summary.fat}g</span>
+                            <span className="text-muted-foreground">
+                              {summary.fat}g
+                            </span>
                           </span>
                         </div>
 
@@ -184,17 +218,31 @@ export const DietDayCard = ({
                           {meal.diet_products.map((product) => (
                             <div
                               key={product.id}
-                              className="pl-3 border-l-2 border-primary-element/20 py-1"
+                              className="pl-3 border-l-2 border-primary-element/20 py-1.5 flex gap-2 items-start"
                             >
-                              <p className="text-xs font-semibold text-foreground">
-                                {product.product_name}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground">
-                                {product.weight_grams != null
-                                  ? `${Math.round(product.weight_grams)}g · `
-                                  : ""}
-                                {Math.round(product.product_kcal)} kcal · P:{fmtNum(product.protein_value)}g · C:{fmtNum(product.carbs_value)}g · F:{fmtNum(product.fat_value)}g
-                              </p>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-foreground">
+                                  {product.product_name}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {product.weight_grams != null
+                                    ? `${Math.round(product.weight_grams)}g · `
+                                    : ""}
+                                  {Math.round(product.product_kcal)} kcal · P:{" "}
+                                  {fmtNum(product.protein_value)}g · C:{" "}
+                                  {fmtNum(product.carbs_value)}g · F:{" "}
+                                  {fmtNum(product.fat_value)}g
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 text-[10px] text-muted-foreground/60 hover:text-foreground gap-1 px-1.5 shrink-0"
+                                onClick={() => setProductToCopy(product)}
+                              >
+                                <Copy className="h-2.5 w-2.5" />
+                                Copy
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -205,13 +253,16 @@ export const DietDayCard = ({
               })}
             </div>
           )}
-
         </CardContent>
       </Card>
 
       <CopyMealDialog
         meal={mealToCopy}
         onOpenChange={(open) => !open && setMealToCopy(null)}
+      />
+      <CopyProductDialog
+        product={productToCopy}
+        onOpenChange={(open) => !open && setProductToCopy(null)}
       />
     </>
   );

@@ -7,6 +7,7 @@ import { useGetDietHistory } from './use-get-diet-history'
 import { useCreateDietDay } from './use-create-diet-day'
 import { useUpdateDietDay } from './use-update-diet-day'
 import { useDeleteDietDay } from './use-delete-diet-day'
+import { useCopyProduct } from './use-copy-product'
 
 //utils
 import { server } from '../../../tests/msw-server'
@@ -16,6 +17,7 @@ import { createQueryWrapper } from '../../../tests/test-utils'
 import type { IGetDietHistoryResponse } from '@/app/api/diet/get-history/route'
 import type { ICreateDietDayResponse } from '@/app/api/diet/create/route'
 import type { IDietDay } from '@/app/api/diet/types'
+import type { ICopyProductResponse } from '@/app/api/diet/copy-product/route'
 
 vi.mock('@/lib/supabase/get-access-token', () => ({
   getAccessToken: async () => 'test-token',
@@ -240,5 +242,81 @@ describe('useDeleteDietDay', () => {
     act(() => { result.current.mutate('day-1') })
 
     await waitFor(() => expect(onError).toHaveBeenCalledOnce())
+  })
+})
+
+// ----------------------------------------------------------------
+describe('useCopyProduct', () => {
+  afterEach(() => server.resetHandlers())
+
+  it('returns target diet day on success', async () => {
+    server.use(
+      http.post('/api/diet/copy-product', () =>
+        HttpResponse.json<ICopyProductResponse>(
+          makeDietDay({ total_kcal: 100 }),
+          { status: 201 }
+        )
+      )
+    )
+
+    const { result } = renderHook(() => useCopyProduct({}), {
+      wrapper: createQueryWrapper(),
+    })
+
+    act(() => {
+      result.current.mutate({
+        product_id: 'prod-1',
+        target_date: '2026-03-30',
+        target_meal_id: null,
+      })
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.total_kcal).toBe(100)
+  })
+
+  it('calls onSuccess callback', async () => {
+    const onSuccess = vi.fn()
+    server.use(
+      http.post('/api/diet/copy-product', () =>
+        HttpResponse.json<ICopyProductResponse>(makeDietDay(), { status: 201 })
+      )
+    )
+
+    const { result } = renderHook(() => useCopyProduct({ onSuccess }), {
+      wrapper: createQueryWrapper(),
+    })
+
+    act(() => {
+      result.current.mutate({
+        product_id: 'prod-1',
+        target_date: '2026-03-30',
+      })
+    })
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce())
+  })
+
+  it('calls onError on API failure', async () => {
+    const onError = vi.fn()
+    server.use(
+      http.post('/api/diet/copy-product', () =>
+        HttpResponse.json({ error: 'Product not found' }, { status: 404 })
+      )
+    )
+
+    const { result } = renderHook(() => useCopyProduct({ onError }), {
+      wrapper: createQueryWrapper(),
+    })
+
+    act(() => {
+      result.current.mutate({
+        product_id: 'prod-1',
+        target_date: '2026-03-30',
+      })
+    })
+
+    await waitFor(() => expect(onError).toHaveBeenCalledOnce())
+    expect(onError.mock.calls[0][0]).toMatch(/product not found/i)
   })
 })

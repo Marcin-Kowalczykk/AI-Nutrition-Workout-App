@@ -1,11 +1,38 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useForm, useFormContext, useFieldArray, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Calculator, Pencil, Check, X, Camera, ChevronUp, ChevronDown, Mic } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Calculator,
+  Pencil,
+  Check,
+  X,
+  Camera,
+  ChevronUp,
+  ChevronDown,
+  Mic,
+  GripVertical,
+} from "lucide-react";
 
 //libs
+import {
+  DndContext,
+  PointerSensor,
+  closestCorners,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 
 const fmtNum = (v: number) => parseFloat(v.toFixed(1)).toString();
@@ -57,6 +84,7 @@ import type { IDietDay } from "@/app/api/diet/types";
 //helpers
 import { buildDietDayPayload } from "./helpers/build-diet-day-payload";
 import { dietDayToFormValues } from "./helpers/diet-day-to-form-values";
+import { applyProductDrop, mergeMealsAtIndices } from "./helpers/diet-dnd-helpers";
 
 interface DaySummaryProps {
   control: Control<DietDayFormValues>;
@@ -323,7 +351,7 @@ const ProductFields = ({
   };
 
   return (
-    <div className="flex flex-col gap-1.5 border-t pt-2">
+    <div className="flex flex-col gap-1.5">
       <ConfirmModal
         open={removeConfirmOpen}
         onOpenChange={setRemoveConfirmOpen}
@@ -418,7 +446,7 @@ const ProductFields = ({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5 border-l-2 border-primary-element pl-2 bg-muted/50 pr-2 py-1.5">
+        <div className="flex flex-col gap-1.5 bg-muted/50 pr-2 py-1.5">
           <div className="flex items-end justify-between gap-1">
             <FormField
               control={control}
@@ -769,23 +797,116 @@ const ProductFields = ({
   );
 };
 
+interface SortableProductRowProps {
+  sortableId: string;
+  mealIndex: number;
+  productIndex: number;
+  withTopRule: boolean;
+  children: ReactNode;
+}
+
+const SortableProductRow = ({
+  sortableId,
+  mealIndex,
+  productIndex,
+  withTopRule,
+  children,
+}: SortableProductRowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: sortableId,
+    data: { type: "product", mealIndex, productIndex },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.45 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex gap-1.5 items-start",
+        withTopRule && "border-t border-border pt-2"
+      )}
+    >
+      <button
+        type="button"
+        className="mt-0.5 shrink-0 touch-none cursor-grab active:cursor-grabbing rounded-sm p-0.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        aria-label="Hold and drag to move product or reorder"
+        {...listeners}
+        {...attributes}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="min-w-0 flex-1 border-l-2 border-primary-element pl-3">{children}</div>
+    </div>
+  );
+};
+
+interface MealProductsDropEndProps {
+  mealFieldId: string;
+  mealIndex: number;
+  variant?: "list" | "collapsed";
+}
+
+const MealProductsDropEnd = ({
+  mealFieldId,
+  mealIndex,
+  variant = "list",
+}: MealProductsDropEndProps) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `meal-drop-end-${mealFieldId}`,
+    data: { type: "drop-end", mealIndex },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      aria-label={
+        variant === "collapsed"
+          ? "Drop zone — add product to this meal while collapsed"
+          : undefined
+      }
+      className={cn(
+        "rounded-md transition-colors",
+        variant === "collapsed" ? "min-h-10 py-2" : "min-h-7",
+        isOver && "bg-primary-element/10 ring-1 ring-primary-element/35"
+      )}
+    />
+  );
+};
+
 interface MealSectionProps {
   mealIndex: number;
+  mealFieldId: string;
   totalMeals: number;
   control: Control<DietDayFormValues>;
   onRemoveMeal: () => void;
   onSave: () => void;
-  initiallyCollapsed?: boolean;
+  expanded: boolean;
+  onExpandedChange: (next: boolean) => void;
   isEditing: boolean;
 }
 
 const MealSection = ({
   mealIndex,
+  mealFieldId,
   totalMeals,
   control,
   onRemoveMeal,
   onSave,
-  initiallyCollapsed = true,
+  expanded,
+  onExpandedChange,
   isEditing,
 }: MealSectionProps) => {
   const {
@@ -797,8 +918,25 @@ const MealSection = ({
     name: `meals.${mealIndex}.products`,
   });
 
+  const {
+    attributes: mealSortAttributes,
+    listeners: mealSortListeners,
+    setNodeRef: setMealSortRef,
+    transform: mealTransform,
+    transition: mealTransition,
+    isDragging: mealDragging,
+  } = useSortable({
+    id: mealFieldId,
+    data: { type: "meal", mealIndex },
+  });
+
+  const { setNodeRef: setMergeRef, isOver: mergeOver } = useDroppable({
+    id: `meal-merge-${mealFieldId}`,
+    data: { type: "meal-merge", mealIndex },
+  });
+
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(initiallyCollapsed);
+  const isCollapsed = !expanded;
   const mealProducts = useWatch({ control, name: `meals.${mealIndex}.products` });
   const mealTotals = useMemo(
     () =>
@@ -823,8 +961,19 @@ const MealSection = ({
     }
   };
 
+  const mealCardStyle = {
+    transform: CSS.Transform.toString(mealTransform),
+    transition: mealTransition,
+    opacity: mealDragging ? 0.4 : undefined,
+  };
+
+  const productSortableIds = useMemo(
+    () => productFields.map((f) => f.id),
+    [productFields]
+  );
+
   return (
-    <Card className="border-0 shadow-none">
+    <Card ref={setMealSortRef} style={mealCardStyle} className="border-0 shadow-none">
       <CardContent className="p-3 flex flex-col gap-2">
         <ConfirmModal
           open={removeConfirmOpen}
@@ -835,22 +984,52 @@ const MealSection = ({
           confirmVariant="destructive"
           onConfirm={() => { setRemoveConfirmOpen(false); onRemoveMeal(); }}
         />
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            className="flex items-center gap-2 min-w-0 flex-1 focus-visible:outline-none"
-            onClick={() => setIsCollapsed((v) => !v)}
-          >
-            {isCollapsed ? (
-              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            ) : (
-              <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              className="touch-none cursor-grab active:cursor-grabbing rounded-sm p-0.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shrink-0"
+              aria-label="Hold and drag to reorder or merge meals"
+              {...mealSortListeners}
+              {...mealSortAttributes}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => onExpandedChange(!expanded)}
+              aria-expanded={expanded}
+              aria-label={isCollapsed ? "Expand meal" : "Collapse meal"}
+            >
+              {isCollapsed ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronUp className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </div>
+          <div
+            ref={setMergeRef}
+            role="button"
+            tabIndex={0}
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              mergeOver && "bg-primary-element/15 ring-1 ring-primary-element/40"
             )}
-            <span className="h-2 w-2 rounded-full bg-primary-element shrink-0" />
-            <div className="flex flex-col items-start min-w-0">
-              <p className="font-medium text-sm leading-tight">Meal {mealIndex + 1}</p>
+            onClick={() => onExpandedChange(!expanded)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onExpandedChange(!expanded);
+              }
+            }}
+          >
+            <span className="h-2 w-2 shrink-0 rounded-full bg-primary-element" />
+            <div className="flex min-w-0 flex-col items-start">
+              <p className="text-sm font-medium leading-tight">Meal {mealIndex + 1}</p>
               {mealTotals.kcal > 0 && (
-                <p className="text-xs tabular-nums flex items-center gap-1.5 flex-wrap min-w-0">
+                <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs tabular-nums">
                   <MacroBadge macro="kcal" value={Math.round(mealTotals.kcal)} />
                   <MacroBadge macro="protein" value={fmtNum(mealTotals.protein)} />
                   <MacroBadge macro="carbs" value={fmtNum(mealTotals.carbs)} />
@@ -858,14 +1037,14 @@ const MealSection = ({
                 </p>
               )}
             </div>
-          </button>
+          </div>
           {totalMeals > 1 && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={handleRemoveMealClick}
-              className="h-6 w-6 text-destructive hover:text-destructive shrink-0"
+              className="h-6 w-6 shrink-0 text-destructive hover:text-destructive"
               aria-label={`Remove meal ${mealIndex + 1}`}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -873,21 +1052,42 @@ const MealSection = ({
           )}
         </div>
 
+        {isCollapsed ? (
+          <MealProductsDropEnd
+            mealFieldId={mealFieldId}
+            mealIndex={mealIndex}
+            variant="collapsed"
+          />
+        ) : null}
+
         {!isCollapsed && (
           <>
-            <div className="border-l-2 border-primary-element pl-3 flex flex-col gap-1">
-              {productFields.map((productField, productIndex) => (
-                <ProductFields
-                  key={productField.id}
-                  mealIndex={mealIndex}
-                  productIndex={productIndex}
-                  control={control}
-                  onRemove={() => removeProduct(productIndex)}
-                  onSave={onSave}
-                  appendProduct={appendProduct}
-                  isEditing={isEditing}
-                />
-              ))}
+            <div className="flex flex-col gap-1">
+              <SortableContext
+                items={productSortableIds}
+                strategy={verticalListSortingStrategy}
+              >
+                {productFields.map((productField, productIndex) => (
+                  <SortableProductRow
+                    key={productField.id}
+                    sortableId={productField.id}
+                    mealIndex={mealIndex}
+                    productIndex={productIndex}
+                    withTopRule={productIndex > 0}
+                  >
+                    <ProductFields
+                      mealIndex={mealIndex}
+                      productIndex={productIndex}
+                      control={control}
+                      onRemove={() => removeProduct(productIndex)}
+                      onSave={onSave}
+                      appendProduct={appendProduct}
+                      isEditing={isEditing}
+                    />
+                  </SortableProductRow>
+                ))}
+              </SortableContext>
+              <MealProductsDropEnd mealFieldId={mealFieldId} mealIndex={mealIndex} />
             </div>
 
             <Button
@@ -934,12 +1134,86 @@ export const AddEditDietDaySheet = ({
     fields: mealFields,
     append: appendMeal,
     remove: removeMeal,
+    move: moveMeal,
   } = useFieldArray({
     control: form.control,
     name: "meals",
   });
 
   const [lastAddedMealIndex, setLastAddedMealIndex] = useState<number | null>(null);
+  const [mealExpandedById, setMealExpandedById] = useState<Record<string, boolean>>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 220, tolerance: 8 },
+    })
+  );
+
+  const handleDietDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeData = active.data.current;
+
+    if (activeData?.type === "meal") {
+      const sourceIdx = mealFields.findIndex((f) => f.id === active.id);
+      if (sourceIdx < 0) return;
+      const overId = String(over.id);
+      if (overId.startsWith("meal-merge-")) {
+        const targetId = overId.slice("meal-merge-".length);
+        const targetIdx = mealFields.findIndex((f) => f.id === targetId);
+        if (targetIdx >= 0 && sourceIdx !== targetIdx) {
+          const targetFieldId = mealFields[targetIdx]?.id;
+          const nextMeals = mergeMealsAtIndices(form.getValues("meals"), sourceIdx, targetIdx);
+          form.setValue("meals", nextMeals, { shouldDirty: true });
+          if (targetFieldId) {
+            setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
+          }
+        }
+        return;
+      }
+      const targetIdx = mealFields.findIndex((f) => f.id === over.id);
+      if (targetIdx >= 0 && sourceIdx !== targetIdx) {
+        moveMeal(sourceIdx, targetIdx);
+      }
+      return;
+    }
+
+    if (activeData?.type === "product") {
+      const fromM = activeData.mealIndex as number;
+      const fromP = activeData.productIndex as number;
+      const overData = over.data.current;
+
+      if (overData?.type === "meal") {
+        return;
+      }
+
+      let toM: number;
+      let toP: number;
+
+      if (overData?.type === "meal-merge") {
+        toM = overData.mealIndex as number;
+        toP = form.getValues(`meals.${toM}.products`).length;
+      } else if (overData?.type === "drop-end") {
+        toM = overData.mealIndex as number;
+        toP = form.getValues(`meals.${toM}.products`).length;
+      } else if (overData?.type === "product") {
+        toM = overData.mealIndex as number;
+        toP = overData.productIndex as number;
+      } else {
+        return;
+      }
+
+      if (fromM === toM && fromP === toP) return;
+
+      const targetFieldId = mealFields[toM]?.id;
+      const next = applyProductDrop(form.getValues("meals"), fromM, fromP, toM, toP);
+      form.setValue("meals", next, { shouldDirty: true });
+      if (targetFieldId) {
+        setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
+      }
+    }
+  };
 
   const { mutate: createDay, isPending: isCreating } = useCreateDietDay({
     onSuccess: () => {
@@ -963,6 +1237,7 @@ export const AddEditDietDaySheet = ({
 
   useEffect(() => {
     if (!open) return;
+    setMealExpandedById({});
     if (isEditing && dayToEdit) {
       form.reset(dietDayToFormValues(dayToEdit));
     } else {
@@ -1038,24 +1313,47 @@ export const AddEditDietDaySheet = ({
               <DaySummary control={form.control} />
 
               <div className="border rounded-md overflow-hidden">
-                <div className="flex flex-col divide-y divide-border">
-                  {mealFields.map((mealField, mealIndex) => (
-                    <MealSection
-                      key={mealField.id}
-                      mealIndex={mealIndex}
-                      totalMeals={mealFields.length}
-                      control={form.control}
-                      onRemoveMeal={() => removeMeal(mealIndex)}
-                      onSave={handleProductSave}
-                      initiallyCollapsed={
-                        mealIndex === lastAddedMealIndex
-                          ? false
-                          : isEditing || mealIndex > 0
-                      }
-                      isEditing={isEditing}
-                    />
-                  ))}
-                </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCorners}
+                  onDragEnd={handleDietDragEnd}
+                >
+                  <SortableContext
+                    items={mealFields.map((f) => f.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="flex flex-col divide-y divide-border">
+                      {mealFields.map((mealField, mealIndex) => {
+                        const defaultExpanded =
+                          mealIndex === lastAddedMealIndex ||
+                          (!isEditing && mealIndex === 0);
+                        const expanded =
+                          mealField.id in mealExpandedById
+                            ? mealExpandedById[mealField.id]!
+                            : defaultExpanded;
+                        return (
+                          <MealSection
+                            key={mealField.id}
+                            mealFieldId={mealField.id}
+                            mealIndex={mealIndex}
+                            totalMeals={mealFields.length}
+                            control={form.control}
+                            onRemoveMeal={() => removeMeal(mealIndex)}
+                            onSave={handleProductSave}
+                            expanded={expanded}
+                            onExpandedChange={(next) =>
+                              setMealExpandedById((m) => ({
+                                ...m,
+                                [mealField.id]: next,
+                              }))
+                            }
+                            isEditing={isEditing}
+                          />
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
 
                 <div className="border-t">
                   <Button
