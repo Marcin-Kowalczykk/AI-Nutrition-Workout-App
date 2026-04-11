@@ -21,7 +21,7 @@ import {
 import {
   DndContext,
   PointerSensor,
-  closestCorners,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
@@ -999,19 +999,6 @@ const MealSection = ({
             >
               <GripVertical className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              onClick={() => onExpandedChange(!expanded)}
-              aria-expanded={expanded}
-              aria-label={isCollapsed ? "Expand meal" : "Collapse meal"}
-            >
-              {isCollapsed ? (
-                <ChevronDown className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronUp className="h-3.5 w-3.5" />
-              )}
-            </button>
           </div>
           <div
             ref={setMergeRef}
@@ -1045,18 +1032,33 @@ const MealSection = ({
               )}
             </div>
           </div>
-          {totalMeals > 1 && (
-            <Button
+          <div className="flex items-center gap-1 shrink-0">
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleRemoveMealClick}
-              className="h-6 w-6 shrink-0 text-destructive hover:text-destructive"
-              aria-label={`Remove meal ${mealIndex + 1}`}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => onExpandedChange(!expanded)}
+              aria-expanded={expanded}
+              aria-label={isCollapsed ? "Expand meal" : "Collapse meal"}
             >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
+              {isCollapsed ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronUp className="h-3.5 w-3.5" />
+              )}
+            </button>
+            {totalMeals > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveMealClick}
+                className="h-6 w-6 shrink-0 text-destructive hover:text-destructive"
+                aria-label={`Remove meal ${mealIndex + 1}`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {!isCollapsed && (
@@ -1327,7 +1329,7 @@ export const AddEditDietDaySheet = ({
               <div className="border rounded-md overflow-hidden">
                 <DndContext
                   sensors={sensors}
-                  collisionDetection={closestCorners}
+                  collisionDetection={pointerWithin}
                   onDragEnd={handleDietDragEnd}
                 >
                   <SortableContext
