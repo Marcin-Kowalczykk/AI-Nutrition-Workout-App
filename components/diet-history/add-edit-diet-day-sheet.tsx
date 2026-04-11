@@ -1149,7 +1149,6 @@ export const AddEditDietDaySheet = ({
 
   const [lastAddedMealIndex, setLastAddedMealIndex] = useState<number | null>(null);
   const [mealExpandedById, setMealExpandedById] = useState<Record<string, boolean>>({});
-  const [openMealsAfterDrag, setOpenMealsAfterDrag] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1177,7 +1176,6 @@ export const AddEditDietDaySheet = ({
           if (targetFieldId) {
             setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
           }
-          setOpenMealsAfterDrag(true);
         }
         return;
       }
@@ -1217,7 +1215,6 @@ export const AddEditDietDaySheet = ({
       if (targetFieldId) {
         setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
       }
-      setOpenMealsAfterDrag(true);
     }
   };
 
@@ -1254,14 +1251,6 @@ export const AddEditDietDaySheet = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  useEffect(() => {
-    if (!open || !openMealsAfterDrag) return;
-    setMealExpandedById(
-      Object.fromEntries(mealFields.map((mealField) => [mealField.id, true]))
-    );
-    setOpenMealsAfterDrag(false);
-  }, [open, openMealsAfterDrag, mealFields]);
 
   useEffect(() => {
     if (!open) return;
