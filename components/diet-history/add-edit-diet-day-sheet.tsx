@@ -932,7 +932,7 @@ const MealSection = ({
     listeners: mealSortListeners,
     setNodeRef: setMealSortRef,
     transform: mealTransform,
-    transition: mealTransition,
+    // transition: mealTransition,
     isDragging: mealDragging,
   } = useDraggable({
     id: mealFieldId,
@@ -972,7 +972,7 @@ const MealSection = ({
 
   const mealCardStyle = {
     transform: CSS.Transform.toString(mealTransform),
-    transition: mealTransition,
+    // transition: mealTransition,
     opacity: mealDragging ? 0.4 : undefined,
   };
 
