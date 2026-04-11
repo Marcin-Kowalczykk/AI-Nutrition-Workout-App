@@ -1014,7 +1014,7 @@ const MealSection = ({
             role="button"
             tabIndex={0}
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring user-select-none",
               mergeOver && "bg-primary-element/15 ring-1 ring-primary-element/40"
             )}
             onClick={() => onExpandedChange(!expanded)}
