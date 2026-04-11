@@ -1052,14 +1052,6 @@ const MealSection = ({
           )}
         </div>
 
-        {isCollapsed ? (
-          <MealProductsDropEnd
-            mealFieldId={mealFieldId}
-            mealIndex={mealIndex}
-            variant="collapsed"
-          />
-        ) : null}
-
         {!isCollapsed && (
           <>
             <div className="flex flex-col gap-1">
@@ -1142,6 +1134,7 @@ export const AddEditDietDaySheet = ({
 
   const [lastAddedMealIndex, setLastAddedMealIndex] = useState<number | null>(null);
   const [mealExpandedById, setMealExpandedById] = useState<Record<string, boolean>>({});
+  const [openMealsAfterDrag, setOpenMealsAfterDrag] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1169,12 +1162,14 @@ export const AddEditDietDaySheet = ({
           if (targetFieldId) {
             setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
           }
+          setOpenMealsAfterDrag(true);
         }
         return;
       }
       const targetIdx = mealFields.findIndex((f) => f.id === over.id);
       if (targetIdx >= 0 && sourceIdx !== targetIdx) {
         moveMeal(sourceIdx, targetIdx);
+        setOpenMealsAfterDrag(true);
       }
       return;
     }
@@ -1212,6 +1207,7 @@ export const AddEditDietDaySheet = ({
       if (targetFieldId) {
         setMealExpandedById((m) => ({ ...m, [targetFieldId]: true }));
       }
+      setOpenMealsAfterDrag(true);
     }
   };
 
@@ -1248,6 +1244,14 @@ export const AddEditDietDaySheet = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !openMealsAfterDrag) return;
+    setMealExpandedById(
+      Object.fromEntries(mealFields.map((mealField) => [mealField.id, true]))
+    );
+    setOpenMealsAfterDrag(false);
+  }, [open, openMealsAfterDrag, mealFields]);
 
   useEffect(() => {
     if (!open) return;
