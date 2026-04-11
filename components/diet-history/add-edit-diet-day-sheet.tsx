@@ -1025,12 +1025,15 @@ const MealSection = ({
               }
             }}
           >
-            <span className="h-2 w-2 shrink-0 rounded-full bg-primary-element" />
-            <div className="flex min-w-0 flex-col items-start">
-              <p className="text-sm font-medium leading-tight">Meal {mealIndex + 1}</p>
+            <div className="flex min-w-0 flex-col items-start gap-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium leading-tight">Meal {mealIndex + 1}</p>
+                {mealTotals.kcal > 0 && (
+                  <MacroBadge macro="kcal" value={Math.round(mealTotals.kcal)} />
+                )}
+              </div>
               {mealTotals.kcal > 0 && (
                 <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs tabular-nums">
-                  <MacroBadge macro="kcal" value={Math.round(mealTotals.kcal)} />
                   <MacroBadge macro="protein" value={fmtNum(mealTotals.protein)} />
                   <MacroBadge macro="carbs" value={fmtNum(mealTotals.carbs)} />
                   <MacroBadge macro="fat" value={fmtNum(mealTotals.fat)} />
