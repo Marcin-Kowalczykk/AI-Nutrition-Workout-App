@@ -222,16 +222,12 @@ export const Records = () => {
           {maxDurationRecord && (
             <MaxRecordTable
               title="Time record"
-              value={
-                <>
-                  {maxDurationRecord.duration} s
-                  {maxDurationRecord.weight !== null &&
-                    maxDurationRecord.weight > 0 && (
-                      <span className="text-xs font-normal text-muted-foreground ml-1">
-                        ({maxDurationRecord.weight} kg)
-                      </span>
-                    )}
-                </>
+              mainValue={`${maxDurationRecord.duration} s`}
+              sub={
+                maxDurationRecord.weight !== null &&
+                maxDurationRecord.weight > 0
+                  ? `${maxDurationRecord.weight} kg`
+                  : undefined
               }
               date={
                 maxDurationRecord.date
@@ -277,16 +273,12 @@ export const Records = () => {
         {maxRepsRecord && (
           <MaxRecordTable
             title="Reps record"
-            value={
-              <>
-                {maxRepsRecord.reps} reps
-                {maxRepsRecord.weight !== null &&
-                  maxRepsRecord.weight > 0 && (
-                    <span className="text-xs font-normal text-muted-foreground ml-1">
-                      ({maxRepsRecord.weight} kg)
-                    </span>
-                  )}
-              </>
+            mainValue={`${maxRepsRecord.reps} reps`}
+            sub={
+              maxRepsRecord.weight !== null &&
+              maxRepsRecord.weight > 0
+                ? `${maxRepsRecord.weight} kg`
+                : undefined
             }
             date={
               maxRepsRecord.date

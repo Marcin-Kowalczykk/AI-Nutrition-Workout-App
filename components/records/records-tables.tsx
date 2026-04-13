@@ -12,25 +12,29 @@ import {
 
 interface MaxRecordTableProps {
   title: string;
-  value: React.ReactNode;
+  mainValue: React.ReactNode;
+  sub?: React.ReactNode;
   date?: string | null;
 }
 
-export const MaxRecordTable = ({ title, value, date }: MaxRecordTableProps) => (
-  <div className="space-y-1">
-    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-      {title}
+export const MaxRecordTable = ({ title, mainValue, sub, date }: MaxRecordTableProps) => (
+  <div className="rounded-xl bg-primary-element/15 border border-primary-element/30 px-3 py-2.5 flex items-center justify-between gap-3">
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[9px] font-medium uppercase tracking-widest text-primary-element/80">
+        {title}
+      </span>
+      <span className="text-xl font-black leading-none text-foreground">
+        {mainValue}
+      </span>
+      {sub && (
+        <span className="text-[10px] text-muted-foreground">{sub}</span>
+      )}
     </div>
-    <Table className="[&_td]:px-3 [&_td]:py-2 text-sm rounded-md border bg-muted/40">
-      <TableBody>
-        <TableRow className="whitespace-nowrap">
-          <TableCell className="whitespace-nowrap text-left">{value}</TableCell>
-          <TableCell className="text-right text-muted-foreground whitespace-nowrap align-bottom">
-            {date ?? "-"}
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    {date && (
+      <span className="shrink-0 text-[10px] text-muted-foreground text-right">
+        {date}
+      </span>
+    )}
   </div>
 );
 
