@@ -56,6 +56,7 @@ body,
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-warning: var(--warning);
+  --color-record-value-badge-text: var(--record-value-badge-text);
   /* --color-exercise-badge-weighted: var(--exercise-badge-weighted);
   --color-exercise-badge-weighted-bg: var(--exercise-badge-weighted-bg); */
   --color-exercise-badge-time-based: var(--exercise-badge-time-based);
@@ -95,6 +96,7 @@ body,
   --macro-carbs-border: color-mix(in srgb, var(--macro-carbs) 30%, transparent);
   --macro-fat-border: color-mix(in srgb, var(--macro-fat) 30%, transparent);
   --trophy: #facc15;
+  --record-value-badge-text: #d8aaff;
 }
 
 :root,
@@ -167,6 +169,7 @@ body,
   --popover-border: #262626;
   --accent: #f4f4f5;
   --accent-foreground: #0a0a0a;
+  --record-value-badge-text: #6b21a8;
   /* --exercise-badge-weighted: #7a4545;
   --exercise-badge-weighted-bg: #efe0e0; */
   --exercise-badge-time-based: #385571;
@@ -223,3 +226,4 @@ body,
 .border-macro-carbs   { border-color: var(--macro-carbs-border); }
 .border-macro-fat     { border-color: var(--macro-fat-border); }
 .text-trophy          { color: var(--trophy); }
+.text-record-value-badge-text { color: var(--record-value-badge-text); }
