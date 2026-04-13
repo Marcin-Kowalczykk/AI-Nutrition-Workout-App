@@ -222,12 +222,11 @@ export const Records = () => {
           {maxDurationRecord && (
             <MaxRecordTable
               title="Time record"
-              mainValue={`${maxDurationRecord.duration} s`}
+              mainValue={<>{maxDurationRecord.duration} <span className="text-sm font-medium text-muted-foreground">s</span></>}
               sub={
-                maxDurationRecord.weight !== null &&
-                maxDurationRecord.weight > 0
+                maxDurationRecord.weight !== null && maxDurationRecord.weight > 0
                   ? `${maxDurationRecord.weight} kg`
-                  : undefined
+                  : "bodyweight"
               }
               date={
                 maxDurationRecord.date
@@ -248,7 +247,7 @@ export const Records = () => {
                 key: record.weight,
                 first: `${record.weight} kg`,
                 second: (
-                  <span className="inline-flex items-center justify-start gap-1 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-primary-element/[0.22] px-2 py-0.5 font-extrabold text-record-value-badge-text whitespace-nowrap">
                     {record.duration} s
                   </span>
                 ),
@@ -273,12 +272,11 @@ export const Records = () => {
         {maxRepsRecord && (
           <MaxRecordTable
             title="Reps record"
-            mainValue={`${maxRepsRecord.reps} reps`}
+            mainValue={<>{maxRepsRecord.reps} <span className="text-sm font-medium text-muted-foreground">reps</span></>}
             sub={
-              maxRepsRecord.weight !== null &&
-              maxRepsRecord.weight > 0
+              maxRepsRecord.weight !== null && maxRepsRecord.weight > 0
                 ? `${maxRepsRecord.weight} kg`
-                : undefined
+                : "bodyweight"
             }
             date={
               maxRepsRecord.date
@@ -313,7 +311,7 @@ export const Records = () => {
                 </>
               ),
               second: (
-                <span className="inline-flex items-center justify-center gap-1 w-15 font-bold border-b-2 border-primary-element whitespace-nowrap py-1">
+                <span className="inline-flex items-center gap-1 rounded-md bg-primary-element/[0.22] px-2 py-0.5 font-extrabold text-record-value-badge-text whitespace-nowrap">
                   {record.weight} kg
                   {isBest && <Trophy className="h-4 w-4 text-trophy" />}
                 </span>
