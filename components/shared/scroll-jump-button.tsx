@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowDown, ArrowUp } from "lucide-react";
 
 // components
@@ -21,6 +22,19 @@ export const ScrollJumpButton = ({
   const [isVisible, setIsVisible] = useState(false);
   const [direction, setDirection] = useState<ScrollDirection>("down");
   const lastScrollTopRef = useRef(0);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setIsVisible(false), 2000);
+  }, []);
+
+  useEffect(() => {
+    setIsVisible(false);
+    lastScrollTopRef.current = 0;
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+  }, [pathname]);
 
   useEffect(() => {
     const container =
@@ -60,10 +74,10 @@ export const ScrollJumpButton = ({
 
       // Show the button whenever vertical scroll exists
       // and the user is not at both extremes at once (tiny content).
-      setIsVisible(!(atTop && atBottom));
+      const visible = !(atTop && atBottom);
+      setIsVisible(visible);
+      if (visible) scheduleHide();
     };
-
-    handleScroll();
 
     container.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -73,8 +87,9 @@ export const ScrollJumpButton = ({
     return () => {
       container.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [scrollContainerRef]);
+  }, [scrollContainerRef, scheduleHide]);
 
   const handleClick = () => {
     const container =
