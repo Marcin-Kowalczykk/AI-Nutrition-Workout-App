@@ -1,20 +1,30 @@
 "use client";
 
+import { useRef, useState, useCallback } from "react";
+
 // components
 import { Toaster } from "sonner";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { TopBar } from "@/components/shared/top-bar";
 import BackgroundImage from "@/components/shared/background-image";
 import { WorkoutUnsavedProvider } from "@/components/workout-form/context/workout-unsaved-context";
 import { ScrollJumpButton } from "@/components/shared/scroll-jump-button";
 import { FloatingSidebarButton } from "@/components/shared/floating-sidebar-button";
-import { useRef } from "react";
+import { RightDrawer } from "@/components/shared/right-drawer/right-drawer";
+
+// hooks
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useSwipeFromRightEdge } from "@/hooks/use-swipe-from-right-edge";
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useIsMobile();
+  const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
+
+  const openRightDrawer = useCallback(() => setRightDrawerOpen(true), []);
+  useSwipeFromRightEdge(openRightDrawer);
+
   return (
     <>
       <Toaster position="bottom-center" richColors />
@@ -45,6 +55,10 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
                 }
               />
             </SidebarInset>
+            <RightDrawer
+              open={rightDrawerOpen}
+              onClose={() => setRightDrawerOpen(false)}
+            />
           </WorkoutUnsavedProvider>
         </SidebarProvider>
       </div>
