@@ -111,6 +111,16 @@ export const Comparisions = () => {
     [filteredHistoryData?.workouts, normalizedExerciseName]
   );
 
+  const showRpe = useMemo(
+    () =>
+      filteredWorkouts.some((w) =>
+        (w.exercises ?? []).some((ex) =>
+          (ex.sets ?? []).some((s) => s.rpe != null)
+        )
+      ),
+    [filteredWorkouts]
+  );
+
   const { points: chartPoints, yLabel } = useMemo(
     () =>
       buildChartData(
@@ -258,6 +268,7 @@ export const Comparisions = () => {
                         workout={workout}
                         normalizedExerciseName={normalizedExerciseName}
                         variant="full"
+                        showRpe={showRpe}
                       />
                     ))}
                   </div>

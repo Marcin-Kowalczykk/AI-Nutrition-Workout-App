@@ -26,12 +26,14 @@ interface ExerciseHistoryWorkoutCardProps {
   workout: IWorkoutItem;
   normalizedExerciseName: string;
   variant?: ExerciseHistoryWorkoutCardVariant;
+  showRpe?: boolean;
 }
 
 export const ExerciseHistoryWorkoutCard = ({
   workout,
   normalizedExerciseName,
   variant = "compact",
+  showRpe: showRpeProp,
 }: ExerciseHistoryWorkoutCardProps) => {
   const exercises = (workout.exercises ?? []).filter(
     (ex: IWorkoutExerciseItem) =>
@@ -43,7 +45,9 @@ export const ExerciseHistoryWorkoutCard = ({
   const unitColumn = getUnitColumn(exercises);
   const allSets = exercises.flatMap((ex) => ex.sets ?? []);
 
-  const hasRpe = allSets.some((set) => set.rpe != null);
+  const hasRpe = showRpeProp !== undefined
+    ? showRpeProp
+    : allSets.some((set) => set.rpe != null);
   const hasMoreSets = allSets.length > 4;
 
   const outerClasses =
@@ -54,7 +58,7 @@ export const ExerciseHistoryWorkoutCard = ({
   const headerWrapperClass =
     variant === "compact"
       ? "mb-1 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0"
-      : "mb-1.5 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0";
+      : "mb-0 flex flex-nowrap items-start justify-between gap-x-2 gap-y-0.5 min-w-0 border-b border-border pb-1.5 mb-1.5";
 
   const dateTextClass =
     variant === "compact"
@@ -69,7 +73,7 @@ export const ExerciseHistoryWorkoutCard = ({
   const tableClass =
     variant === "compact"
       ? "text-[10px] w-full table-fixed [&_th]:h-6 [&_th]:py-0.5 [&_td]:py-0.5 [&_tr]:border-border [&_th:first-child]:pl-0 [&_th:last-child]:pr-0 [&_td:first-child]:pl-0 [&_td:last-child]:pr-0 [&_th]:px-1 [&_td]:px-1"
-      : "text-xs w-full table-fixed [&_th]:h-1 [&_th]:py-0.5 [&_td]:py-0.5 [&_tr]:border-border [&_th:first-child]:pl-0 [&_th:last-child]:pr-1 [&_td:first-child]:pl-0 [&_td:last-child]:pr-1 [&_th]:px-1 [&_td]:px-1";
+      : "text-xs w-full table-fixed [&_th]:h-1 [&_th]:py-0.5 [&_td]:py-0.5 [&_tr]:border-border [&_th:first-child]:pl-0 [&_th:last-child]:pr-1 [&_td:first-child]:pl-0 [&_td:last-child]:pr-1 [&_th]:px-1 [&_td]:px-1 [&_thead_tr]:bg-muted/20 [&_tbody_tr:hover]:bg-muted/10";
 
   return (
     <div className={outerClasses}>
