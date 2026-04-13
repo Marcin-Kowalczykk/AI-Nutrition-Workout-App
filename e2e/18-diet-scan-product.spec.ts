@@ -73,10 +73,10 @@ test.describe('Diet scan product', () => {
 
     // Verify calculator fields are filled
     // Calculator uses plain <label> tags (not FormLabel) — locate input via parent div
-    const kcalPer100gInput = page.locator('label', { hasText: 'Kcal / 100g' }).locator('..').locator('input')
-    const proteinPer100gInput = page.locator('label', { hasText: 'Protein / 100g' }).locator('..').locator('input')
-    const carbsPer100gInput = page.locator('label', { hasText: 'Carbs / 100g' }).locator('..').locator('input')
-    const fatPer100gInput = page.locator('label', { hasText: 'Fat / 100g' }).locator('..').locator('input')
+    const kcalPer100gInput = page.locator('label', { hasText: 'Kcal/100g' }).locator('..').locator('input')
+    const proteinPer100gInput = page.locator('label', { hasText: 'Protein/100g' }).locator('..').locator('input')
+    const carbsPer100gInput = page.locator('label', { hasText: 'Carbs/100g' }).locator('..').locator('input')
+    const fatPer100gInput = page.locator('label', { hasText: 'Fat/100g' }).locator('..').locator('input')
     await expect(kcalPer100gInput).toHaveValue('165')
     await expect(proteinPer100gInput).toHaveValue('31')
     await expect(carbsPer100gInput).toHaveValue('0')

@@ -31,7 +31,7 @@ test.describe('Workout template creation', () => {
     // Set 2 — reps + weight
     await page.getByRole('button', { name: /add set/i }).nth(0).click()
     await page.getByLabel('Reps').nth(1).fill('8')
-    await page.getByLabel('Weight [kg]').nth(1).fill('50')
+    await page.getByLabel('Weight kg').nth(1).fill('50')
 
     // === Exercise 2: time-based ===
     await page.getByRole('button', { name: /add exercise/i }).click()
@@ -43,12 +43,12 @@ test.describe('Workout template creation', () => {
 
     // Set 1 — duration only
     await page.getByRole('button', { name: /add set/i }).nth(1).click()
-    await page.getByLabel('Duration [s]').nth(0).fill('45')
+    await page.getByLabel('Duration s').nth(0).fill('45')
 
     // Set 2 — duration + weight
     await page.getByRole('button', { name: /add set/i }).nth(1).click()
-    await page.getByLabel('Duration [s]').nth(1).fill('30')
-    await page.getByLabel('Weight [kg]').nth(3).fill('10')
+    await page.getByLabel('Duration s').nth(1).fill('30')
+    await page.getByLabel('Weight kg').nth(3).fill('10')
 
     // Save — wait for API response before navigating away
     // There are two "Save Template" buttons; use the submit button (nth(1))

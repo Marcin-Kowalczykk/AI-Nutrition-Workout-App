@@ -32,14 +32,14 @@ test.describe('Create Workout B (records baseline)', () => {
     await page.getByLabel('Reps').nth(0).fill('15')
     // Set 2: reps 8, weight 55 (beats Workout A set 2 weight = 50)
     await page.getByLabel('Reps').nth(1).fill('8')
-    await page.getByLabel('Weight [kg]').nth(1).fill('55')
+    await page.getByLabel('Weight kg').nth(1).fill('55')
 
     // Time-based exercise:
     // Set 1: duration 60 (beats Workout A set 1 = 45 s), no weight
-    await page.getByLabel('Duration [s]').nth(0).fill('60')
+    await page.getByLabel('Duration s').nth(0).fill('60')
     // Set 2: duration 30, weight 12 (beats Workout A set 2 weight = 10)
-    await page.getByLabel('Duration [s]').nth(1).fill('30')
-    await page.getByLabel('Weight [kg]').nth(3).fill('12')
+    await page.getByLabel('Duration s').nth(1).fill('30')
+    await page.getByLabel('Weight kg').nth(3).fill('12')
 
     // Check all 4 set checkboxes
     const checkboxes = page.getByRole('checkbox')

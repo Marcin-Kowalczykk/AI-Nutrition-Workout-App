@@ -39,7 +39,7 @@ test.describe('Diet history', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
 
     // New product starts in edit mode (empty product_name)
-    await page.getByLabel('Product name').fill('Chicken breast')
+    await page.getByLabel('Product name', { exact: true }).fill('Chicken breast')
     await page.getByLabel('Kcal').fill('165')
     await page.getByLabel('Protein').fill('31')
     await page.getByLabel('Carbs').fill('0')
@@ -87,7 +87,7 @@ test.describe('Diet history', () => {
     await page.getByRole('button', { name: /meal 1/i }).click()
 
     // Existing products start in view mode — click the pencil to enter edit mode
-    await page.getByRole('button', { name: /edit product 1/i }).click()
+    await page.getByRole('button', { name: 'Edit product 1', exact: true }).click()
 
     // Update kcal value
     const kcalInput = page.getByLabel('Kcal')

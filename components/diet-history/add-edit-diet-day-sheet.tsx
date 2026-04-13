@@ -480,6 +480,7 @@ const ProductFields = ({
                           field.ref(el);
                           textareaRef.current = el;
                         }}
+                        aria-label="Product name"
                         rows={1}
                         className="flex w-full rounded-md border border-input bg-card px-3 py-1.5 pr-8 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                         onInput={(e) => {
