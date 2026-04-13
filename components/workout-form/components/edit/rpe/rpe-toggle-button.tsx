@@ -36,7 +36,7 @@ export const RpeToggleButton = ({
       const rpeKey = `${exerciseIndex}-${setIndex}`;
       const isRpeOpen = rpeOpenBySet[rpeKey] === true;
       return (
-        <FormItem className="shrink-0">
+        <FormItem className="shrink-0 mt-4">
           <FormControl>
             <Button
               type="button"
@@ -47,7 +47,7 @@ export const RpeToggleButton = ({
               }
               disabled={isPending}
               aria-expanded={isRpeOpen}
-              className="text-xs h-9 w-[3.5rem]"
+              className="h-7 shrink-0 px-2 text-[10px] font-bold"
             >
               {field.value != null ? `RPE ${field.value}` : "RPE"}
             </Button>

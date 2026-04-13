@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import type {
   IWorkoutExerciseItem,
@@ -40,14 +41,14 @@ export const ExerciseHistoryWorkoutCard = ({
   if (!exercises.length) return null;
 
   const unitColumn = getUnitColumn(exercises);
+  const allSets = exercises.flatMap((ex) => ex.sets ?? []);
 
-  const hasRpe = exercises
-    .flatMap((ex) => ex.sets ?? [])
-    .some((set) => set.rpe != null);
+  const hasRpe = allSets.some((set) => set.rpe != null);
+  const hasMoreSets = allSets.length > 4;
 
   const outerClasses =
     variant === "compact"
-      ? "shrink-0 w-[calc(50%-0.25rem)] min-w-[140px] max-w-[220px] rounded-md border border-border bg-muted/30 px-1 py-1 text-[11px] leading-snug overflow-hidden"
+      ? "shrink-0 w-[calc(50%-0.25rem)] min-w-[140px] max-w-[220px] rounded-md border border-border bg-muted/30 px-1 py-1 text-[11px] leading-snug overflow-x-hidden"
       : "w-full rounded-md border border-border bg-muted/30 px-2 py-1.5 text-[12px] leading-snug";
 
   const headerWrapperClass =
@@ -80,93 +81,103 @@ export const ExerciseHistoryWorkoutCard = ({
           {workout.name}
         </span>
       </div>
-      <Table className={tableClass}>
-        <TableHeader>
-          <TableRow>
-            <TableHead
-              className={
-                unitColumn
-                  ? `${hasRpe ? "w-[22%]" : "w-[30%]"} text-[9px] text-center pl-0`
-                  : `${hasRpe ? "w-[28%]" : "w-[40%]"} text-[9px] text-center pl-0`
-              }
-            >
-              Set
-            </TableHead>
-            <TableHead
-              className={
-                unitColumn
-                  ? `${hasRpe ? "w-[22%]" : "w-[25%]"} text-[9px] text-center`
-                  : `${hasRpe ? "w-[28%]" : "w-[60%]"} text-[9px] text-center pr-0`
-              }
-            >
-              {unitColumn === WORKOUT_UNIT_TYPE.DURATION ? "Duration" : "Reps"}
-            </TableHead>
-            {unitColumn !== null && (
-              <TableHead className={`${hasRpe ? "w-[33%]" : "w-[45%]"} text-[9px] text-center pr-0`}>
-                Weight
-              </TableHead>
-            )}
-            {hasRpe && (
-              <TableHead
-                className={`${unitColumn ? "w-[23%]" : "w-[44%]"} text-[9px] text-center pr-0`}
-              >
-                RPE
-              </TableHead>
-            )}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {exercises.map((ex) =>
-            ex.sets.map((set) => {
-              const isSetChecked = isHistorySetChecked(set);
-              return (
-                <TableRow key={set.id}>
-                  <TableCell className="flex justify-center pl-0">
-                    <span className="inline-flex items-center gap-1">
-                      {isSetChecked ? (
-                        <CheckCircle
-                          className="text-success shrink-0"
-                          size={12}
-                          aria-hidden
-                        />
-                      ) : (
-                        <CircleX
-                          className="text-destructive shrink-0"
-                          size={12}
-                          strokeWidth={2.5}
-                          aria-hidden
-                        />
+      <div className="relative">
+        <div
+          className={cn(hasMoreSets && "max-h-[100px] overflow-y-auto")}
+          style={hasMoreSets ? { WebkitOverflowScrolling: "touch" } : undefined}
+        >
+          <Table className={tableClass}>
+            <TableHeader>
+              <TableRow>
+                <TableHead
+                  className={
+                    unitColumn
+                      ? `${hasRpe ? "w-[22%]" : "w-[30%]"} text-[9px] text-center pl-0`
+                      : `${hasRpe ? "w-[28%]" : "w-[40%]"} text-[9px] text-center pl-0`
+                  }
+                >
+                  Set
+                </TableHead>
+                <TableHead
+                  className={
+                    unitColumn
+                      ? `${hasRpe ? "w-[22%]" : "w-[25%]"} text-[9px] text-center`
+                      : `${hasRpe ? "w-[28%]" : "w-[60%]"} text-[9px] text-center pr-0`
+                  }
+                >
+                  {unitColumn === WORKOUT_UNIT_TYPE.DURATION ? "Duration" : "Reps"}
+                </TableHead>
+                {unitColumn !== null && (
+                  <TableHead className={`${hasRpe ? "w-[33%]" : "w-[45%]"} text-[9px] text-center pr-0`}>
+                    Weight
+                  </TableHead>
+                )}
+                {hasRpe && (
+                  <TableHead
+                    className={`${unitColumn ? "w-[23%]" : "w-[44%]"} text-[9px] text-center pr-0`}
+                  >
+                    RPE
+                  </TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {exercises.map((ex) =>
+                ex.sets.map((set) => {
+                  const isSetChecked = isHistorySetChecked(set);
+                  return (
+                    <TableRow key={set.id}>
+                      <TableCell className="flex justify-center pl-0">
+                        <span className="inline-flex items-center gap-1">
+                          {isSetChecked ? (
+                            <CheckCircle
+                              className="text-success shrink-0"
+                              size={12}
+                              aria-hidden
+                            />
+                          ) : (
+                            <CircleX
+                              className="text-destructive shrink-0"
+                              size={12}
+                              strokeWidth={2.5}
+                              aria-hidden
+                            />
+                          )}
+                          <span className="text-muted-foreground">
+                            {set.set_number}
+                          </span>
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {unitColumn === WORKOUT_UNIT_TYPE.DURATION
+                          ? typeof set.duration === "number"
+                            ? `${set.duration} s`
+                            : "-"
+                          : set.reps}
+                      </TableCell>
+                      {unitColumn !== null && (
+                        <TableCell className="text-center pr-0">
+                          {typeof set.weight === "number" && set.weight > 0
+                            ? `${set.weight} kg`
+                            : "-"}
+                        </TableCell>
                       )}
-                      <span className="text-muted-foreground">
-                        {set.set_number}
-                      </span>
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {unitColumn === WORKOUT_UNIT_TYPE.DURATION
-                      ? typeof set.duration === "number"
-                        ? `${set.duration} s`
-                        : "-"
-                      : set.reps}
-                  </TableCell>
-                  {unitColumn !== null && (
-                    <TableCell className="text-center pr-0">
-                      {typeof set.weight === "number" && set.weight > 0
-                        ? `${set.weight} kg`
-                        : "-"}
-                    </TableCell>
-                  )}
-                  {hasRpe && (
-                    <TableCell className="text-center pr-0">
-                      {set.rpe != null ? set.rpe : "-"}
-                    </TableCell>
-                  )}
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+                      {hasRpe && (
+                        <TableCell className="text-center pr-0">
+                          {set.rpe != null ? set.rpe : "-"}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {hasMoreSets && (
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-5 bg-gradient-to-t from-muted/80 to-transparent" />
+        )}
+      </div>
     </div>
   );
 };

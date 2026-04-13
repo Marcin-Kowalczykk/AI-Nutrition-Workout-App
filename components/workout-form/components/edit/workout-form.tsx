@@ -1,5 +1,8 @@
 "use client";
 
+// libs
+import { cn } from "@/lib/utils";
+
 // dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -1111,15 +1114,27 @@ export const WorkoutForm = ({
                         ) as number | null | undefined;
                         const rpeDisplayValue =
                           rpeSliderDisplayBySet[rpeKey] ?? rpeValue ?? 5;
+                        const isChecked =
+                          (form.watch(
+                            `exercises.${exerciseIndex}.sets.${setIndex}.isChecked` as `exercises.${number}.sets.${number}.isChecked`
+                          ) as boolean | undefined) ?? false;
+
                         return (
                           <div key={set.id} className="flex flex-col min-w-0">
-                            <div className="flex items-end gap-1 min-w-0">
+                            <div
+                              className={cn(
+                                "flex items-center gap-1.5 rounded-lg border px-2 py-1.5",
+                                !isTemplateMode && isChecked
+                                  ? "border-success/[0.27] bg-success/[0.06]"
+                                  : "border-border bg-muted"
+                              )}
+                            >
                               {!isTemplateMode && (
                                 <FormField
                                   control={form.control}
                                   name={`exercises.${exerciseIndex}.sets.${setIndex}.isChecked`}
                                   render={({ field }) => (
-                                    <FormItem className="shrink-0 pb-2">
+                                    <FormItem className="shrink-0 mt-4">
                                       <FormControl>
                                         <NativeCheckbox
                                           checked={field.value ?? false}
@@ -1131,17 +1146,15 @@ export const WorkoutForm = ({
                                   )}
                                 />
                               )}
-                              <div className="w-14 shrink-0 min-w-0 ml-3">
-                                <FormLabel>Set</FormLabel>
-                                <Input
-                                  type="text"
-                                  autoComplete="off"
-                                  disabled={true}
-                                  readOnly
-                                  value={set.set_number || setIndex + 1}
-                                  data-form-field="false"
-                                  className="bg-background cursor-default w-full"
-                                />
+                              <div
+                                className={cn(
+                                  "mt-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-black",
+                                  !isTemplateMode && isChecked
+                                    ? "border-success/40 bg-success/10 text-success"
+                                    : "border-border bg-accent text-muted-foreground"
+                                )}
+                              >
+                                {set.set_number || setIndex + 1}
                               </div>
                               {(() => {
                                 const unitType =
@@ -1150,7 +1163,6 @@ export const WorkoutForm = ({
                                   ) as WorkoutUnitType | undefined) ??
                                   WORKOUT_UNIT_TYPE.REPS_BASED;
 
-                                // TIME-BASED: Duration + Weight, bez Reps (Reps zapisuje się jako 0).
                                 if (unitType === WORKOUT_UNIT_TYPE.DURATION) {
                                   return (
                                     <>
@@ -1158,8 +1170,10 @@ export const WorkoutForm = ({
                                         control={form.control}
                                         name={`exercises.${exerciseIndex}.sets.${setIndex}.duration`}
                                         render={({ field }) => (
-                                          <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Duration [s]</FormLabel>
+                                          <FormItem className="flex-1 min-w-0 space-y-1">
+                                            <FormLabel className="block text-center text-[8px] uppercase tracking-widest text-muted-foreground">
+                                              Duration s
+                                            </FormLabel>
                                             <FormControl>
                                               <Input
                                                 type="number"
@@ -1172,6 +1186,7 @@ export const WorkoutForm = ({
                                                 onChange={(e) =>
                                                   field.onChange(e.target.value)
                                                 }
+                                                className="text-center font-bold"
                                               />
                                             </FormControl>
                                           </FormItem>
@@ -1181,8 +1196,10 @@ export const WorkoutForm = ({
                                         control={form.control}
                                         name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
                                         render={({ field }) => (
-                                          <FormItem className="flex-1 min-w-0">
-                                            <FormLabel>Weight [kg]</FormLabel>
+                                          <FormItem className="flex-1 min-w-0 space-y-1">
+                                            <FormLabel className="block text-center text-[8px] uppercase tracking-widest text-muted-foreground">
+                                              Weight kg
+                                            </FormLabel>
                                             <FormControl>
                                               <Input
                                                 type="number"
@@ -1195,6 +1212,7 @@ export const WorkoutForm = ({
                                                 onChange={(e) =>
                                                   field.onChange(e.target.value)
                                                 }
+                                                className="text-center font-bold"
                                               />
                                             </FormControl>
                                           </FormItem>
@@ -1204,15 +1222,16 @@ export const WorkoutForm = ({
                                   );
                                 }
 
-                                // REPS-BASED: Reps + Weight.
                                 return (
                                   <>
                                     <FormField
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.reps`}
                                       render={({ field }) => (
-                                        <FormItem className="flex-1 min-w-0">
-                                          <FormLabel>Reps</FormLabel>
+                                        <FormItem className="flex-1 min-w-0 space-y-1">
+                                          <FormLabel className="block text-center text-[8px] uppercase tracking-widest text-muted-foreground">
+                                            Reps
+                                          </FormLabel>
                                           <FormControl>
                                             <Input
                                               type="number"
@@ -1225,6 +1244,7 @@ export const WorkoutForm = ({
                                               onChange={(e) =>
                                                 field.onChange(e.target.value)
                                               }
+                                              className="text-center font-bold"
                                             />
                                           </FormControl>
                                         </FormItem>
@@ -1234,8 +1254,10 @@ export const WorkoutForm = ({
                                       control={form.control}
                                       name={`exercises.${exerciseIndex}.sets.${setIndex}.weight`}
                                       render={({ field }) => (
-                                        <FormItem className="flex-1 min-w-0">
-                                          <FormLabel>Weight [kg]</FormLabel>
+                                        <FormItem className="flex-1 min-w-0 space-y-1">
+                                          <FormLabel className="block text-center text-[8px] uppercase tracking-widest text-muted-foreground">
+                                            Weight kg
+                                          </FormLabel>
                                           <FormControl>
                                             <Input
                                               type="number"
@@ -1248,6 +1270,7 @@ export const WorkoutForm = ({
                                               onChange={(e) =>
                                                 field.onChange(e.target.value)
                                               }
+                                              className="text-center font-bold"
                                             />
                                           </FormControl>
                                         </FormItem>
@@ -1275,7 +1298,7 @@ export const WorkoutForm = ({
                                   handleRemoveSetClick(exerciseIndex, setIndex)
                                 }
                                 disabled={isPending}
-                                className="text-destructive size-4 hover:text-destructive shrink-0 min-w-0 p-0.5 mb-2"
+                                className="mt-5 text-destructive size-4 hover:text-destructive shrink-0 min-w-0 p-0.5"
                               >
                                 <Trash2 />
                               </Button>
@@ -1302,7 +1325,7 @@ export const WorkoutForm = ({
                               />
                             )}
                             {setErrorMsg && (
-                              <p className="text-destructive text-sm mt-1 text-center">
+                              <p className="mt-0.5 text-center text-sm text-destructive">
                                 {setErrorMsg}
                               </p>
                             )}
