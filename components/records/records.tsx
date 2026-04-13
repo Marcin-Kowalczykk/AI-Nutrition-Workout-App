@@ -18,6 +18,8 @@ import {
   getAllWeightsForExercise,
   getBestRecordsByReps,
   getBestDurationByWeight,
+  getExerciseLoadType,
+  getBestRepsOnlyRecords,
   getMaxDurationRecord,
   getMaxRepsRecord,
   getMostFrequentReps,
@@ -65,7 +67,8 @@ export const Records = () => {
     return (match?.unit_type as ExerciseUnitType | undefined) ?? null;
   })();
 
-  const isRepsOnlyExercise = false;
+  const loadType = getExerciseLoadType(workouts, normalizedExerciseName);
+  const isRepsOnlyExercise = loadType === "repsOnly";
   const isTimeBasedExercise = exerciseUnitType === "time-based";
   const isRepsBasedExercise =
     exerciseUnitType === "reps-based" || !exerciseUnitType;
@@ -125,6 +128,12 @@ export const Records = () => {
       effectiveSelectedReps,
     ]
   );
+
+  const repsOnlyRecords = useMemo(() => {
+    if (!isRepsOnlyExercise) return [];
+    const allRepCounts = getAllRepsForExercise(workouts, normalizedExerciseName);
+    return getBestRepsOnlyRecords(workouts, normalizedExerciseName, allRepCounts);
+  }, [isRepsOnlyExercise, workouts, normalizedExerciseName]);
 
   const maxWeight = useMemo(() => {
     if (!isRepsBasedExercise || !bestWeightedRecords.length) return null;
@@ -256,6 +265,61 @@ export const Records = () => {
                 }),
               }))}
             />
+          )}
+        </div>
+      );
+    }
+    if (isRepsOnlyExercise) {
+      if (!maxRepsRecord && repsOnlyRecords.length === 0) {
+        return <p className="text-sm text-muted-foreground">No record yet 😢</p>;
+      }
+      return (
+        <div className="space-y-3">
+          {maxRepsRecord && (
+            <MaxRecordTable
+              title="Max reps record"
+              mainValue={<>{maxRepsRecord.reps} <span className="text-sm font-medium text-muted-foreground">reps</span></>}
+              sub="bodyweight"
+              date={
+                maxRepsRecord.date
+                  ? format(new Date(maxRepsRecord.date), "d MMMM yyyy", { locale: pl })
+                  : null
+              }
+            />
+          )}
+          {repsOnlyRecords.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Best sets
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {repsOnlyRecords.map((record, idx) => (
+                  <div
+                    key={record.targetReps}
+                    className="flex items-center justify-between rounded-lg bg-muted/40 border border-border px-3 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-black leading-none text-foreground">
+                        {record.bestReps ?? record.targetReps}
+                      </span>
+                      <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                        reps
+                      </span>
+                    </div>
+                    {idx === 0 && (
+                      <span className="rounded bg-primary-element/[0.22] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-record-value-badge-text">
+                        Best
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground">
+                      {record.date
+                        ? format(new Date(record.date), "d MMMM yyyy", { locale: pl })
+                        : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       );
