@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { Mic, Sparkles, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-//libs
-import { cn } from "@/lib/utils";
 
 //components
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +23,7 @@ export const AiMealAnalyzerPage = () => {
   const [saveMealOpen, setSaveMealOpen] = useState(false);
   const [analyzedProducts, setAnalyzedProducts] = useState<ProductAnalysis[] | null>(null);
   const [analyzerKey, setAnalyzerKey] = useState(0);
+  const router = useRouter();
 
   const canAnalyze = mealName.trim().length >= 3;
 
@@ -73,7 +73,6 @@ export const AiMealAnalyzerPage = () => {
                   el.style.height = `${el.scrollHeight}px`;
                 }}
                 rows={3}
-                placeholder="e.g. grilled chicken with rice and broccoli, approx. 300g…"
                 className="flex w-full rounded-md border border-primary-element bg-background px-3 py-2 pr-8 text-base md:text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-element/60 resize-none transition-colors"
               />
               {mealName && (
@@ -110,6 +109,14 @@ export const AiMealAnalyzerPage = () => {
               Analyze with AI
             </Button>
           </div>
+          <Button
+              type="button"
+              variant="showHide"
+              onClick={() => router.push("/diet-history")}
+              aria-label="go to diet history"
+            >
+              Go to diet history
+            </Button>
 
           {showAnalyzer && (
             <AiMealAnalyzer
