@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 
+// components
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -109,8 +110,8 @@ export const ScrollJumpButton = ({
       }
       onClick={handleClick}
       className={cn(
-        "fixed bottom-20 right-4 z-40 h-10 w-10 rounded-full border bg-background/80 shadow-lg backdrop-blur",
-        "md:bottom-6 md:right-6",
+        "fixed bottom-14 right-4 z-40 h-10 w-10 rounded-full border bg-background/80 shadow-lg backdrop-blur",
+        "md:bottom-4 md:right-6",
         className
       )}
     >

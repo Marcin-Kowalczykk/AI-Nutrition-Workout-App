@@ -9,6 +9,7 @@ import { TopBar } from "@/components/shared/top-bar";
 import BackgroundImage from "@/components/shared/background-image";
 import { WorkoutUnsavedProvider } from "@/components/workout-form/context/workout-unsaved-context";
 import { ScrollJumpButton } from "@/components/shared/scroll-jump-button";
+import { FloatingSidebarButton } from "@/components/shared/floating-sidebar-button";
 import { useRef } from "react";
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
@@ -37,6 +38,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
                   />
                 </div>
               </div>
+              <FloatingSidebarButton />
               <ScrollJumpButton
                 scrollContainerRef={
                   scrollContainerRef as React.RefObject<HTMLElement>
