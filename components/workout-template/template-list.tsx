@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 // components
+import { WorkoutHistoryStats } from "@/components/workout-history/workout-history-stats";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,8 @@ export function TemplateList() {
           </CardContent>
         </Card>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="relative flex flex-col gap-2 pl-5">
+          <div className="pointer-events-none absolute bottom-3 left-2 top-1 w-[2.5px] rounded-full bg-linear-to-b from-primary-element via-primary-element/20 to-transparent" />
           {filteredTemplates.map((template: IWorkoutTemplateItem) => (
             <li key={template.id} data-testid="workout-template-item" className={deletingTemplateId === template.id ? "opacity-50 pointer-events-none" : ""}>
               <Card className="w-full">
@@ -122,12 +124,15 @@ export function TemplateList() {
                           {template.description}
                         </div>
                       )}
-                      {template.exercises && template.exercises.length > 0 && (
-                        <div className="text-sm text-muted-foreground">
-                          {template.exercises.length} exercise
-                          {template.exercises.length !== 1 ? "s" : ""}
-                        </div>
-                      )}
+                      <WorkoutHistoryStats
+                        exercisesCount={template.exercises?.length ?? 0}
+                        setsCount={
+                          template.exercises?.reduce(
+                            (sum, ex) => sum + (ex.sets?.length ?? 0),
+                            0
+                          ) ?? 0
+                        }
+                      />
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <Button
