@@ -61,7 +61,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
-import { ProductScannerDialog } from "@/components/diet-history/product-scanner-dialog";
+import { ProductScannerDialog } from "@/components/diet-history/product-scanner";
 import { AiAnalyzeDialog } from "@/components/diet-history/ai-analyze-dialog";
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";
 import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
@@ -296,33 +296,65 @@ const ProductFields = ({
     protein,
     carbs,
     fat,
+    grams,
   }: {
     kcal: string;
     protein: string;
     carbs: string;
     fat: string;
+    grams?: string;
   }) => {
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.kcal_per_100g`,
-      kcal,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.protein_per_100g`,
-      protein,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.carbs_per_100g`,
-      carbs,
-      { shouldDirty: true }
-    );
-    setValue(
-      `meals.${mealIndex}.products.${productIndex}.fat_per_100g`,
-      fat,
-      { shouldDirty: true }
-    );
-    recalculate();
+    if (grams) {
+      // whole-product variant: set totals directly (mirrors handleAnalyzeApply)
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.product_kcal`,
+        kcal,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.protein_value`,
+        protein,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.carbs_value`,
+        carbs,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.fat_value`,
+        fat,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.weight_grams`,
+        grams,
+        { shouldDirty: true }
+      );
+    } else {
+      // per-100g variant: same as before
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.kcal_per_100g`,
+        kcal,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.protein_per_100g`,
+        protein,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.carbs_per_100g`,
+        carbs,
+        { shouldDirty: true }
+      );
+      setValue(
+        `meals.${mealIndex}.products.${productIndex}.fat_per_100g`,
+        fat,
+        { shouldDirty: true }
+      );
+      recalculate();
+    }
   };
 
   const handleAnalyzeApply = (products: ProductAnalysis[]) => {
