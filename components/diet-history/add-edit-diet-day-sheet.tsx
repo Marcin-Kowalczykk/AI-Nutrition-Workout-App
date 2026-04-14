@@ -61,7 +61,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/shared/date-picker";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
-import { ProductScannerDialog } from "@/components/diet-history/product-scanner";
+import { ProductScannerDialog } from "@/components/diet-history/add-edit-diet-day-sheet/dialogs/product-scanner";
 import { AiAnalyzeDialog } from "@/components/diet-history/ai-analyze-dialog";
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";
 import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
