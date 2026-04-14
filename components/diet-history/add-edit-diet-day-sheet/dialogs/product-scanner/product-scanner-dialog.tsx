@@ -2,7 +2,7 @@
 
 //libs
 import { useRef, useState } from "react";
-import { Camera, RotateCcw } from "lucide-react";
+import { Camera, Ruler, RotateCcw } from "lucide-react";
 
 //hooks
 import { useScanProduct } from "./use-scan-product";
@@ -229,6 +229,19 @@ export const ProductScannerDialog = ({
               onChange={handleFieldChange}
               variant={hasChoice ? selectedVariant : "per_100g"}
             />
+
+            {editedValues.prefilledGrams && (
+              <div className="flex items-center gap-1.5 rounded-md border border-primary-element/30 bg-primary-element/5 px-2.5 py-1.5">
+                <Ruler className="h-3.5 w-3.5 shrink-0 text-primary-element" />
+                <p className="text-xs text-muted-foreground">
+                  Detected weight{" "}
+                  <span className="font-semibold text-foreground">
+                    {editedValues.prefilledGrams}g
+                  </span>{" "}
+                  — will be filled in the grams field
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-2">
               <Button
