@@ -26,7 +26,7 @@ import {
 import { getAccessToken } from "@/lib/supabase/get-access-token";
 
 //types
-import type { BreakdownItem } from "@/components/diet-history/types";
+import type { BreakdownItem } from "@/components/shared/diet/types";
 
 //components
 import { Button } from "@/components/ui/button";
@@ -41,15 +41,10 @@ type AnalyzeState =
   | "error"
   | "limit_reached";
 
-export interface ProductAnalysis {
-  product_name: string;
-  kcal: string;
-  protein: string;
-  carbs: string;
-  fat: string;
-  weight_grams: string;
-  breakdown: BreakdownItem[] | null;
-}
+export type { ProductAnalysis } from "@/components/shared/diet/types";
+
+//types
+import type { ProductAnalysis } from "@/components/shared/diet/types";
 
 interface AiMealAnalyzerProps {
   productName: string;

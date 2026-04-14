@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+//types
+import { breakdownItemSchema } from "@/components/shared/diet/types";
+export type { BreakdownItem } from "@/components/shared/diet/types";
+
 const nonNegativeNumberString = z
   .string()
   .min(1, "Required")
@@ -7,16 +11,7 @@ const nonNegativeNumberString = z
     message: "Must be a non-negative number",
   });
 
-export const breakdownItemSchema = z.object({
-  name: z.string(),
-  weight_g: z.number(),
-  kcal: z.number(),
-  protein: z.number().optional(),
-  carbs: z.number().optional(),
-  fat: z.number().optional(),
-});
-
-export type BreakdownItem = z.infer<typeof breakdownItemSchema>;
+export { breakdownItemSchema };
 
 export const dietProductSchema = z.object({
   product_name: z.string().min(1, "Product name is required"),
