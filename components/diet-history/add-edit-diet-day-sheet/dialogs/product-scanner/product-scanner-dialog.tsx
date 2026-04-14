@@ -88,6 +88,7 @@ export const ProductScannerDialog = ({
         carbs:
           result.carbs_per_100g != null ? String(result.carbs_per_100g) : "",
         fat: result.fat_per_100g != null ? String(result.fat_per_100g) : "",
+        prefilledGrams: result.total_grams != null ? String(result.total_grams) : undefined,
       });
     }
   };
@@ -112,6 +113,7 @@ export const ProductScannerDialog = ({
             : "",
         fat:
           apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
+        prefilledGrams: apiResult.total_grams != null ? String(apiResult.total_grams) : undefined,
       });
     } else {
       const wp = apiResult.whole_product;
@@ -209,24 +211,18 @@ export const ProductScannerDialog = ({
 
         {scanState === "result" && apiResult && (
           <div className="flex flex-col gap-3">
-            {hasChoice && (
-              <>
-                <p className="text-xs text-muted-foreground">
-                  Found values for 100g and full product — choose one:
-                </p>
-                <ScanVariantTiles
-                  apiResult={apiResult}
-                  selected={selectedVariant}
-                  onSelect={handleVariantSelect}
-                />
-              </>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {hasChoice
+                ? "Found values for 100g and full product — choose one:"
+                : "Values per 100g — check and correct if needed:"}
+            </p>
 
-            {!hasChoice && (
-              <p className="text-xs text-muted-foreground">
-                Values per 100g — check and correct if needed:
-              </p>
-            )}
+            <ScanVariantTiles
+              apiResult={apiResult}
+              selected={hasChoice ? selectedVariant : "per_100g"}
+              readonly={!hasChoice}
+              onSelect={handleVariantSelect}
+            />
 
             <ScanResultFields
               values={editedValues}

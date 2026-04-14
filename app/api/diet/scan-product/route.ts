@@ -37,13 +37,20 @@ If such a column exists and the weight in grams is clearly stated, populate whol
 Do NOT calculate, estimate, or derive whole_product values — extract them only when explicitly printed on the label.
 If no such column exists, or the weight is unclear, set whole_product to null.
 
+STEP 3 — Detect total_grams (optional).
+Look anywhere on the label for the total/net product weight in grams.
+This can appear as: "netto Xg", "masa netto Xg", "net weight Xg", "net Xg", a standalone value like "350g", "200 g", or any clearly printed gram amount that represents the total package/product size.
+If found, set total_grams to that number. If whole_product already has a grams value, total_grams should match it.
+If no clear total weight is found, set total_grams to null.
+
 Return this exact JSON (no markdown, no code block, no explanation):
 {
   "kcal_per_100g": <number|null>,
   "protein_per_100g": <number|null>,
   "carbs_per_100g": <number|null>,
   "fat_per_100g": <number|null>,
-  "whole_product": <{ "grams": number, "kcal": number, "protein": number, "carbs": number, "fat": number } | null>
+  "whole_product": <{ "grams": number, "kcal": number, "protein": number, "carbs": number, "fat": number } | null>,
+  "total_grams": <number|null>
 }
 
 Rules:
@@ -154,10 +161,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: rawWp } =
+    const { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: rawWp, total_grams: rawTotalGrams } =
       parsed;
 
     const whole_product = isValidWholeProduct(rawWp) ? rawWp : null;
+    const total_grams = typeof rawTotalGrams === "number" ? rawTotalGrams : (whole_product?.grams ?? null);
 
     const allNull = [
       kcal_per_100g,
@@ -181,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: whole_product ?? null },
+      { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: whole_product ?? null, total_grams: total_grams ?? null },
       { status: 200 }
     );
   } catch (error) {

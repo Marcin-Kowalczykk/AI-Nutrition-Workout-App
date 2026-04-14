@@ -107,7 +107,7 @@ export const MealSection = ({
 
   return (
     <Card ref={setMealSortRef} style={mealCardStyle} className="border-0 shadow-none">
-      <CardContent className="p-3 flex flex-col gap-2">
+      <CardContent className="p-1 flex flex-col gap-2 ">
         <ConfirmModal
           open={removeConfirmOpen}
           onOpenChange={setRemoveConfirmOpen}

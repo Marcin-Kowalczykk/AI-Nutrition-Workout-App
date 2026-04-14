@@ -124,12 +124,14 @@ export const ProductFields = ({
     carbs,
     fat,
     grams,
+    prefilledGrams,
   }: {
     kcal: string;
     protein: string;
     carbs: string;
     fat: string;
     grams?: string;
+    prefilledGrams?: string;
   }) => {
     if (grams) {
       setValue(`meals.${mealIndex}.products.${productIndex}.product_kcal`, kcal, { shouldDirty: true });
@@ -142,6 +144,9 @@ export const ProductFields = ({
       setValue(`meals.${mealIndex}.products.${productIndex}.protein_per_100g`, protein, { shouldDirty: true });
       setValue(`meals.${mealIndex}.products.${productIndex}.carbs_per_100g`, carbs, { shouldDirty: true });
       setValue(`meals.${mealIndex}.products.${productIndex}.fat_per_100g`, fat, { shouldDirty: true });
+      if (prefilledGrams) {
+        setValue(`meals.${mealIndex}.products.${productIndex}.weight_grams`, prefilledGrams, { shouldDirty: true });
+      }
       recalculate();
     }
   };

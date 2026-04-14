@@ -9,6 +9,7 @@ const makeApiResult = (): ScanApiResponse => ({
   carbs_per_100g: 52,
   fat_per_100g: 18,
   whole_product: { grams: 200, kcal: 830, protein: 17, carbs: 104, fat: 36 },
+  total_grams: 200,
 });
 
 describe("ScanVariantTiles", () => {

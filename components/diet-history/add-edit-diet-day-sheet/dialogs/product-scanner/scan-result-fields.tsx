@@ -12,7 +12,7 @@ interface ScanResultFieldsProps {
   variant: ScanVariant | null;
 }
 
-type FieldKey = keyof Omit<ScanResult, "grams">;
+type FieldKey = "kcal" | "protein" | "carbs" | "fat";
 
 const PER_100G_LABELS: Record<FieldKey, string> = {
   kcal: "Kcal / 100g",

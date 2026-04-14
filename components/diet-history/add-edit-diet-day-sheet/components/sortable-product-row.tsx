@@ -103,7 +103,7 @@ export const MealProductsDropEnd = ({
       }
       className={cn(
         "rounded-md transition-colors",
-        variant === "collapsed" ? "min-h-10 py-2" : "min-h-7",
+        variant !== "collapsed" && "min-h-7",
         isOver && "bg-primary-element/10 ring-1 ring-primary-element/35"
       )}
     />
