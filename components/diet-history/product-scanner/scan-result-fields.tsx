@@ -32,7 +32,7 @@ const FIELDS: FieldKey[] = ["kcal", "protein", "carbs", "fat"];
 
 export const ScanResultFields = ({ values, onChange, variant }: ScanResultFieldsProps) => {
   const disabled = variant === null;
-  const labels = variant === "whole_product" ? TOTAL_LABELS : PER_100G_LABELS;
+  const labels = variant === "whole_product" ? TOTAL_LABELS : PER_100G_LABELS; // null falls back to per-100g as placeholder
 
   return (
     <div className="grid grid-cols-2 gap-2">

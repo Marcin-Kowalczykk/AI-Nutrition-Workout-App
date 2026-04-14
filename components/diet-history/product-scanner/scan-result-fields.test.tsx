@@ -73,4 +73,15 @@ describe("ScanResultFields", () => {
     fireEvent.change(kcalInput, { target: { value: "420" } });
     expect(onChange).toHaveBeenCalledWith("kcal", "420");
   });
+
+  it("shows per-100g labels as placeholder when no variant selected", () => {
+    render(
+      <ScanResultFields
+        values={makeResult()}
+        onChange={vi.fn()}
+        variant={null}
+      />
+    );
+    expect(screen.getByText("Kcal / 100g")).toBeInTheDocument();
+  });
 });
