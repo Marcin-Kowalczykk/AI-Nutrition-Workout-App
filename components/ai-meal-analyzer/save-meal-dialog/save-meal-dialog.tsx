@@ -20,7 +20,7 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { Loader } from "@/components/shared/loader";
 
 //hooks
-import { useAddMeal } from "./api/use-add-meal";
+import { useAddMeal } from "../api/use-add-meal";
 
 //types
 import type { ProductAnalysis } from "@/components/shared/diet/ai-meal-analyzer";

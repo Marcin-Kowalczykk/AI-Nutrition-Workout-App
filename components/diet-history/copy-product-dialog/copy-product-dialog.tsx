@@ -27,8 +27,8 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { Loader } from "@/components/shared/loader";
 
 //hooks
-import { useCopyProduct } from "./api/use-copy-product";
-import { useGetDietHistory } from "./api/use-get-diet-history";
+import { useCopyProduct } from "../api/use-copy-product";
+import { useGetDietHistory } from "../api/use-get-diet-history";
 
 //types
 import type { IDietProduct } from "@/app/api/diet/types";
