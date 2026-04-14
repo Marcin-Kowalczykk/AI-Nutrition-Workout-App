@@ -23,9 +23,31 @@ const createMessageWithFallback = async (params: Anthropic.MessageCreateParamsNo
 
 const SYSTEM_PROMPT = `You are a nutrition label parser. You only output raw JSON. No explanations, no markdown, no code blocks. Only a valid JSON object.`;
 
-const SCAN_PROMPT = `Extract nutritional values per 100g from this label.
-Return exactly: {"kcal_per_100g": <number|null>, "protein_per_100g": <number|null>, "carbs_per_100g": <number|null>, "fat_per_100g": <number|null>}
-All values must be numbers. If you cannot read a value clearly, use null.`;
+const SCAN_PROMPT = `Extract nutritional values from this label.
+Always return per-100g values.
+If the label also shows values for the full product AND states the total weight in grams, also return whole_product.
+Return exactly:
+{
+  "kcal_per_100g": <number|null>,
+  "protein_per_100g": <number|null>,
+  "carbs_per_100g": <number|null>,
+  "fat_per_100g": <number|null>,
+  "whole_product": <{ "grams": number, "kcal": number, "protein": number, "carbs": number, "fat": number } | null>
+}
+All numeric values must be numbers. Use null when a value cannot be read clearly.
+Only include whole_product when the label explicitly states the total package weight in grams AND total nutritional values for the whole product. Otherwise set whole_product to null.`;
+
+const isValidWholeProduct = (wp: unknown): wp is { grams: number; kcal: number; protein: number; carbs: number; fat: number } => {
+  if (!wp || typeof wp !== "object") return false;
+  const o = wp as Record<string, unknown>;
+  return (
+    typeof o.grams === "number" &&
+    typeof o.kcal === "number" &&
+    typeof o.protein === "number" &&
+    typeof o.carbs === "number" &&
+    typeof o.fat === "number"
+  );
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -104,7 +126,7 @@ export async function POST(request: NextRequest) {
     const text =
       response.content[0].type === "text" ? response.content[0].text.trim() : "";
 
-    let parsed: Record<string, number | null>;
+    let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(text);
     } catch {
@@ -118,8 +140,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g } =
+    const { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: rawWp } =
       parsed;
+
+    const whole_product = isValidWholeProduct(rawWp) ? rawWp : null;
 
     const allNull = [
       kcal_per_100g,
@@ -143,7 +167,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g },
+      { kcal_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, whole_product: whole_product ?? null },
       { status: 200 }
     );
   } catch (error) {
