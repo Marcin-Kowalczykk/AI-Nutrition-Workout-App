@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ScanResultFields } from "./scan-result-fields";
-import type { ScanResult, ScanVariant } from "./scan-product.types";
+import type { ScanResult } from "./scan-product.types";
 
 const makeResult = (): ScanResult => ({
   kcal: "415",
