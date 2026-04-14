@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     const response = await createMessageWithFallback({
       model: PRIMARY_MODEL,
-      max_tokens: 256,
+      max_tokens: 512,
       system: SYSTEM_PROMPT,
       messages: [
         {

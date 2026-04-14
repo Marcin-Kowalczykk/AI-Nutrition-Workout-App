@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+//libs
+import { useRef, useState } from "react";
 import { Camera, RotateCcw } from "lucide-react";
 
 //hooks
@@ -45,18 +46,6 @@ export const ProductScannerDialog = ({
 
   const { scanState, apiResult, error, analyze, reset } = useScanProduct();
 
-  // When scan completes without a choice (per-100g only), pre-fill editedValues
-  useEffect(() => {
-    if (scanState === "result" && apiResult && !apiResult.whole_product) {
-      setEditedValues({
-        kcal: apiResult.kcal_per_100g != null ? String(apiResult.kcal_per_100g) : "",
-        protein: apiResult.protein_per_100g != null ? String(apiResult.protein_per_100g) : "",
-        carbs: apiResult.carbs_per_100g != null ? String(apiResult.carbs_per_100g) : "",
-        fat: apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
-      });
-    }
-  }, [scanState, apiResult]);
-
   const handleClose = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
@@ -86,7 +75,16 @@ export const ProductScannerDialog = ({
 
   const handleAnalyze = async () => {
     if (!photo) return;
-    await analyze(photo);
+    const result = await analyze(photo);
+    // When per-100g only (no whole_product), pre-fill fields immediately
+    if (result && !result.whole_product) {
+      setEditedValues({
+        kcal: result.kcal_per_100g != null ? String(result.kcal_per_100g) : "",
+        protein: result.protein_per_100g != null ? String(result.protein_per_100g) : "",
+        carbs: result.carbs_per_100g != null ? String(result.carbs_per_100g) : "",
+        fat: result.fat_per_100g != null ? String(result.fat_per_100g) : "",
+      });
+    }
   };
 
   const handleVariantSelect = (variant: ScanVariant) => {
@@ -101,7 +99,8 @@ export const ProductScannerDialog = ({
         fat: apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
       });
     } else {
-      const wp = apiResult.whole_product!;
+      const wp = apiResult.whole_product;
+      if (!wp) return;
       setEditedValues({
         kcal: String(wp.kcal),
         protein: String(wp.protein),
@@ -158,6 +157,7 @@ export const ProductScannerDialog = ({
 
         {previewUrl && (scanState === "idle" || scanState === "preview" || scanState === "analyzing") && (
           <div className="flex flex-col gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- transient blob URL, next/image cannot optimise it */}
             <img
               src={previewUrl}
               alt="Nutrition label"

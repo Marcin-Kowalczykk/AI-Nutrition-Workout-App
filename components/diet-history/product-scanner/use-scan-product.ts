@@ -42,7 +42,7 @@ interface UseScanProductReturn {
   scanState: ScanState;
   apiResult: ScanApiResponse | null;
   error: string | null;
-  analyze: (file: File) => Promise<void>;
+  analyze: (file: File) => Promise<ScanApiResponse | null>;
   reset: () => void;
 }
 
@@ -57,7 +57,7 @@ export const useScanProduct = (): UseScanProductReturn => {
     setError(null);
   };
 
-  const analyze = async (file: File) => {
+  const analyze = async (file: File): Promise<ScanApiResponse | null> => {
     setScanState("analyzing");
     setError(null);
     try {
@@ -72,24 +72,26 @@ export const useScanProduct = (): UseScanProductReturn => {
         body: formData,
       });
 
-      if (response.status === 429) { setScanState("limit_reached"); return; }
+      if (response.status === 429) { setScanState("limit_reached"); return null; }
       if (response.status === 422) {
         setError("Couldn't read the label clearly — try a better-lit photo.");
         setScanState("error");
-        return;
+        return null;
       }
       if (!response.ok) {
         toast.error("Analysis failed, try again.");
         setScanState("preview");
-        return;
+        return null;
       }
 
       const data: ScanApiResponse = await response.json();
       setApiResult(data);
       setScanState("result");
+      return data;
     } catch {
       toast.error("Analysis failed, try again.");
       setScanState("preview");
+      return null;
     }
   };
 
