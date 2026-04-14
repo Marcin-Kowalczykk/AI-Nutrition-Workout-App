@@ -662,7 +662,7 @@ const ProductFields = ({
           </div>
 
           {calcOpen && (
-            <div className="flex flex-col gap-1.5 border-dashed border-primary-element py-1 pl-3 rounded-sm border-l-2">
+            <div className="flex flex-col gap-1.5 border-l-2 border-primary-element py-1 pl-3">
               <Button
                 type="button"
                 variant="outline"

@@ -23,10 +23,21 @@ const createMessageWithFallback = async (params: Anthropic.MessageCreateParamsNo
 
 const SYSTEM_PROMPT = `You are a nutrition label parser. You only output raw JSON. No explanations, no markdown, no code blocks. Only a valid JSON object.`;
 
-const SCAN_PROMPT = `Extract nutritional values from this label.
-Always return per-100g values.
-If the label also shows values for the full product AND states the total weight in grams, also return whole_product.
-Return exactly:
+const SCAN_PROMPT = `You are reading a nutrition label photo. Follow these steps carefully.
+
+STEP 1 — Locate the per-100g column.
+Find the column or section explicitly labeled "100g", "per 100g", "na 100g", "100ml", "per 100ml", or an equivalent.
+Read ONLY from that column for all _per_100g fields.
+NEVER use values from "per serving", "per portion", "porcja", "per package", or any other column for _per_100g fields.
+
+STEP 2 — Detect whole_product (optional).
+Look for a second column or section that shows nutritional values for a SPECIFIC weight other than 100g.
+This can be labeled as: "per portion Xg", "w porcji Xg", "per package", "per container", "270g", "330g", or similar — any explicit gram weight.
+If such a column exists and the weight in grams is clearly stated, populate whole_product using those values and that gram weight.
+Do NOT calculate, estimate, or derive whole_product values — extract them only when explicitly printed on the label.
+If no such column exists, or the weight is unclear, set whole_product to null.
+
+Return this exact JSON (no markdown, no code block, no explanation):
 {
   "kcal_per_100g": <number|null>,
   "protein_per_100g": <number|null>,
@@ -34,8 +45,11 @@ Return exactly:
   "fat_per_100g": <number|null>,
   "whole_product": <{ "grams": number, "kcal": number, "protein": number, "carbs": number, "fat": number } | null>
 }
-All numeric values must be numbers. Use null when a value cannot be read clearly.
-Only include whole_product when the label explicitly states the total package weight in grams AND total nutritional values for the whole product. Otherwise set whole_product to null.`;
+
+Rules:
+- All values are plain numbers without units.
+- Use null for any value that is not clearly readable.
+- whole_product is null unless both total package weight AND total package nutrition are explicitly printed on the label.`;
 
 const isValidWholeProduct = (wp: unknown): wp is { grams: number; kcal: number; protein: number; carbs: number; fat: number } => {
   if (!wp || typeof wp !== "object") return false;
