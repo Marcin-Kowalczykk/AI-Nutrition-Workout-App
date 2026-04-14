@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 //components
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { VoiceInputDialog } from "@/components/diet-history/voice-input-dialog";
+import { VoiceInputDialog } from "@/components/shared/diet/voice-input-dialog";
 import { AiMealAnalyzer } from "@/components/shared/diet/ai-meal-analyzer";
 import { SaveMealDialog } from "./save-meal-dialog";
 import { InfoButton } from "@/components/shared/info-button";
