@@ -4,8 +4,6 @@ import { useState } from "react";
 
 //libs
 import { toast } from "sonner";
-
-//hooks
 import { getAccessToken } from "@/lib/supabase/get-access-token";
 
 //types
@@ -61,6 +59,7 @@ export const useScanProduct = (): UseScanProductReturn => {
 
   const analyze = async (file: File) => {
     setScanState("analyzing");
+    setError(null);
     try {
       const resized = await resizeImageIfNeeded(file);
       const token = await getAccessToken();

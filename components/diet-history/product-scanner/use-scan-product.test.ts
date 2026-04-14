@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useScanProduct } from "./use-scan-product";
 
+vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+
 vi.mock("@/lib/supabase/get-access-token", () => ({
   getAccessToken: vi.fn().mockResolvedValue("token"),
 }));
@@ -69,6 +71,7 @@ describe("useScanProduct", () => {
     const { result } = renderHook(() => useScanProduct());
     await act(async () => { await result.current.analyze(makeFile()); });
     expect(result.current.scanState).toBe("error");
+    expect(result.current.error).toBe("Couldn't read the label clearly — try a better-lit photo.");
   });
 
   it("reset returns to idle", async () => {
