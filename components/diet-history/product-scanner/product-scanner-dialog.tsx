@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, RotateCcw } from "lucide-react";
 
 //hooks
@@ -45,17 +45,17 @@ export const ProductScannerDialog = ({
 
   const { scanState, apiResult, error, analyze, reset } = useScanProduct();
 
-  // When scan completes without a choice (per-100g only), pre-fill editedValues once
-  const prevScanStateRef = useRef<string | null>(null);
-  if (scanState === "result" && prevScanStateRef.current !== "result" && apiResult && !apiResult.whole_product) {
-    setEditedValues({
-      kcal: apiResult.kcal_per_100g != null ? String(apiResult.kcal_per_100g) : "",
-      protein: apiResult.protein_per_100g != null ? String(apiResult.protein_per_100g) : "",
-      carbs: apiResult.carbs_per_100g != null ? String(apiResult.carbs_per_100g) : "",
-      fat: apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
-    });
-  }
-  prevScanStateRef.current = scanState;
+  // When scan completes without a choice (per-100g only), pre-fill editedValues
+  useEffect(() => {
+    if (scanState === "result" && apiResult && !apiResult.whole_product) {
+      setEditedValues({
+        kcal: apiResult.kcal_per_100g != null ? String(apiResult.kcal_per_100g) : "",
+        protein: apiResult.protein_per_100g != null ? String(apiResult.protein_per_100g) : "",
+        carbs: apiResult.carbs_per_100g != null ? String(apiResult.carbs_per_100g) : "",
+        fat: apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
+      });
+    }
+  }, [scanState, apiResult]);
 
   const handleClose = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -144,7 +144,7 @@ export const ProductScannerDialog = ({
           onChange={handleFileChange}
         />
 
-        {scanState === "idle" && (
+        {scanState === "idle" && !previewUrl && (
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-center text-sm text-muted-foreground">
               Take a photo of the nutrition label to fill in values automatically.
@@ -156,7 +156,7 @@ export const ProductScannerDialog = ({
           </div>
         )}
 
-        {(scanState === "preview" || scanState === "analyzing") && previewUrl && (
+        {previewUrl && (scanState === "idle" || scanState === "preview" || scanState === "analyzing") && (
           <div className="flex flex-col gap-3">
             <img
               src={previewUrl}
