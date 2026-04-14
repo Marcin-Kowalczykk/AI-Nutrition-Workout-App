@@ -36,7 +36,9 @@ export const ProductScannerDialog = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<ScanVariant | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ScanVariant | null>(
+    null
+  );
   const [editedValues, setEditedValues] = useState<ScanResult>({
     kcal: "",
     protein: "",
@@ -76,12 +78,15 @@ export const ProductScannerDialog = ({
   const handleAnalyze = async () => {
     if (!photo) return;
     const result = await analyze(photo);
-    // When per-100g only (no whole_product), pre-fill fields immediately
     if (result && !result.whole_product) {
       setEditedValues({
         kcal: result.kcal_per_100g != null ? String(result.kcal_per_100g) : "",
-        protein: result.protein_per_100g != null ? String(result.protein_per_100g) : "",
-        carbs: result.carbs_per_100g != null ? String(result.carbs_per_100g) : "",
+        protein:
+          result.protein_per_100g != null
+            ? String(result.protein_per_100g)
+            : "",
+        carbs:
+          result.carbs_per_100g != null ? String(result.carbs_per_100g) : "",
         fat: result.fat_per_100g != null ? String(result.fat_per_100g) : "",
       });
     }
@@ -93,10 +98,20 @@ export const ProductScannerDialog = ({
 
     if (variant === "per_100g") {
       setEditedValues({
-        kcal: apiResult.kcal_per_100g != null ? String(apiResult.kcal_per_100g) : "",
-        protein: apiResult.protein_per_100g != null ? String(apiResult.protein_per_100g) : "",
-        carbs: apiResult.carbs_per_100g != null ? String(apiResult.carbs_per_100g) : "",
-        fat: apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
+        kcal:
+          apiResult.kcal_per_100g != null
+            ? String(apiResult.kcal_per_100g)
+            : "",
+        protein:
+          apiResult.protein_per_100g != null
+            ? String(apiResult.protein_per_100g)
+            : "",
+        carbs:
+          apiResult.carbs_per_100g != null
+            ? String(apiResult.carbs_per_100g)
+            : "",
+        fat:
+          apiResult.fat_per_100g != null ? String(apiResult.fat_per_100g) : "",
       });
     } else {
       const wp = apiResult.whole_product;
@@ -111,7 +126,10 @@ export const ProductScannerDialog = ({
     }
   };
 
-  const handleFieldChange = (key: keyof Omit<ScanResult, "grams">, value: string) => {
+  const handleFieldChange = (
+    key: keyof Omit<ScanResult, "grams">,
+    value: string
+  ) => {
     setEditedValues((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -120,12 +138,10 @@ export const ProductScannerDialog = ({
     handleClose();
   };
 
-  // When apiResult has no whole_product, skip tile selection and auto-populate fields
   const hasChoice = apiResult?.whole_product != null;
-  const canApply =
-    !hasChoice
-      ? scanState === "result"
-      : scanState === "result" && selectedVariant !== null;
+  const canApply = !hasChoice
+    ? scanState === "result"
+    : scanState === "result" && selectedVariant !== null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -146,44 +162,50 @@ export const ProductScannerDialog = ({
         {scanState === "idle" && !previewUrl && (
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-center text-sm text-muted-foreground">
-              Take a photo of the nutrition label to fill in values automatically.
+              Take a photo of the nutrition label to fill in values
+              automatically.
             </p>
-            <Button onClick={() => fileInputRef.current?.click()} className="gap-2">
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2"
+            >
               <Camera className="h-4 w-4" />
               Take photo
             </Button>
           </div>
         )}
 
-        {previewUrl && (scanState === "idle" || scanState === "preview" || scanState === "analyzing") && (
-          <div className="flex flex-col gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- transient blob URL, next/image cannot optimise it */}
-            <img
-              src={previewUrl}
-              alt="Nutrition label"
-              className="max-h-48 w-full rounded-md object-contain"
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={handleAnalyze}
-                disabled={scanState === "analyzing"}
-                className="flex-1 gap-2"
-              >
-                {scanState === "analyzing" && <Loader size={16} />}
-                {scanState === "analyzing" ? "Analyzing…" : "Analyze"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleRetake}
-                disabled={scanState === "analyzing"}
-                className="gap-2"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Retake
-              </Button>
+        {previewUrl &&
+          (scanState === "idle" ||
+            scanState === "preview" ||
+            scanState === "analyzing") && (
+            <div className="flex flex-col gap-3">
+              <img
+                src={previewUrl}
+                alt="Nutrition label"
+                className="max-h-48 w-full rounded-md object-contain"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={scanState === "analyzing"}
+                  className="flex-1 gap-2"
+                >
+                  {scanState === "analyzing" && <Loader size={16} />}
+                  {scanState === "analyzing" ? "Analyzing…" : "Analyze"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleRetake}
+                  disabled={scanState === "analyzing"}
+                  className="gap-2"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Retake
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {scanState === "result" && apiResult && (
           <div className="flex flex-col gap-3">
@@ -213,7 +235,11 @@ export const ProductScannerDialog = ({
             />
 
             <div className="flex gap-2">
-              <Button onClick={handleApply} disabled={!canApply} className="flex-1">
+              <Button
+                onClick={handleApply}
+                disabled={!canApply}
+                className="flex-1"
+              >
                 Apply to calculator
               </Button>
               <Button variant="outline" onClick={handleClose}>

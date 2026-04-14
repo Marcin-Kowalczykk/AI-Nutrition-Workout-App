@@ -9,21 +9,34 @@ interface ScanVariantTilesProps {
   onSelect: (variant: ScanVariant) => void;
 }
 
+type MacroType = "protein" | "carbs" | "fat";
+
 interface MacroRowProps {
   label: string;
   value: number | null;
+  macro: MacroType;
 }
 
-const MacroRow = ({ label, value }: MacroRowProps) => (
+const macroColorMap: Record<MacroType, string> = {
+  protein: "text-macro-protein",
+  carbs: "text-macro-carbs",
+  fat: "text-macro-fat",
+};
+
+const MacroRow = ({ label, value, macro }: MacroRowProps) => (
   <div className="flex justify-between text-xs text-muted-foreground">
     <span>{label}</span>
-    <span className="font-medium text-foreground">
+    <span className={`font-medium ${macroColorMap[macro]}`}>
       {value != null ? `${value}g` : "—"}
     </span>
   </div>
 );
 
-export const ScanVariantTiles = ({ apiResult, selected, onSelect }: ScanVariantTilesProps) => {
+export const ScanVariantTiles = ({
+  apiResult,
+  selected,
+  onSelect,
+}: ScanVariantTilesProps) => {
   const wp = apiResult.whole_product;
   if (!wp) return null;
 
@@ -34,10 +47,11 @@ export const ScanVariantTiles = ({ apiResult, selected, onSelect }: ScanVariantT
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      {/* Per 100g tile */}
       <div
         data-variant="per_100g"
-        className={`${tileBase} ${selected === "per_100g" ? selectedStyle : unselectedStyle}`}
+        className={`${tileBase} ${
+          selected === "per_100g" ? selectedStyle : unselectedStyle
+        }`}
         onClick={() => onSelect("per_100g")}
       >
         {selected === "per_100g" && (
@@ -50,22 +64,26 @@ export const ScanVariantTiles = ({ apiResult, selected, onSelect }: ScanVariantT
         </p>
         <p className="text-lg font-bold leading-none">
           {apiResult.kcal_per_100g ?? "—"}
-          <span className="text-xs font-normal text-muted-foreground"> kcal</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            {" "}
+            kcal
+          </span>
         </p>
         <div className="mt-1 flex flex-col gap-0.5">
-          <MacroRow label="Protein" value={apiResult.protein_per_100g} />
-          <MacroRow label="Carbs" value={apiResult.carbs_per_100g} />
-          <MacroRow label="Fat" value={apiResult.fat_per_100g} />
+          <MacroRow label="Protein" value={apiResult.protein_per_100g} macro="protein" />
+          <MacroRow label="Carbs" value={apiResult.carbs_per_100g} macro="carbs" />
+          <MacroRow label="Fat" value={apiResult.fat_per_100g} macro="fat" />
         </div>
         <span className="mt-2 inline-block rounded-full border border-border bg-muted px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">
           100g
         </span>
       </div>
 
-      {/* Whole product tile */}
       <div
         data-variant="whole_product"
-        className={`${tileBase} ${selected === "whole_product" ? selectedStyle : unselectedStyle}`}
+        className={`${tileBase} ${
+          selected === "whole_product" ? selectedStyle : unselectedStyle
+        }`}
         onClick={() => onSelect("whole_product")}
       >
         {selected === "whole_product" && (
@@ -78,12 +96,15 @@ export const ScanVariantTiles = ({ apiResult, selected, onSelect }: ScanVariantT
         </p>
         <p className="text-lg font-bold leading-none">
           {wp.kcal}
-          <span className="text-xs font-normal text-muted-foreground"> kcal</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            {" "}
+            kcal
+          </span>
         </p>
         <div className="mt-1 flex flex-col gap-0.5">
-          <MacroRow label="Protein" value={wp.protein} />
-          <MacroRow label="Carbs" value={wp.carbs} />
-          <MacroRow label="Fat" value={wp.fat} />
+          <MacroRow label="Protein" value={wp.protein} macro="protein" />
+          <MacroRow label="Carbs" value={wp.carbs} macro="carbs" />
+          <MacroRow label="Fat" value={wp.fat} macro="fat" />
         </div>
         <span className="mt-2 inline-block rounded-full border border-primary-element/30 bg-primary-element/10 px-2 py-0.5 text-[9px] font-semibold text-primary-element">
           {wp.grams}g
