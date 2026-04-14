@@ -36,4 +36,9 @@ describe("ScanVariantTiles", () => {
     render(<ScanVariantTiles apiResult={makeApiResult()} selected={null} onSelect={vi.fn()} />);
     expect(screen.getByText("200g")).toBeInTheDocument();
   });
+
+  it("shows checkmark on selected tile", () => {
+    render(<ScanVariantTiles apiResult={makeApiResult()} selected="per_100g" onSelect={vi.fn()} />);
+    expect(screen.getByText("✓")).toBeInTheDocument();
+  });
 });

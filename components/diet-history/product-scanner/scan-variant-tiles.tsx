@@ -24,7 +24,8 @@ const MacroRow = ({ label, value }: MacroRowProps) => (
 );
 
 export const ScanVariantTiles = ({ apiResult, selected, onSelect }: ScanVariantTilesProps) => {
-  const wp = apiResult.whole_product!;
+  const wp = apiResult.whole_product;
+  if (!wp) return null;
 
   const tileBase =
     "relative flex flex-col gap-1 rounded-xl border p-3 cursor-pointer transition-colors";
