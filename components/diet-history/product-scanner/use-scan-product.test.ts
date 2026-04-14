@@ -8,6 +8,10 @@ vi.mock("@/lib/supabase/get-access-token", () => ({
   getAccessToken: vi.fn().mockResolvedValue("token"),
 }));
 
+vi.mock("@/components/shared/diet/helpers/image-resize", () => ({
+  resizeImageForUpload: (file: File) => Promise.resolve(file),
+}));
+
 const mockFetch = vi.fn();
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
