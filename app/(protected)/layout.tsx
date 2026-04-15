@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+// libs
+import { useRef, useState, useCallback, Suspense } from "react";
 
 // components
 import { Toaster } from "sonner";
+import { RouteRestorer } from "@/components/shared/route-restorer/route-restorer";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
 import { TopBar } from "@/components/shared/top-bar";
@@ -27,6 +29,9 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <RouteRestorer />
+      </Suspense>
       <Toaster position="bottom-center" richColors />
       <div className="flex min-h-0 flex-1 flex-col">
         <SidebarProvider defaultOpen={true}>
