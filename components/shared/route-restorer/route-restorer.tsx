@@ -50,7 +50,10 @@ export const RouteRestorer = () => {
 
   if (isRedirecting) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-color-background">
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <Loader />
       </div>
     );
