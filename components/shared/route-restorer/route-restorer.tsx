@@ -1,10 +1,13 @@
 "use client";
 
 // libs
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // hooks
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+
+// components
+import { Loader } from "@/components/shared/loader";
 
 const ROUTE_KEY = "pwa-last-route";
 
@@ -13,6 +16,7 @@ export const RouteRestorer = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasRestored = useRef(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     if (hasRestored.current) return;
@@ -21,6 +25,7 @@ export const RouteRestorer = () => {
     try {
       const saved = localStorage.getItem(ROUTE_KEY);
       if (saved && saved !== pathname) {
+        setIsRedirecting(true);
         router.replace(saved);
       }
     } catch {
@@ -28,6 +33,10 @@ export const RouteRestorer = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isRedirecting) setIsRedirecting(false);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const qs = searchParams.toString();
@@ -38,6 +47,14 @@ export const RouteRestorer = () => {
       // localStorage unavailable
     }
   }, [pathname, searchParams]);
+
+  if (isRedirecting) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-color-background">
+        <Loader />
+      </div>
+    );
+  }
 
   return null;
 };
