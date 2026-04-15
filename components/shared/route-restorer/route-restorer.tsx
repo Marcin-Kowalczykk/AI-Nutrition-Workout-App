@@ -8,29 +8,54 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 // components
 import { Loader } from "@/components/shared/loader";
+import { createClient } from "@/lib/supabase/client";
 
-const ROUTE_KEY = "pwa-last-route";
+const ROUTE_KEY_PREFIX = "pwa-last-route";
+// sessionStorage: persists within a browser tab/session, cleared when PWA is killed or tab closed
+// This ensures restore runs only once per PWA launch, not on every hard navigation
+const SESSION_RESTORED_KEY = "pwa-route-restored";
+
+const getRouteKey = (userId: string) => `${ROUTE_KEY_PREFIX}-${userId}`;
 
 export const RouteRestorer = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const hasRestored = useRef(false);
+  const hasRun = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (hasRestored.current) return;
-    hasRestored.current = true;
+    // hasRun guards against React Strict Mode double-invocation
+    if (hasRun.current) return;
+    hasRun.current = true;
 
+    let alreadyRestored = false;
     try {
-      const saved = localStorage.getItem(ROUTE_KEY);
-      if (saved && saved !== pathname) {
-        setIsRedirecting(true);
-        router.replace(saved);
-      }
+      alreadyRestored = !!sessionStorage.getItem(SESSION_RESTORED_KEY);
     } catch {
-      // localStorage unavailable (private mode edge case)
+      // sessionStorage unavailable — skip restore entirely
+      return;
     }
+
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+
+      if (!uid || alreadyRestored) return;
+
+      try {
+        sessionStorage.setItem(SESSION_RESTORED_KEY, "1");
+        const saved = localStorage.getItem(getRouteKey(uid));
+        if (saved && saved !== pathname) {
+          setIsRedirecting(true);
+          router.replace(saved);
+        }
+      } catch {
+        // localStorage unavailable
+      }
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -39,14 +64,15 @@ export const RouteRestorer = () => {
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!userId) return;
     const qs = searchParams.toString();
     const full = pathname + (qs ? `?${qs}` : "");
     try {
-      localStorage.setItem(ROUTE_KEY, full);
+      localStorage.setItem(getRouteKey(userId), full);
     } catch {
       // localStorage unavailable
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, userId]);
 
   if (isRedirecting) {
     return (
@@ -62,10 +88,18 @@ export const RouteRestorer = () => {
   return null;
 };
 
-export const clearLastRoute = () => {
+export const clearLastRoute = (userId?: string) => {
   try {
-    localStorage.removeItem(ROUTE_KEY);
+    // Clear the session flag so the next login can restore again if needed
+    sessionStorage.removeItem(SESSION_RESTORED_KEY);
+    if (userId) {
+      localStorage.removeItem(getRouteKey(userId));
+    } else {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith(ROUTE_KEY_PREFIX))
+        .forEach((key) => localStorage.removeItem(key));
+    }
   } catch {
-    // localStorage unavailable
+    // storage unavailable
   }
 };

@@ -20,6 +20,16 @@ vi.mock('@/components/shared/route-restorer/route-restorer', () => ({
   clearLastRoute: vi.fn(),
 }))
 
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: { user: { id: 'test-user-id' } } },
+      }),
+    },
+  }),
+}))
+
 // ----------------------------------------------------------------
 describe('useLogout', () => {
   afterEach(() => {

@@ -11,8 +11,10 @@ test.describe('Edit Workout A sets', () => {
   })
 
   test('changes reps of first set from 10 to 12 and saves', async ({ page }) => {
-    await page.goto('/main-page')
-    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
+    await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200),
+      page.goto('/main-page'),
+    ])
 
     // Search to bypass client-side pagination before locating the card
     await page.getByPlaceholder('Search workouts...').fill(TEST_NAMES.workoutA)
@@ -41,9 +43,11 @@ test.describe('Edit Workout A sets', () => {
       page.getByRole('button', { name: /update workout/i }).nth(1).click(),
     ])
 
-    // Verify workout still appears in history — search to bypass pagination
+    // Verify workout still appears in history
+    // Note: update-workout does not invalidate the history query cache,
+    // so data may be served from localStorage cache without an HTTP request.
     await page.goto('/main-page')
-    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
+    await expect(page.getByTestId('workout-history-item').first()).toBeVisible()
     await page.getByPlaceholder('Search workouts...').fill(TEST_NAMES.workoutA)
     await page.waitForTimeout(300)
     await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()

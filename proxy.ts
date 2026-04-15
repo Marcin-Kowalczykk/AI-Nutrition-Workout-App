@@ -32,12 +32,14 @@ export async function proxy(request: NextRequest) {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const isLoggedIn = !!session?.user;
 
   // Handle root path - redirect based on auth status
   if (request.nextUrl.pathname === "/") {
-    if (!user) {
+    if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", request.url));
     } else {
       return NextResponse.redirect(new URL("/main-page", request.url));
@@ -45,17 +47,25 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protect routes that require authentication
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith("/main-page") ||
-      request.nextUrl.pathname.startsWith("/profile-settings"))
-  ) {
+  const protectedPrefixes = [
+    "/main-page",
+    "/profile-settings",
+    "/exercises",
+    "/workout",
+    "/records",
+    "/body-measurements",
+    "/comparisons",
+    "/diet-history",
+    "/ai-meal-analyzer",
+  ];
+
+  if (!isLoggedIn && protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Redirect logged in users from /login and /register
   if (
-    user &&
+    isLoggedIn &&
     (request.nextUrl.pathname === "/login" ||
       request.nextUrl.pathname === "/register")
   ) {

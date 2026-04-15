@@ -40,8 +40,10 @@ test.describe('Create Workout A from template', () => {
     ])
 
     // Verify in history — search to bypass client-side pagination
-    await page.goto('/main-page')
-    await page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200)
+    await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/workouts/get-workouts-history') && r.status() === 200),
+      page.goto('/main-page'),
+    ])
     await page.getByPlaceholder('Search workouts...').fill(TEST_NAMES.workoutA)
     await page.waitForTimeout(300)
     await expect(page.getByText(TEST_NAMES.workoutA).first()).toBeVisible()

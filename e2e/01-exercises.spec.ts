@@ -11,7 +11,10 @@ test.describe('Exercises CRUD', () => {
   })
 
   test('creates category and two exercises of different unit types', async ({ page }) => {
-    await page.goto('/exercises')
+    await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/exercises/categories') && r.status() === 200),
+      page.goto('/exercises'),
+    ])
 
     // Create category
     await page.getByPlaceholder('New category name').fill(TEST_NAMES.category)

@@ -68,6 +68,7 @@ export const AddEditDietDaySheet = ({
 }: AddEditDietDaySheetProps) => {
   const isEditing = dayToEdit !== null;
   const closeOnSuccessRef = useRef(true);
+  const [createdDay, setCreatedDay] = useState<IDietDay | null>(null);
 
   const form = useForm<DietDayFormValues>({
     resolver: zodResolver(dietDayFormSchema),
@@ -159,7 +160,8 @@ export const AddEditDietDaySheet = ({
   };
 
   const { mutate: createDay, isPending: isCreating } = useCreateDietDay({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data) setCreatedDay(data);
       toast.success("Diet day saved");
       if (closeOnSuccessRef.current) onOpenChange(false);
       closeOnSuccessRef.current = true;
@@ -181,6 +183,7 @@ export const AddEditDietDaySheet = ({
   useEffect(() => {
     if (!open) return;
     setMealExpandedById({});
+    setCreatedDay(null);
     if (isEditing && dayToEdit) {
       form.reset(dietDayToFormValues(dayToEdit));
     } else {
@@ -206,8 +209,9 @@ export const AddEditDietDaySheet = ({
 
   const onSubmit = (values: DietDayFormValues) => {
     const payload = buildDietDayPayload(values);
-    if (isEditing && dayToEdit) {
-      updateDay({ ...payload, id: dayToEdit.id });
+    const effectiveId = dayToEdit?.id ?? createdDay?.id ?? null;
+    if (effectiveId) {
+      updateDay({ ...payload, id: effectiveId });
     } else {
       createDay(payload);
     }
