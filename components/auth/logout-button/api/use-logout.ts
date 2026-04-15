@@ -3,10 +3,12 @@
 // dependencies
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { clearLastRoute } from "@/components/shared/route-restorer/route-restorer";
 
 // types
 import { ILogoutResponse } from "@/app/api/auth/logout/route";
+
+// components
+import { clearLastRoute } from "@/components/shared/route-restorer/route-restorer";
 
 export const useLogout = () => {
   const router = useRouter();
@@ -28,6 +30,7 @@ export const useLogout = () => {
     onSuccess: () => {
       clearLastRoute();
       queryClient.clear();
+      localStorage.removeItem("tanstack-query");
       router.push("/login");
       router.refresh();
     },

@@ -16,6 +16,10 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }))
 
+vi.mock('@/components/shared/route-restorer/route-restorer', () => ({
+  clearLastRoute: vi.fn(),
+}))
+
 // ----------------------------------------------------------------
 describe('useLogout', () => {
   afterEach(() => {
@@ -64,5 +68,49 @@ describe('useLogout', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(pushMock).toHaveBeenCalledWith('/login')
     expect(refreshMock).toHaveBeenCalled()
+  })
+
+  it('clears the saved route on success', async () => {
+    const { clearLastRoute } = await import('@/components/shared/route-restorer/route-restorer')
+
+    server.use(
+      http.post('/api/auth/logout', () =>
+        HttpResponse.json({ success: true })
+      )
+    )
+
+    const { result } = renderHook(() => useLogout(), {
+      wrapper: createQueryWrapper(),
+    })
+
+    act(() => {
+      result.current.mutate()
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(clearLastRoute).toHaveBeenCalled()
+  })
+
+  it('removes the persisted query cache from localStorage on success', async () => {
+    const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
+
+    server.use(
+      http.post('/api/auth/logout', () =>
+        HttpResponse.json({ success: true })
+      )
+    )
+
+    const { result } = renderHook(() => useLogout(), {
+      wrapper: createQueryWrapper(),
+    })
+
+    act(() => {
+      result.current.mutate()
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(removeItemSpy).toHaveBeenCalledWith('tanstack-query')
+
+    removeItemSpy.mockRestore()
   })
 })
