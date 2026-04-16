@@ -1,13 +1,16 @@
 "use client";
 
+//libs
 import { useState } from "react";
+import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
 
-// hooks
+//hooks
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteWorkout } from "../api/use-delete-workout";
 
-// components
+//components
 import {
   Sheet,
   SheetContent,
@@ -18,8 +21,6 @@ import {
 import { WorkoutView } from "./workout-view";
 import { Button } from "@/components/ui/button";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
-import { Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 export const ViewWorkoutSheet = () => {
   const searchParams = useSearchParams();

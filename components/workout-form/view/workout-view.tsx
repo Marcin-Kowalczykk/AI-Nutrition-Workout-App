@@ -1,13 +1,17 @@
 "use client";
 
-// hooks
+//libs
+import { format } from "date-fns";
+import { enUS } from "date-fns/locale";
+import { CheckCircle2, XCircle } from "lucide-react";
+
+//hooks
 import { useGetWorkout } from "../api/use-get-workout";
 
-// components
+//components
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
-import { CheckCircle2, XCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -16,8 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
-import { enUS } from "date-fns/locale";
 
 interface WorkoutViewProps {
   workoutId: string;
