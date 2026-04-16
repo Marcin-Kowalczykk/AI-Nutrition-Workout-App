@@ -1,16 +1,14 @@
 "use client";
 
-// libs
+//libs
 import { cn } from "@/lib/utils";
-
-// dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { format, startOfDay, subDays } from "date-fns";
 
-// hooks
-import { useFieldArray, useForm, type Resolver } from "react-hook-form";
+//hooks
+import { useFieldArray, useForm } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateWorkout } from "./api/use-create-workout";
@@ -22,7 +20,7 @@ import { useUpdateTemplate } from "@/components/workout-template/api/use-update-
 import { useGetTemplate } from "@/components/workout-template/api/use-get-template";
 import { useDeleteTemplate } from "@/components/workout-template/api/use-delete-template";
 
-// components
+//components
 import {
   Form,
   FormControl,
@@ -44,7 +42,8 @@ import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { DatePicker } from "@/components/shared/date-picker";
 import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./components/edit/rpe";
 
-// types and schemas
+//types
+import type { Resolver } from "react-hook-form";
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
 import {
   CreateWorkoutFormType,
@@ -64,6 +63,7 @@ import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
 } from "@/app/api/workout-templates/types";
+import type { PreparedExercise } from "./helpers";
 import {
   formatNumericField,
   getComparisonBaselineString,
@@ -71,7 +71,6 @@ import {
   normalizeCachedFormData,
   prepareExercisesForSubmission,
   prepareExercisesForTemplate,
-  type PreparedExercise,
 } from "./helpers";
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";

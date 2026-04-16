@@ -1,6 +1,9 @@
 "use client";
 
+//libs
 import { Suspense } from "react";
+
+//components
 import { Loader } from "@/components/shared/loader";
 import { WorkoutForm } from "./workout-form";
 import { Card, CardContent } from "@/components/ui/card";
