@@ -3,17 +3,16 @@
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-// libs
+//libs
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-// hooks
-import { useListTemplates } from "./api/use-list-templates";
+//hooks
+import { useListTemplates, TEMPLATES_QUERY_KEY } from "./api/use-list-templates";
 import { useDeleteTemplate } from "./api/use-delete-template";
-import { TEMPLATES_QUERY_KEY } from "./api/use-list-templates";
 import { useTemplateSearch } from "./hooks/use-template-search";
 
-// types
+//types
 import type { IWorkoutTemplateItem } from "@/app/api/workout-templates/types";
 
 // components
@@ -25,7 +24,7 @@ import { CreateTemplateRedirectButton } from "./create-template-redirect-button"
 import { TemplateSearchInput } from "./template-search";
 import { TemplateListItem } from "./components/template-list-item";
 
-export function TemplateList() {
+export const TemplateList = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

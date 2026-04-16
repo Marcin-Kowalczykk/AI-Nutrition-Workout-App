@@ -1,8 +1,7 @@
 "use client";
 
+//libs
 import Link from "next/link";
-
-// libs
 import { Edit, Eye, Trash2 } from "lucide-react";
 
 // components
