@@ -11,6 +11,7 @@ import { format, startOfDay, subDays } from "date-fns";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useWorkoutFormState } from "./hooks/use-workout-form-state";
 import { useCreateWorkout } from "./api/use-create-workout";
 import { useUpdateWorkout } from "./api/use-update-workout";
 import { useGetWorkout } from "./api/use-get-workout";
@@ -90,29 +91,17 @@ export const WorkoutForm = ({
   prefillFromTemplateId,
 }: WorkoutFormProps) => {
   const router = useRouter();
-  const entityId = isTemplateMode ? initialTemplateId : initialWorkoutId;
-  const [workoutId, setWorkoutId] = useState<string | null>(
-    initialWorkoutId || null
-  );
-  const [templateId, setTemplateId] = useState<string | null>(
-    initialTemplateId || null
-  );
+  const {
+    workoutId, setWorkoutId,
+    templateId, setTemplateId,
+    isFirstSave, setIsFirstSave,
+    isDiscardWorkoutModalOpen, setIsDiscardWorkoutModalOpen,
+    removeExerciseModal, setRemoveExerciseModal,
+    removeSetModal, setRemoveSetModal,
+    historyOpenByExerciseId, setHistoryOpenByExerciseId,
+    headerVisible, setHeaderVisible,
+  } = useWorkoutFormState({ initialWorkoutId, initialTemplateId, isTemplateMode });
   const currentEntityId = isTemplateMode ? templateId : workoutId;
-  const [isFirstSave, setIsFirstSave] = useState(!entityId);
-  const [isDiscardWorkoutModalOpen, setIsDiscardWorkoutModalOpen] =
-    useState(false);
-  const [removeExerciseModal, setRemoveExerciseModal] = useState<{
-    open: boolean;
-    exerciseIndex: number | null;
-  }>({ open: false, exerciseIndex: null });
-  const [removeSetModal, setRemoveSetModal] = useState<{
-    open: boolean;
-    exerciseIndex: number | null;
-    setIndex: number | null;
-  }>({ open: false, exerciseIndex: null, setIndex: null });
-  const [historyOpenByExerciseId, setHistoryOpenByExerciseId] = useState<
-    Record<string, boolean>
-  >({});
   const {
     rpeOpenBySet,
     rpeSliderDisplayBySet,
@@ -120,7 +109,6 @@ export const WorkoutForm = ({
     clearRpeDisplay,
     setRpeDisplay,
   } = useRpeState();
-  const [headerVisible, setHeaderVisible] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
   const hasLoadedWorkoutDataRef = useRef(false);
@@ -288,7 +276,7 @@ export const WorkoutForm = ({
 
   useEffect(() => {
     if (!isInitialMountRef.current) return;
-    if (entityId) return;
+    if (isTemplateMode ? initialTemplateId : initialWorkoutId) return;
     if (prefillFromTemplateId) return;
 
     const loadCached = async () => {
