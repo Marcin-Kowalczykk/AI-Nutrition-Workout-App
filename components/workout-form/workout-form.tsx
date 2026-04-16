@@ -40,7 +40,7 @@ import CenterWrapper from "@/components/shared/center-wrapper";
 import { ConfirmModal } from "../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { DatePicker } from "@/components/shared/date-picker";
-import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./components/edit/rpe";
+import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./form/rpe";
 
 //types
 import type { Resolver } from "react-hook-form";
@@ -58,7 +58,7 @@ import { useWorkoutUnsavedChanges } from "./context/workout-unsaved-context";
 import {
   ExerciseHistoryStrip,
   ExerciseHistoryStripContent,
-} from "./components/edit/exercise-history-strip/exercise-history-strip";
+} from "./form/exercise-history-strip/exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,

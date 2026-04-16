@@ -6,4 +6,3 @@ export const formatWorkoutDate = (dateString?: string): string => {
   const date = new Date(dateString);
   return format(date, "d MMM yyyy", { locale: pl });
 };
-

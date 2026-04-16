@@ -49,3 +49,5 @@ export const useRpeState = () => {
     setRpeDisplay,
   };
 };
+
+export type UseRpeStateReturn = ReturnType<typeof useRpeState>;

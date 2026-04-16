@@ -29,4 +29,3 @@ export const getUnitColumn = (
   if (hasWeight) return WORKOUT_UNIT_TYPE.REPS_BASED;
   return null;
 };
-

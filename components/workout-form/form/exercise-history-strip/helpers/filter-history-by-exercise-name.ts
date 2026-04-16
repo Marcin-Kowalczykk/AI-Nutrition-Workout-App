@@ -24,4 +24,3 @@ export const filterHistoryByExerciseName = (
 
   return withExercise.slice(0, maxWorkouts);
 };
-
