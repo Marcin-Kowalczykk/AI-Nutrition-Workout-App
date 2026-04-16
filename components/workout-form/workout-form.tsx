@@ -9,11 +9,12 @@ import { format, startOfDay, subDays } from "date-fns";
 
 //hooks
 import { useFieldArray, useForm } from "react-hook-form";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect } from "react";
 import { useWorkoutFormState } from "./hooks/use-workout-form-state";
 import { useWorkoutFormCache } from "./hooks/use-workout-form-cache";
 import { useWorkoutFormData } from "./hooks/use-workout-form-data";
 import { useWorkoutFormSubmit } from "./hooks/use-workout-form-submit";
+import { useWorkoutExerciseOps } from "./hooks/use-workout-exercise-ops";
 
 //components
 import {
@@ -46,17 +47,11 @@ import {
   WORKOUT_UNIT_TYPE,
   type WorkoutUnitType,
 } from "./types";
-import { ExerciseUnitType } from "@/app/api/exercises/types";
 import { useWorkoutUnsavedChanges } from "./context/workout-unsaved-context";
 import {
   ExerciseHistoryStrip,
   ExerciseHistoryStripContent,
 } from "./form/exercise-history-strip/exercise-history-strip";
-import type { PreparedExercise } from "./helpers";
-import {
-  getComparisonBaselineString,
-  prepareExercisesForSubmission,
-} from "./helpers";
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
 const TEMPLATE_FORM_CACHE_KEY = "workout-template-form-draft";
@@ -118,7 +113,7 @@ export const WorkoutForm = ({
   });
 
   const formValues = form.watch();
-  const { saveToCache, clearCache } = useWorkoutFormCache({ form, cacheKey, discardRef, formValues });
+  const { clearCache } = useWorkoutFormCache({ form, cacheKey, discardRef, formValues });
 
   const {
     lastSavedBaseline, setLastSavedBaseline,
@@ -173,6 +168,29 @@ export const WorkoutForm = ({
     name: "exercises",
   });
 
+  const {
+    applyUnitChange,
+    mapExerciseUnitToWorkoutUnit,
+    handleAddExercise,
+    handleRemoveExerciseClick,
+    handleConfirmRemoveExercise,
+    handleAddSet,
+    handleRemoveSetClick,
+    handleConfirmRemoveSet,
+  } = useWorkoutExerciseOps({
+    form,
+    currentEntityId,
+    isTemplateMode,
+    appendExercise,
+    removeExercise,
+    setBaselineFromValues,
+    setRemoveExerciseModal,
+    setRemoveSetModal,
+    removeExerciseModal,
+    removeSetModal,
+    saveToServer,
+  });
+
   useEffect(() => {
     const hasChanges = hasFormChanges();
     setHasUnsavedChanges(hasChanges);
@@ -181,34 +199,6 @@ export const WorkoutForm = ({
       setHasUnsavedChanges(false);
     };
   }, [formValues, hasFormChanges, setHasUnsavedChanges]);
-
-  const applyUnitChange = useCallback(
-    (exerciseIndex: number, newUnit: WorkoutUnitType) => {
-      const values = form.getValues();
-      const exercises = values.exercises ?? [];
-      const updatedExercises = exercises.map((exercise, i) => {
-        if (i !== exerciseIndex) return exercise;
-        const sets = (exercise.sets ?? []).map((set) => ({
-          ...set,
-          weight: "",
-          duration: "",
-        }));
-        return { ...exercise, unitType: newUnit, sets };
-      });
-      form.reset(
-        { ...values, exercises: updatedExercises },
-        { keepDefaultValues: false }
-      );
-    },
-    [form]
-  );
-
-  const mapExerciseUnitToWorkoutUnit = (
-    unitType: ExerciseUnitType | undefined
-  ): WorkoutUnitType => {
-    if (unitType === "time-based") return WORKOUT_UNIT_TYPE.DURATION;
-    return WORKOUT_UNIT_TYPE.REPS_BASED;
-  };
 
   if (
     (isLoadingWorkout && initialWorkoutId && !isTemplateMode) ||
@@ -220,116 +210,6 @@ export const WorkoutForm = ({
       </CenterWrapper>
     );
   }
-
-  const handleAddExercise = () => {
-    appendExercise({
-      id: crypto.randomUUID(),
-      name: "",
-      unitType: WORKOUT_UNIT_TYPE.REPS_BASED,
-      sets: [],
-    });
-  };
-
-  const handleRemoveExerciseClick = (exerciseIndex: number) => {
-    if (currentEntityId) {
-      setRemoveExerciseModal({ open: true, exerciseIndex });
-    } else {
-      removeExercise(exerciseIndex);
-      setBaselineFromValues(form.getValues());
-    }
-  };
-
-  const handleConfirmRemoveExercise = () => {
-    const exerciseIndex = removeExerciseModal.exerciseIndex;
-    if (exerciseIndex === null || !currentEntityId) return;
-
-    const values = form.getValues();
-    const newExercises = values.exercises.filter((_, i) => i !== exerciseIndex);
-    const prepared = prepareExercisesForSubmission(newExercises);
-    const newValues: CreateWorkoutFormType = {
-      name: values.name,
-      description: values.description,
-      exercises: newExercises,
-      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
-    };
-
-    saveToServer(values, prepared, () => {
-      removeExercise(exerciseIndex);
-      setRemoveExerciseModal({ open: false, exerciseIndex: null });
-      setBaselineFromValues(newValues);
-    });
-  };
-
-  const handleAddSet = (exerciseIndex: number) => {
-    const exercise = form.getValues(`exercises.${exerciseIndex}`);
-    if (!exercise?.name?.trim()) {
-      return;
-    }
-
-    const currentSets = exercise?.sets ?? [];
-    const nextSetNumber = currentSets.length + 1;
-
-    form.setValue(`exercises.${exerciseIndex}.sets`, [
-      ...currentSets,
-      {
-        id: crypto.randomUUID(),
-        set_number: nextSetNumber,
-        reps: "",
-        weight: "",
-        duration: "",
-        isChecked: false,
-      },
-    ]);
-  };
-
-  const doRemoveSetFromForm = (exerciseIndex: number, setIndex: number) => {
-    const exercise = form.getValues(`exercises.${exerciseIndex}`);
-    const currentSets = exercise?.sets ?? [];
-    const updatedSets = currentSets.filter((_, index) => index !== setIndex);
-    const renumberedSets = updatedSets.map((set, index) => ({
-      ...set,
-      set_number: index + 1,
-    }));
-    form.setValue(`exercises.${exerciseIndex}.sets`, renumberedSets);
-  };
-
-  const handleRemoveSetClick = (exerciseIndex: number, setIndex: number) => {
-    if (currentEntityId) {
-      setRemoveSetModal({ open: true, exerciseIndex, setIndex });
-    } else {
-      doRemoveSetFromForm(exerciseIndex, setIndex);
-      setBaselineFromValues(form.getValues());
-    }
-  };
-
-  const handleConfirmRemoveSet = () => {
-    const { exerciseIndex, setIndex } = removeSetModal;
-    if (exerciseIndex === null || setIndex === null || !currentEntityId) return;
-
-    const values = form.getValues();
-    const exercise = values.exercises[exerciseIndex];
-    if (!exercise) return;
-
-    const newSets = exercise.sets
-      .filter((_, i) => i !== setIndex)
-      .map((set, i) => ({ ...set, set_number: i + 1 }));
-    const newExercises = values.exercises.map((ex, i) =>
-      i === exerciseIndex ? { ...ex, sets: newSets } : ex
-    );
-    const prepared = prepareExercisesForSubmission(newExercises);
-    const newValues: CreateWorkoutFormType = {
-      name: values.name,
-      description: values.description,
-      exercises: newExercises,
-      ...(isTemplateMode ? {} : { workout_date: values.workout_date ?? "" }),
-    };
-
-    saveToServer(values, prepared, () => {
-      doRemoveSetFromForm(exerciseIndex, setIndex);
-      setRemoveSetModal({ open: false, exerciseIndex: null, setIndex: null });
-      setBaselineFromValues(newValues);
-    });
-  };
 
   const handleDiscardWorkoutClick = () => {
     setIsDiscardWorkoutModalOpen(true);
