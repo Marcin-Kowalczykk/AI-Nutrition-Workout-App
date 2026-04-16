@@ -1,12 +1,10 @@
 "use client";
 
-// libs
+//libs
 import { cn } from "@/lib/utils";
-
-// dependencies
 import { X } from "lucide-react";
 
-// components
+//components
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 

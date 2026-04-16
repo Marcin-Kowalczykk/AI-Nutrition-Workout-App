@@ -8,7 +8,7 @@ import { ExercisesSelect } from "../shared/exercises-select";
 import { DatePicker } from "../shared/date-picker";
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
 import { normalizeForComparison } from "@/lib/normalize-string";
-import { filterHistoryByExerciseName } from "@/components/workout-form/components/edit/exercise-history-strip/helpers";
+import { filterHistoryByExerciseName } from "@/components/workout-form/form/exercise-history-strip/helpers";
 import { ExerciseHistoryWorkoutCard } from "@/components/workout-history/exercise-history-workout-card";
 import { Loader } from "@/components/shared/loader";
 import { ExerciseHistoryBarChart } from "@/components/comparisions/exercise-history-bar-chart";

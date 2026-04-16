@@ -1,4 +1,7 @@
+//libs
 import { normalizeForComparison } from "@/lib/normalize-string";
+
+//types
 import type {
   IWorkoutExerciseItem,
   IWorkoutItem,

@@ -68,7 +68,7 @@ export default defineConfig({
         'components/workout-form/workout.tsx',
         // Workout form: large rendering component (tested separately)
         'components/workout-form/workout-form.tsx',
-        'components/workout-form/components/edit/exercise-history-strip/exercise-history-strip.tsx',
+        'components/workout-form/form/exercise-history-strip/exercise-history-strip.tsx',
         // Page-level UI wrappers — tested via e2e
         'components/workout-create/*.tsx',
         'components/workout-edit/*.tsx',

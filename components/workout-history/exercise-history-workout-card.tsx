@@ -9,7 +9,7 @@ import {
   formatWorkoutDate,
   getUnitColumn,
   isSetChecked as isHistorySetChecked,
-} from "@/components/workout-form/components/edit/exercise-history-strip/helpers";
+} from "@/components/workout-form/form/exercise-history-strip/helpers";
 import {
   Table,
   TableBody,

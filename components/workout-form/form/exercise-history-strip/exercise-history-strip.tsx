@@ -1,13 +1,17 @@
 "use client";
 
+//libs
 import { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-
 import { normalizeForComparison } from "@/lib/normalize-string";
+
+//hooks
 import { useGetWorkoutHistory } from "@/components/workout-history/api/use-get-workout-history";
-import { filterHistoryByExerciseName } from "./helpers";
+
+//components
 import { Button } from "@/components/ui/button";
 import { ExerciseHistoryWorkoutCard } from "@/components/workout-history/exercise-history-workout-card";
+import { filterHistoryByExerciseName } from "./helpers";
 
 interface ExerciseHistoryStripProps {
   exerciseName?: string | null;
