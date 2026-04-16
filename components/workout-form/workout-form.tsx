@@ -12,6 +12,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useWorkoutFormState } from "./hooks/use-workout-form-state";
+import { useWorkoutFormCache } from "./hooks/use-workout-form-cache";
 import { useCreateWorkout } from "./api/use-create-workout";
 import { useUpdateWorkout } from "./api/use-update-workout";
 import { useGetWorkout } from "./api/use-get-workout";
@@ -45,7 +46,7 @@ import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./form/rpe";
 
 //types
 import type { Resolver } from "react-hook-form";
-import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
+import { getFormCache } from "@/lib/form-cache";
 import {
   CreateWorkoutFormType,
   createWorkoutFormSchema,
@@ -109,7 +110,6 @@ export const WorkoutForm = ({
     clearRpeDisplay,
     setRpeDisplay,
   } = useRpeState();
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMountRef = useRef(true);
   const hasLoadedWorkoutDataRef = useRef(false);
   const hasLoadedTemplateDataRef = useRef(false);
@@ -144,24 +144,6 @@ export const WorkoutForm = ({
     templateId: prefillFromTemplateId || null,
     enabled: !isTemplateMode && !initialWorkoutId && !!prefillFromTemplateId,
   });
-
-  const saveToCache = useCallback(
-    (data: CreateWorkoutFormType) => {
-      setFormCache(cacheKey, JSON.stringify(data));
-    },
-    [cacheKey]
-  );
-
-  const clearCache = useCallback(() => {
-    removeFormCache(cacheKey);
-  }, [cacheKey]);
-
-  useEffect(() => {
-    discardRef.current = clearCache;
-    return () => {
-      discardRef.current = null;
-    };
-  }, [discardRef, clearCache]);
 
   const {
     mutate: createWorkout,
@@ -273,6 +255,9 @@ export const WorkoutForm = ({
       exercises: [],
     },
   });
+
+  const formValues = form.watch();
+  const { saveToCache, clearCache } = useWorkoutFormCache({ form, cacheKey, discardRef, formValues });
 
   useEffect(() => {
     if (!isInitialMountRef.current) return;
@@ -551,30 +536,6 @@ export const WorkoutForm = ({
     },
     [form]
   );
-
-  const formValues = form.watch();
-
-  useEffect(() => {
-    if (isInitialMountRef.current) {
-      isInitialMountRef.current = false;
-      return;
-    }
-
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(() => {
-      const currentValues = form.getValues();
-      saveToCache(currentValues);
-    }, 2000);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [formValues, form, saveToCache]);
 
   useEffect(() => {
     const hasChanges = hasFormChanges();
