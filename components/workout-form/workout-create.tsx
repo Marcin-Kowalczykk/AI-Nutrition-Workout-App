@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Workout from "../workout-form/workout";
+import Workout from "./workout";
 import { useListTemplates } from "../workout-template/api/use-list-templates";
 import {
   Select,
@@ -11,8 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IWorkoutTemplateItem } from "@/app/api/workout-templates/types";
-import { TemplateSelectSearchInput } from "./template-select-search";
-import { useTemplateSelectSearch } from "./hooks/use-template-select-search";
+import { TemplateSelectSearchInput } from "./form/template-select-search";
+import { useTemplateSelectSearch } from "./form/hooks/use-template-select-search";
 
 const WorkoutCreate = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<
