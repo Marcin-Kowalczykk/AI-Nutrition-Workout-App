@@ -14,7 +14,7 @@ import { useTemplateSearch } from "./hooks/use-template-search";
 //types
 import type { IWorkoutTemplateItem } from "@/app/api/workout-templates/types";
 
-// components
+//components
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import CenterWrapper from "@/components/shared/center-wrapper";

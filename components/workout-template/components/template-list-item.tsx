@@ -4,13 +4,13 @@
 import Link from "next/link";
 import { Edit, Eye, Trash2 } from "lucide-react";
 
-// components
+//components
 import { WorkoutHistoryStats } from "@/components/workout-history/workout-history-stats";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// types
+//types
 import type { IWorkoutTemplateItem } from "@/app/api/workout-templates/types";
 
 type TemplateListItemProps = {
