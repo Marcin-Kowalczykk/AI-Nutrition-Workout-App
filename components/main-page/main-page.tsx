@@ -2,7 +2,7 @@
 
 // components
 import WorkoutHistory from "../workout-history/workout-history";
-import { ViewWorkoutSheet } from "../workout-form/components/view/view-workout-sheet";
+import { ViewWorkoutSheet } from "../workout-form/view/view-workout-sheet";
 import { Suspense } from "react";
 import { Loader } from "../shared/loader";
 

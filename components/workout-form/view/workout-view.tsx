@@ -1,7 +1,7 @@
 "use client";
 
 // hooks
-import { useGetWorkout } from "../../api/use-get-workout";
+import { useGetWorkout } from "../api/use-get-workout";
 
 // components
 import { Loader } from "@/components/shared/loader";

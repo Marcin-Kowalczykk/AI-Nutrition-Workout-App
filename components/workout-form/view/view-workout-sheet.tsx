@@ -5,7 +5,7 @@ import { useState } from "react";
 // hooks
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDeleteWorkout } from "../../api/use-delete-workout";
+import { useDeleteWorkout } from "../api/use-delete-workout";
 
 // components
 import {
