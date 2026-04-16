@@ -10,16 +10,10 @@ import { format, startOfDay, subDays } from "date-fns";
 //hooks
 import { useFieldArray, useForm } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useWorkoutFormState } from "./hooks/use-workout-form-state";
 import { useWorkoutFormCache } from "./hooks/use-workout-form-cache";
 import { useWorkoutFormData } from "./hooks/use-workout-form-data";
-import { useCreateWorkout } from "./api/use-create-workout";
-import { useUpdateWorkout } from "./api/use-update-workout";
-import { useDeleteWorkout } from "./api/use-delete-workout";
-import { useCreateTemplate } from "@/components/workout-template/api/use-create-template";
-import { useUpdateTemplate } from "@/components/workout-template/api/use-update-template";
-import { useDeleteTemplate } from "@/components/workout-template/api/use-delete-template";
+import { useWorkoutFormSubmit } from "./hooks/use-workout-form-submit";
 
 //components
 import {
@@ -62,7 +56,6 @@ import type { PreparedExercise } from "./helpers";
 import {
   getComparisonBaselineString,
   prepareExercisesForSubmission,
-  prepareExercisesForTemplate,
 } from "./helpers";
 
 const WORKOUT_FORM_CACHE_KEY = "workout-form-draft";
@@ -81,7 +74,6 @@ export const WorkoutForm = ({
   templateId: initialTemplateId,
   prefillFromTemplateId,
 }: WorkoutFormProps) => {
-  const router = useRouter();
   const {
     workoutId, setWorkoutId,
     templateId, setTemplateId,
@@ -100,12 +92,6 @@ export const WorkoutForm = ({
     clearRpeDisplay,
     setRpeDisplay,
   } = useRpeState();
-  const [lastSavedBaseline, setLastSavedBaseline] = useState<string | null>(
-    null
-  );
-  const lastSavedExercisesRef = useRef<
-    CreateWorkoutFormType["exercises"] | null
-  >(null);
   const { setHasUnsavedChanges, discardRef } = useWorkoutUnsavedChanges();
 
   const baseCacheKey = isTemplateMode
@@ -115,102 +101,6 @@ export const WorkoutForm = ({
   const cacheKey = entityCacheId
     ? `${baseCacheKey}:${entityCacheId}`
     : baseCacheKey;
-
-  const {
-    mutate: createWorkout,
-    isPending: isCreating,
-    isError: isCreateError,
-    error: createError,
-  } = useCreateWorkout({
-    onSuccess: (data) => {
-      setWorkoutId(data.id);
-      setIsFirstSave(false);
-      clearCache();
-      toast.success("Workout created successfully");
-
-      router.replace(`/workout/edit?id=${data.id}`);
-    },
-    onError: (error) => {
-      toast.error(error || "Failed to create workout. Please try again.");
-    },
-  });
-
-  const {
-    mutate: updateWorkout,
-    isPending: isUpdating,
-    isError: isUpdateError,
-    error: updateError,
-  } = useUpdateWorkout({
-    onSuccess: () => {
-      clearCache();
-      toast.success("Workout updated successfully");
-    },
-    onError: (error) => {
-      toast.error(error || "Failed to update workout. Please try again.");
-    },
-  });
-
-  const { mutate: deleteWorkout, isPending: isDeleting } = useDeleteWorkout({
-    onSuccess: () => {
-      clearCache();
-      form.reset({
-        name: "",
-        description: "",
-        workout_date: defaultWorkoutDate,
-        exercises: [],
-      });
-      setWorkoutId(null);
-      setIsFirstSave(true);
-      setLastSavedBaseline(null);
-      lastSavedExercisesRef.current = null;
-      setIsDiscardWorkoutModalOpen(false);
-      toast.success("Workout discarded");
-    },
-    onError: (error) => {
-      toast.error(error || "Failed to delete workout. Please try again.");
-    },
-  });
-
-  const { mutate: createTemplate } = useCreateTemplate({
-    onSuccess: (data) => {
-      setTemplateId(data.id);
-      setIsFirstSave(false);
-      clearCache();
-      toast.success("Template created successfully");
-      router.replace(`/workout/template/${data.id}/edit`);
-    },
-    onError: (error) => {
-      toast.error(error || "Failed to create template. Please try again.");
-    },
-  });
-
-  const { mutate: updateTemplate, isPending: isUpdatingTemplate } =
-    useUpdateTemplate({
-      onSuccess: () => {
-        clearCache();
-        toast.success("Template updated successfully");
-      },
-      onError: (error) => {
-        toast.error(error || "Failed to update template. Please try again.");
-      },
-    });
-
-  const { mutate: deleteTemplate, isPending: isDeletingTemplate } =
-    useDeleteTemplate({
-      onSuccess: () => {
-        clearCache();
-        form.reset({ name: "", description: "", exercises: [] });
-        setTemplateId(null);
-        setIsFirstSave(true);
-        setLastSavedBaseline(null);
-        lastSavedExercisesRef.current = null;
-        setIsDiscardWorkoutModalOpen(false);
-        toast.success("Template discarded");
-      },
-      onError: (error) => {
-        toast.error(error || "Failed to delete template. Please try again.");
-      },
-    });
 
   const defaultWorkoutDate = format(new Date(), "yyyy-MM-dd");
 
@@ -229,6 +119,37 @@ export const WorkoutForm = ({
 
   const formValues = form.watch();
   const { saveToCache, clearCache } = useWorkoutFormCache({ form, cacheKey, discardRef, formValues });
+
+  const {
+    lastSavedBaseline, setLastSavedBaseline,
+    lastSavedExercisesRef,
+    setBaselineFromValues,
+    hasFormChanges,
+    hasExerciseChanges,
+    saveToServer,
+    onSubmitHandler,
+    deleteWorkout,
+    deleteTemplate,
+    isUpdating,
+    isDeleting,
+    isDeletingTemplate,
+    isPending,
+    isError,
+    error,
+    submitLabel,
+  } = useWorkoutFormSubmit({
+    form,
+    isTemplateMode,
+    workoutId,
+    setWorkoutId,
+    templateId,
+    setTemplateId,
+    isFirstSave,
+    setIsFirstSave,
+    currentEntityId,
+    defaultWorkoutDate,
+    clearCache,
+  });
 
   const { isLoadingWorkout, isLoadingTemplate } = useWorkoutFormData({
     form,
@@ -252,81 +173,6 @@ export const WorkoutForm = ({
     name: "exercises",
   });
 
-  const hasFormChanges = useCallback(() => {
-    const values = form.getValues();
-    const currentBaseline = getComparisonBaselineString(values, isTemplateMode);
-
-    if (lastSavedBaseline === null) {
-      const emptyBaseline = getComparisonBaselineString(
-        {
-          name: "",
-          description: "",
-          workout_date: defaultWorkoutDate,
-          exercises: [],
-        },
-        isTemplateMode
-      );
-      return currentBaseline !== emptyBaseline;
-    }
-
-    return currentBaseline !== lastSavedBaseline;
-  }, [form, isTemplateMode, lastSavedBaseline, defaultWorkoutDate]);
-
-  const hasExerciseChanges = useCallback(
-    (exerciseIndex: number) => {
-      const currentExercises = form.getValues("exercises");
-      const saved = lastSavedExercisesRef.current;
-      const current = currentExercises[exerciseIndex];
-
-      if (!current) return false;
-
-      if (saved === null) {
-        const hasName = !!(current.name ?? "").trim();
-        const hasSets = (current.sets ?? []).some(
-          (s) =>
-            (s.reps ?? "") !== "" ||
-            (s.weight ?? "") !== "" ||
-            (s.duration ?? "") !== ""
-        );
-        return hasName || hasSets;
-      }
-
-      const savedExercise = saved.find((e) => e.id === current.id);
-      if (!savedExercise) return true;
-
-      const normalizeNumber = (val: unknown): number | undefined => {
-        if (val === null || val === undefined || val === "") return undefined;
-        const num = Number(val);
-        return Number.isNaN(num) ? undefined : num;
-      };
-
-      const normalizeExercise = (
-        exercise: (typeof currentExercises)[number]
-      ) => ({
-        id: exercise.id,
-        name: (exercise.name ?? "").trim(),
-        unitType: exercise.unitType,
-        sets: (exercise.sets ?? []).map((set) => ({
-          id: set.id,
-          set_number: set.set_number ?? 0,
-          reps: normalizeNumber(set.reps),
-          weight: normalizeNumber(set.weight),
-          duration: normalizeNumber(set.duration),
-          isChecked: !!set.isChecked,
-          rpe: set.rpe ?? null,
-        })),
-      });
-
-      const normalizedCurrent = normalizeExercise(current);
-      const normalizedSaved = normalizeExercise(savedExercise);
-
-      return (
-        JSON.stringify(normalizedCurrent) !== JSON.stringify(normalizedSaved)
-      );
-    },
-    [form]
-  );
-
   useEffect(() => {
     const hasChanges = hasFormChanges();
     setHasUnsavedChanges(hasChanges);
@@ -335,96 +181,6 @@ export const WorkoutForm = ({
       setHasUnsavedChanges(false);
     };
   }, [formValues, hasFormChanges, setHasUnsavedChanges]);
-
-  const setBaselineFromValues = useCallback(
-    (values: CreateWorkoutFormType) => {
-      setLastSavedBaseline(getComparisonBaselineString(values, isTemplateMode));
-      lastSavedExercisesRef.current = values.exercises;
-    },
-    [isTemplateMode]
-  );
-
-  const isPending =
-    isCreating ||
-    isUpdating ||
-    isDeleting ||
-    isUpdatingTemplate ||
-    isDeletingTemplate ||
-    isLoadingWorkout ||
-    isLoadingTemplate;
-  const isError = isCreateError || isUpdateError;
-  const error = createError || updateError;
-
-  const getCreatedAtFromWorkoutDate = (workoutDateStr: string) =>
-    startOfDay(new Date(workoutDateStr + "T12:00:00")).toISOString();
-
-  const onSubmitHandler = async (values: CreateWorkoutFormType) => {
-    const { name, description, exercises, workout_date } = values;
-    const currentDate = new Date().toISOString();
-    const filteredExercises = prepareExercisesForSubmission(exercises);
-    const created_at =
-      workout_date && !isTemplateMode
-        ? getCreatedAtFromWorkoutDate(workout_date)
-        : undefined;
-
-    const setBaselineOnSuccess = () => setBaselineFromValues(values);
-
-    if (isTemplateMode) {
-      const templateExercises = prepareExercisesForTemplate(exercises);
-      if (isFirstSave && !currentEntityId) {
-        createTemplate(
-          {
-            name,
-            description: description || undefined,
-            exercises:
-              templateExercises.length > 0 ? templateExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      } else if (currentEntityId) {
-        updateTemplate(
-          {
-            id: currentEntityId,
-            name,
-            description: description || undefined,
-            exercises:
-              templateExercises.length > 0 ? templateExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      }
-    } else {
-      if (isFirstSave && !workoutId) {
-        createWorkout(
-          {
-            name,
-            description: description || undefined,
-            start_date: currentDate,
-            ...(created_at && { created_at }),
-            exercises:
-              filteredExercises.length > 0 ? filteredExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      } else if (workoutId) {
-        updateWorkout(
-          {
-            id: workoutId,
-            name,
-            description: description || undefined,
-            end_date: currentDate,
-            ...(created_at && { created_at }),
-            exercises:
-              filteredExercises.length > 0 ? filteredExercises : undefined,
-          },
-          { onSuccess: setBaselineOnSuccess }
-        );
-      } else if (!isFirstSave && !workoutId) {
-        console.error("Workout ID is missing during update");
-        toast.error("An unexpected error occurred. Please try again.");
-      }
-    }
-  };
 
   const applyUnitChange = useCallback(
     (exerciseIndex: number, newUnit: WorkoutUnitType) => {
@@ -480,35 +236,6 @@ export const WorkoutForm = ({
     } else {
       removeExercise(exerciseIndex);
       setBaselineFromValues(form.getValues());
-    }
-  };
-
-  const saveToServer = (
-    values: CreateWorkoutFormType,
-    prepared: PreparedExercise[],
-    onSuccess: () => void
-  ) => {
-    if (!currentEntityId) return;
-    const exercises = prepared.length > 0 ? prepared : undefined;
-    if (isTemplateMode) {
-      updateTemplate(
-        { id: currentEntityId, name: values.name, description: values.description, exercises },
-        { onSuccess }
-      );
-    } else {
-      const created_at =
-        values.workout_date && getCreatedAtFromWorkoutDate(values.workout_date);
-      updateWorkout(
-        {
-          id: currentEntityId,
-          name: values.name,
-          description: values.description,
-          end_date: new Date().toISOString(),
-          ...(created_at && { created_at }),
-          exercises,
-        },
-        { onSuccess }
-      );
     }
   };
 
@@ -634,9 +361,6 @@ export const WorkoutForm = ({
   };
 
   const workoutName = form.watch("name") ?? "";
-  const submitLabel = isFirstSave
-    ? isTemplateMode ? "Save Template" : "Save Workout"
-    : isTemplateMode ? "Update Template" : "Update Workout";
 
   const submitForm = (form.handleSubmit as unknown as (
     fn: (data: CreateWorkoutFormType) => void | Promise<void>
