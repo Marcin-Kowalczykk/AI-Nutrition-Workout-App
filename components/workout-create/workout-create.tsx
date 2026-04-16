@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Workout from "../workout-form/components/workout";
+import Workout from "../workout-form/workout";
 import { useListTemplates } from "../workout-template/api/use-list-templates";
 import {
   Select,

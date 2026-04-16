@@ -4,7 +4,7 @@ import { prepareExercisesForSubmission } from './prepare-exercises-for-submissio
 import { prepareExercisesForTemplate } from './prepare-exercises-for-template'
 import { getBaselineString, getComparisonBaselineString } from './get-baseline-string'
 import { normalizeCachedFormData, formatNumericField } from './normalize-cached-form-data'
-import type { CreateWorkoutFormType } from '../../../types'
+import type { CreateWorkoutFormType } from '../types'
 
 // --- factory helpers ---
 

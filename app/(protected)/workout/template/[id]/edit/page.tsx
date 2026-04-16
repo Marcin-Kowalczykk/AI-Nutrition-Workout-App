@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Workout from "@/components/workout-form/components/workout";
+import Workout from "@/components/workout-form/workout";
 
 export default function EditTemplatePage() {
   const params = useParams();

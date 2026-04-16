@@ -1,4 +1,4 @@
-import type { CreateWorkoutFormType } from "../../../types";
+import type { CreateWorkoutFormType } from "../types";
 import { normalizeForComparison } from "@/lib/normalize-string";
 import type {
   IWorkoutTemplateExerciseItem,

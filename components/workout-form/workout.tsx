@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Loader } from "@/components/shared/loader";
-import { WorkoutForm } from "./edit/workout-form";
+import { WorkoutForm } from "./workout-form";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface WorkoutProps {

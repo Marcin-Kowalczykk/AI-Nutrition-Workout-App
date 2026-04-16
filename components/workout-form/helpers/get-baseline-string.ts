@@ -1,4 +1,4 @@
-import type { CreateWorkoutFormType } from "../../../types";
+import type { CreateWorkoutFormType } from "../types";
 import { prepareExercisesForSubmission } from "./prepare-exercises-for-submission";
 import { prepareExercisesForTemplate } from "./prepare-exercises-for-template";
 

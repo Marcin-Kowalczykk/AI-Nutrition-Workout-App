@@ -1,5 +1,5 @@
 import { normalizeForComparison } from "@/lib/normalize-string";
-import type { CreateWorkoutFormType } from "../../../types";
+import type { CreateWorkoutFormType } from "../types";
 
 type FormExercise = CreateWorkoutFormType["exercises"][number];
 type FormSet = FormExercise["sets"][number];

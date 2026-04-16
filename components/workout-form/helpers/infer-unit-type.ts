@@ -1,4 +1,4 @@
-import { WORKOUT_UNIT_TYPE, type WorkoutUnitType } from "../../../types";
+import { WORKOUT_UNIT_TYPE, type WorkoutUnitType } from "../types";
 
 type SetLike = { weight?: string | number; duration?: string | number };
 

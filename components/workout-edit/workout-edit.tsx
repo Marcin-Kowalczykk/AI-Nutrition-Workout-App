@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import Workout from "../workout-form/components/workout";
+import Workout from "../workout-form/workout";
 import { Suspense } from "react";
 import { Loader } from "../shared/loader";
 

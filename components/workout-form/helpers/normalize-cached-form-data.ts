@@ -1,4 +1,4 @@
-import type { CreateWorkoutFormType } from "../../../types";
+import type { CreateWorkoutFormType } from "../types";
 
 export const formatNumericField = (value: unknown): string => {
   if (value === null || value === undefined) return "";

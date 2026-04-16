@@ -13,10 +13,10 @@ import { format, startOfDay, subDays } from "date-fns";
 import { useFieldArray, useForm, type Resolver } from "react-hook-form";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateWorkout } from "../../api/use-create-workout";
-import { useUpdateWorkout } from "../../api/use-update-workout";
-import { useGetWorkout } from "../../api/use-get-workout";
-import { useDeleteWorkout } from "../../api/use-delete-workout";
+import { useCreateWorkout } from "./api/use-create-workout";
+import { useUpdateWorkout } from "./api/use-update-workout";
+import { useGetWorkout } from "./api/use-get-workout";
+import { useDeleteWorkout } from "./api/use-delete-workout";
 import { useCreateTemplate } from "@/components/workout-template/api/use-create-template";
 import { useUpdateTemplate } from "@/components/workout-template/api/use-update-template";
 import { useGetTemplate } from "@/components/workout-template/api/use-get-template";
@@ -39,10 +39,10 @@ import { NativeCheckbox } from "@/components/shared/native-checkbox";
 import { Loader } from "@/components/shared/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CenterWrapper from "@/components/shared/center-wrapper";
-import { ConfirmModal } from "../../../shared/confirm-modal";
+import { ConfirmModal } from "../shared/confirm-modal";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { DatePicker } from "@/components/shared/date-picker";
-import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./rpe";
+import { RpeToggleButton, RpeSliderPanel, useRpeState } from "./components/edit/rpe";
 
 // types and schemas
 import { getFormCache, removeFormCache, setFormCache } from "@/lib/form-cache";
@@ -52,14 +52,14 @@ import {
   templateWorkoutFormSchema,
   WORKOUT_UNIT_TYPE,
   type WorkoutUnitType,
-} from "../../types";
+} from "./types";
 import { ExerciseUnitType } from "@/app/api/exercises/types";
 import { normalizeForComparison } from "@/lib/normalize-string";
-import { useWorkoutUnsavedChanges } from "../../context/workout-unsaved-context";
+import { useWorkoutUnsavedChanges } from "./context/workout-unsaved-context";
 import {
   ExerciseHistoryStrip,
   ExerciseHistoryStripContent,
-} from "./exercise-history-strip/exercise-history-strip";
+} from "./components/edit/exercise-history-strip/exercise-history-strip";
 import type {
   IWorkoutTemplateExerciseItem,
   IWorkoutTemplateSetItem,
