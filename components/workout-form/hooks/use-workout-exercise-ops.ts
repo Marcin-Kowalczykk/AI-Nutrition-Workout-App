@@ -105,6 +105,29 @@ export const useWorkoutExerciseOps = ({
     [form]
   );
 
+  const handleCopySet = useCallback(
+    (exerciseIndex: number) => {
+      const exercise = form.getValues(`exercises.${exerciseIndex}`);
+      if (!exercise?.name?.trim()) return;
+      const currentSets = exercise?.sets ?? [];
+      const lastSet = currentSets[currentSets.length - 1];
+      if (!lastSet) return;
+      form.setValue(`exercises.${exerciseIndex}.sets`, [
+        ...currentSets,
+        {
+          id: crypto.randomUUID(),
+          set_number: currentSets.length + 1,
+          reps: lastSet.reps,
+          weight: lastSet.weight,
+          duration: lastSet.duration,
+          rpe: lastSet.rpe ?? null,
+          isChecked: false,
+        },
+      ]);
+    },
+    [form]
+  );
+
   const doRemoveSetFromForm = useCallback(
     (exerciseIndex: number, setIndex: number) => {
       const currentSets = form.getValues(`exercises.${exerciseIndex}`)?.sets ?? [];
@@ -154,6 +177,7 @@ export const useWorkoutExerciseOps = ({
     handleRemoveExerciseClick,
     handleConfirmRemoveExercise,
     handleAddSet,
+    handleCopySet,
     handleRemoveSetClick,
     handleConfirmRemoveSet,
   };
