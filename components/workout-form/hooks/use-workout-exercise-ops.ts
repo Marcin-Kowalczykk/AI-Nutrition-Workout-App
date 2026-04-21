@@ -112,6 +112,7 @@ export const useWorkoutExerciseOps = ({
       const currentSets = exercise?.sets ?? [];
       const lastSet = currentSets[currentSets.length - 1];
       if (!lastSet) return;
+      if (!lastSet.reps && !lastSet.weight && !lastSet.duration) return;
       form.setValue(`exercises.${exerciseIndex}.sets`, [
         ...currentSets,
         {
