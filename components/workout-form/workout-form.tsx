@@ -150,6 +150,7 @@ export const WorkoutForm = ({
     handleRemoveExerciseClick,
     handleConfirmRemoveExercise,
     handleAddSet,
+    handleCopySet,
     handleRemoveSetClick,
     handleConfirmRemoveSet,
   } = useWorkoutExerciseOps({
@@ -248,6 +249,7 @@ export const WorkoutForm = ({
                   setHistoryOpenByExerciseId((prev) => ({ ...prev, [id]: open }))
                 }
                 onAddSet={handleAddSet}
+                onCopySet={handleCopySet}
                 onRemoveExercise={handleRemoveExerciseClick}
                 onRemoveSet={handleRemoveSetClick}
                 rpeState={rpeState}
