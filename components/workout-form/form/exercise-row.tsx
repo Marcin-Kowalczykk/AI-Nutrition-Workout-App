@@ -8,7 +8,7 @@ import type { UseRpeStateReturn } from "./rpe/use-rpe-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared/loader";
-import { Plus, Trash2 } from "lucide-react";
+import { Copy, Plus, Trash2 } from "lucide-react";
 import { ExercisesSelect } from "@/components/shared/exercises-select";
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { ExerciseHistoryStrip, ExerciseHistoryStripContent } from "./exercise-history-strip/exercise-history-strip";
@@ -28,6 +28,7 @@ interface ExerciseRowProps {
   historyOpenByExerciseId: Record<string, boolean>;
   onHistoryChange: (exerciseId: string, open: boolean) => void;
   onAddSet: (exerciseIndex: number) => void;
+  onCopySet: (exerciseIndex: number) => void;
   onRemoveExercise: (exerciseIndex: number) => void;
   onRemoveSet: (exerciseIndex: number, setIndex: number) => void;
   rpeState: UseRpeStateReturn;
@@ -41,7 +42,7 @@ interface ExerciseRowProps {
 
 export const ExerciseRow = ({
   form, exercise, exerciseIndex, isTemplateMode, isPending,
-  historyOpenByExerciseId, onHistoryChange, onAddSet, onRemoveExercise, onRemoveSet,
+  historyOpenByExerciseId, onHistoryChange, onAddSet, onCopySet, onRemoveExercise, onRemoveSet,
   rpeState, onSubmit, submitLabel, hasExerciseChanges, isLastExercise,
   applyUnitChange, mapExerciseUnitToWorkoutUnit,
 }: ExerciseRowProps) => {
@@ -50,6 +51,9 @@ export const ExerciseRow = ({
     (form.watch(`exercises.${exerciseIndex}.unitType`) as WorkoutUnitType | undefined) ??
     WORKOUT_UNIT_TYPE.REPS_BASED;
   const sets = form.watch(`exercises.${exerciseIndex}.sets`) ?? [];
+  const lastSet = sets[sets.length - 1];
+  const canCopySet =
+    !!lastSet && (!!lastSet.reps || !!lastSet.weight || !!lastSet.duration);
 
   return (
     <Card>
@@ -113,14 +117,42 @@ export const ExerciseRow = ({
         </div>
 
         <div className="flex items-center justify-between gap-1 py-2 w-full">
-          <Button type="button" variant="outline" size="sm" onClick={() => onAddSet(exerciseIndex)} disabled={isPending || !exerciseName?.trim()} className="gap-2 shrink-0 w-[5.75rem]">
-            <Plus className="h-4 w-4" />Add Set
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onAddSet(exerciseIndex)}
+              disabled={isPending || !exerciseName?.trim()}
+              className="gap-2 shrink-0 w-[6.5rem]"
+            >
+              <Plus className="h-4 w-4" />Add Empty Set
+            </Button>
+            {canCopySet && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onCopySet(exerciseIndex)}
+                disabled={isPending || !exerciseName?.trim()}
+                className="gap-2 shrink-0"
+              >
+                <Copy className="h-4 w-4" />Copy Last Set
+              </Button>
+            )}
+          </div>
           <div className="flex items-center gap-1">
             {!isTemplateMode && <div className="w-[3.5rem] shrink-0" />}
             <div className="size-4 shrink-0" />
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => onRemoveExercise(exerciseIndex)} disabled={isPending} className="gap-2 min-w-0 text-muted-foreground hover:text-primary w-[10rem]">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onRemoveExercise(exerciseIndex)}
+            disabled={isPending}
+            className="gap-2 min-w-0 text-muted-foreground hover:text-primary w-[10rem]"
+          >
             <Trash2 className="h-4 w-4 text-destructive" />Remove Exercise
           </Button>
         </div>
