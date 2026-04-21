@@ -15,9 +15,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Training Diet App",
+  title: "AI Nutrition & Workout App",
   description:
-    "Training Diet App for counting calories and tracking your diet and workout progress",
+    "AI-powered app for tracking nutrition, counting calories and monitoring your workout progress",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [{ url: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Training Diet",
+    title: "AI Nutrition & Workout",
   },
 };
 

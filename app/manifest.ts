@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Training Diet App",
-    short_name: "JTCNW",
+    name: "AI Nutrition & Workout App",
+    short_name: "AI Fitness",
     description:
-      "Training Diet App for counting calories and tracking your diet and workout progress",
+      "AI-powered app for tracking nutrition, counting calories and monitoring your workout progress",
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",
